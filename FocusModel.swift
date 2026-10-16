@@ -1,137 +1,135 @@
 //
-//  FocusModel.swift
-//  FocusKey
-//
-//  Created by Pablo Ortega on 14/10/2026.
-//
+ //  FocusModel.swift
+ //  FocusKey
+ //
+ //  Created by Pablo Ortega on 14/10/2026.
+ //
 
-import SwiftUI
-import Combine
-import FamilyControls
-import ManagedSettings
+ import SwiftUI
+ import Combine
+ import FamilyControls
+ import ManagedSettings
 
-@MainActor
-final class FocusModel: ObservableObject {
+ @MainActor
+ final class FocusModel: ObservableObject {
 
-    @Published var selection = FamilyActivitySelection()
-    @Published var isLocked: Bool = UserDefaults.standard.bool(
-        forKey: "FocusKey.isLocked"
-    ) {
-        didSet {
-            UserDefaults.standard.set(isLocked, forKey: "FocusKey.isLocked")
-        }
-    }
-    @Published var status = "Autoriza Screen Time para empezar."
+     @Published var selection = FamilyControls.FamilyActivitySelection() {
+         didSet {
+             // Save the cleaned selection (applications only)
+             if let data = try? JSONEncoder().encode(ensureApplicationOnlySelection(selection)) {
+                 UserDefaults.standard.set(data, forKey: selectionKey)
+             }
+         }
+     }
+     @Published var isLocked: Bool = UserDefaults.standard.bool(
+         forKey: "FocusKey.isLocked"
+     ) {
+         didSet {
+             UserDefaults.standard.set(isLocked, forKey: "FocusKey.isLocked")
+         }
+     }
+     @Published var status = "Autoriza Screen Time para empezar."
 
-    private let store = ManagedSettingsStore()
-    private let selectionKey = "FocusKeySelection"
+     private let store = ManagedSettingsStore()
+     private let selectionKey = "FocusKeySelection"
+     private var cachedSelfApplicationToken: String?
 
-    init() {
-        if let data = UserDefaults.standard.data(
-            forKey: selectionKey
-        ),
-        let saved = try? JSONDecoder().decode(
-            FamilyActivitySelection.self,
-            from: data
-        ) {
-            selection = saved
-        }
+     private func ensureApplicationOnlySelection(_ selection: FamilyControls.FamilyActivitySelection) -> FamilyControls.FamilyActivitySelection {
+         var cleanSelection = selection
+         cleanSelection.categoryTokens = []
+         cleanSelection.webDomainTokens = []
+         return cleanSelection
+     }
 
-        // No asumimos que el sistema siga bloqueado
-        // después de un reinicio o un cambio de autorización.
-    }
+     init() {
+         if let data = UserDefaults.standard.data(
+             forKey: selectionKey
+         ),
+         let saved = try? JSONDecoder().decode(
+             FamilyControls.FamilyActivitySelection.self,
+             from: data
+         ) {
+             selection = saved
+         }
+         // The didSet will save the cleaned selection (applications only).
+     }
 
-    func authorize() async {
-        let center = AuthorizationCenter.shared
+     private var selfApplicationToken: String? {
+         if cachedSelfApplicationToken == nil {
+             cachedSelfApplicationToken = Bundle.main.bundleIdentifier
+         }
+         return cachedSelfApplicationToken
+     }
 
-        switch center.authorizationStatus {
-        case .approved:
-            status = "Screen Time ya está autorizado."
-            print("✅ Autorización existente.")
+     func authorize() async {
+         let center = AuthorizationCenter.shared
 
-        case .notDetermined, .denied:
-            do {
-                try await center.requestAuthorization(for: .individual)
+         switch center.authorizationStatus {
+         case .approved:
+             status = "Screen Time ya está autorizado."
+         case .approvedWithDataAccess:
+             status = "Screen Time ya está autorizado con acceso a datos."
+         case .notDetermined, .denied:
+             do {
+                 try await center.requestAuthorization(for: .individual)
 
-                if center.authorizationStatus == .approved {
-                    status = "Autorización concedida."
-                } else {
-                    status = "La autorización no está aprobada."
-                }
-            } catch {
-                status = "Error de autorización: \(error.localizedDescription)"
-                print("❌ Error de autorización:", error)
-            }
+                 if center.authorizationStatus == .approved {
+                     status = "Autorización concedida."
+                 } else {
+                     status = "La autorización no está aprobada."
+                 }
+             } catch {
+                 status = "Error de autorización: \(error.localizedDescription)"
+             }
 
-        @unknown default:
-            status = "Estado de autorización desconocido."
-        }
-    }
+         @unknown default:
+             status = "Estado de autorización desconocido."
+         }
+     }
 
-    func saveSelection() {
-        if let data = try? JSONEncoder().encode(selection) {
-            UserDefaults.standard.set(data, forKey: selectionKey)
-        }
-    }
+     
+     func toggleLock() {
+         guard AuthorizationCenter.shared.authorizationStatus == .approved else {
+             status = "Error: autorización de Screen Time no aprobada."
+             return
+         }
 
-    func toggleLock() {
-        guard AuthorizationCenter.shared.authorizationStatus == .approved else {
-            status = "Error: autorización de Screen Time no aprobada."
-            return
-        }
+         // Get applications to block, excluding self
+         let cleanedSelection = ensureApplicationOnlySelection(selection)
+         var applicationsToBlock = cleanedSelection.applicationTokens
+         if let selfToken = selfApplicationToken {
+             applicationsToBlock = Set(applicationsToBlock.filter { String(describing: $0) != selfToken })
+         }
 
-        let hasApps = !selection.applicationTokens.isEmpty
-        let hasCategories = !selection.categoryTokens.isEmpty
-        let hasWebDomains = !selection.webDomainTokens.isEmpty
+         guard !applicationsToBlock.isEmpty else {
+             status = "Selecciona aplicaciones para bloquear."
+             return
+         }
 
-        guard hasApps || hasCategories || hasWebDomains else {
-            status = "Selecciona aplicaciones, categorías o sitios web."
-            return
-        }
+         if isLocked {
+             // Retirar todas las restricciones de este almacén.
+             store.clearAllSettings()
 
-        if isLocked {
-            // Retirar todas las restricciones de este almacén.
-            store.clearAllSettings()
+             isLocked = false
+             status = "Bloqueo desactivado."
+         } else {
+             // Bloquear aplicaciones seleccionadas individualmente.
+             store.shield.applications = applicationsToBlock
 
-            isLocked = false
-            status = "Bloqueo desactivado."
-            print("🔓 FocusKey: restricciones retiradas.")
-        } else {
-            // Bloquear aplicaciones seleccionadas individualmente.
-            store.shield.applications =
-                selection.applicationTokens.isEmpty
-                ? nil
-                : selection.applicationTokens
+             // Asegurarse de que categorías y webs no estén bloqueadas.
+             store.shield.applicationCategories = nil
+             store.shield.webDomains = nil
 
-            // Bloquear las categorías completas seleccionadas.
-            store.shield.applicationCategories =
-                selection.categoryTokens.isEmpty
-                ? nil
-                : .specific(selection.categoryTokens)
+             isLocked = true
 
-            // Bloquear dominios web seleccionados individualmente.
-            store.shield.webDomains =
-                selection.webDomainTokens.isEmpty
-                ? nil
-                : selection.webDomainTokens
+             status = """
+             Bloqueo solicitado:
+             \(applicationsToBlock.count) aplicaciones individuales.
+             """
+         }
+     }
 
-            isLocked = true
-
-            status = """
-            Bloqueo solicitado:
-            \(selection.applicationTokens.count) aplicaciones individuales.
-            \(selection.categoryTokens.count) categorías.
-            \(selection.webDomainTokens.count) sitios web.
-            """
-
-            print("🔒 FocusKey: restricciones aplicadas.")
-            print("Aplicaciones:", selection.applicationTokens.count)
-            print("Categorías:", selection.categoryTokens.count)
-            print("Dominios web:", selection.webDomainTokens.count)
-        }
-    }
-
-    func handleNFC() {
-        toggleLock()
-    }
-}
+     func handleNFC() {
+         toggleLock()
+     }
+ }
