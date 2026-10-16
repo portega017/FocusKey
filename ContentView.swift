@@ -47,7 +47,7 @@
                  .font(.subheadline)
 
 
-                 Button("Leer etiqueta NFC") {
+                 Button(model.isLocked ? "Desbloquear" : "Bloquear") {
                      nfc.start()
                  }
                  .buttonStyle(.bordered)
