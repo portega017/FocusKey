@@ -2,7 +2,7 @@
  //  NFCScanner.swift
  //  FocusKey
  //
- //  Created by Pablo Ortega on 14/10/2026.
+ //  Created by pibol on 14/10/2026.
  //
 
 

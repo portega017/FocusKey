@@ -1,6 +1,6 @@
 # FocusKey
 
-FocusKey is an iOS app designed to help you stay focused by controlling access to apps, app categories, and websites using Apple's Screen Time and Family Controls APIs.
+FocusKey is an OpenSource iOS app designed to help you stay focused by controlling access to apps, app categories, and websites using Apple's Screen Time and Family Controls APIs.
 
 The app lets you:
 - select the apps, categories, and web domains you want to restrict;
