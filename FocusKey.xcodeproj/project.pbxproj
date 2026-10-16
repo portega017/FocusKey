@@ -11,6 +11,7 @@
 		6EB29E27307F90F200466BF3 /* FocusModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E26307F90ED00466BF3 /* FocusModel.swift */; };
 		6EB29E29307F910800466BF3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E28307F910300466BF3 /* ContentView.swift */; };
 		6EB29E2D307F912800466BF3 /* NFCScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E2C307F912800466BF3 /* NFCScanner.swift */; };
+		6ECF384D30821ACB00D0F135 /* focuskey.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6ECF384C30821ACB00D0F135 /* focuskey.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,6 +32,7 @@
 		6EB29E26307F90ED00466BF3 /* FocusModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusModel.swift; sourceTree = "<group>"; };
 		6EB29E28307F910300466BF3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		6EB29E2C307F912800466BF3 /* NFCScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFCScanner.swift; sourceTree = "<group>"; };
+		6ECF384C30821ACB00D0F135 /* focuskey.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = focuskey.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -71,6 +73,7 @@
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				6ECF384C30821ACB00D0F135 /* focuskey.icon */,
 				6EB29E2C307F912800466BF3 /* NFCScanner.swift */,
 				6EB29E28307F910300466BF3 /* ContentView.swift */,
 				6EB29E26307F90ED00466BF3 /* FocusModel.swift */,
@@ -158,6 +161,7 @@
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				6ECF384D30821ACB00D0F135 /* focuskey.icon in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */

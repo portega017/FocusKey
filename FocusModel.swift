@@ -13,12 +13,12 @@
  @MainActor
  final class FocusModel: ObservableObject {
 
-     @Published var selection = FamilyActivitySelection() {
+     @Published var selection = FamilyControls.FamilyActivitySelection() {
          didSet {
-             // Clean the selection to only applications
-             selection = ensureApplicationOnlySelection()
-             // Save the cleaned selection
-             saveSelection()
+             // Save the cleaned selection (applications only)
+             if let data = try? JSONEncoder().encode(ensureApplicationOnlySelection(selection)) {
+                 UserDefaults.standard.set(data, forKey: selectionKey)
+             }
          }
      }
      @Published var isLocked: Bool = UserDefaults.standard.bool(
@@ -34,7 +34,7 @@
      private let selectionKey = "FocusKeySelection"
      private var cachedSelfApplicationToken: String?
 
-     private func ensureApplicationOnlySelection() -> FamilyActivitySelection {
+     private func ensureApplicationOnlySelection(_ selection: FamilyControls.FamilyActivitySelection) -> FamilyControls.FamilyActivitySelection {
          var cleanSelection = selection
          cleanSelection.categoryTokens = []
          cleanSelection.webDomainTokens = []
@@ -46,12 +46,12 @@
              forKey: selectionKey
          ),
          let saved = try? JSONDecoder().decode(
-             FamilyActivitySelection.self,
+             FamilyControls.FamilyActivitySelection.self,
              from: data
          ) {
              selection = saved
          }
-         // The didSet will clean and save the loaded selection.
+         // The didSet will save the cleaned selection (applications only).
      }
 
      private var selfApplicationToken: String? {
@@ -87,12 +87,7 @@
          }
      }
 
-     func saveSelection() {
-         if let data = try? JSONEncoder().encode(selection) {
-             UserDefaults.standard.set(data, forKey: selectionKey)
-         }
-     }
-
+     
      func toggleLock() {
          guard AuthorizationCenter.shared.authorizationStatus == .approved else {
              status = "Error: autorización de Screen Time no aprobada."
@@ -100,7 +95,8 @@
          }
 
          // Get applications to block, excluding self
-         var applicationsToBlock = selection.applicationTokens
+         let cleanedSelection = ensureApplicationOnlySelection(selection)
+         var applicationsToBlock = cleanedSelection.applicationTokens
          if let selfToken = selfApplicationToken {
              applicationsToBlock = Set(applicationsToBlock.filter { String(describing: $0) != selfToken })
          }
