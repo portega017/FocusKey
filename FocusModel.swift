@@ -2,7 +2,7 @@
  //  FocusModel.swift
  //  FocusKey
  //
- //  Created by Pablo Ortega on 14/10/2026.
+ //  Created by pibol on 14/10/2026.
  //
 
  import SwiftUI
@@ -15,8 +15,8 @@
 
      @Published var selection = FamilyControls.FamilyActivitySelection() {
          didSet {
-             // Save the cleaned selection (applications only)
-             if let data = try? JSONEncoder().encode(ensureApplicationOnlySelection(selection)) {
+             // Guardar la selección completa (incluyendo categorías y dominios web)
+             if let data = try? JSONEncoder().encode(selection) {
                  UserDefaults.standard.set(data, forKey: selectionKey)
              }
          }
@@ -34,13 +34,7 @@
      private let selectionKey = "FocusKeySelection"
      private var cachedSelfApplicationToken: String?
 
-     private func ensureApplicationOnlySelection(_ selection: FamilyControls.FamilyActivitySelection) -> FamilyControls.FamilyActivitySelection {
-         var cleanSelection = selection
-         cleanSelection.categoryTokens = []
-         cleanSelection.webDomainTokens = []
-         return cleanSelection
-     }
-
+     
      init() {
          if let data = UserDefaults.standard.data(
              forKey: selectionKey
@@ -51,7 +45,16 @@
          ) {
              selection = saved
          }
-         // The didSet will save the cleaned selection (applications only).
+         // The didSet will save the full selection (including categories and web domains).
+     }
+
+     var selectedBundleIdentifiers: Set<String> {
+         get {
+             return []
+         }
+         set {
+             // Do nothing
+         }
      }
 
      private var selfApplicationToken: String? {
@@ -94,37 +97,35 @@
              return
          }
 
-         // Get applications to block, excluding self
-         let cleanedSelection = ensureApplicationOnlySelection(selection)
-         var applicationsToBlock = cleanedSelection.applicationTokens
-         if let selfToken = selfApplicationToken {
-             applicationsToBlock = Set(applicationsToBlock.filter { String(describing: $0) != selfToken })
-         }
+         // Applications, categories, and web domains to block
+         let applicationsToBlock: Set<ManagedSettings.ApplicationToken> = selection.applicationTokens
+         let categoriesToBlock: Set<ManagedSettings.ActivityCategoryToken> = selection.categoryTokens
+         let webDomainsToBlock: Set<ManagedSettings.WebDomainToken> = selection.webDomainTokens
 
-         guard !applicationsToBlock.isEmpty else {
-             status = "Selecciona aplicaciones para bloquear."
+         guard !applicationsToBlock.isEmpty || !categoriesToBlock.isEmpty || !webDomainsToBlock.isEmpty else {
+             status = "Selecciona aplicaciones, categorías o dominios web para bloquear."
              return
          }
 
          if isLocked {
-             // Retirar todas las restricciones de este almacén.
+             // Remove all restrictions from this store.
              store.clearAllSettings()
 
              isLocked = false
              status = "Bloqueo desactivado."
          } else {
-             // Bloquear aplicaciones seleccionadas individualmente.
-             store.shield.applications = applicationsToBlock
-
-             // Asegurarse de que categorías y webs no estén bloqueadas.
-             store.shield.applicationCategories = nil
-             store.shield.webDomains = nil
+             // Block selected applications, categories, and web domains.
+              store.shield.applications = applicationsToBlock
+              store.shield.applicationCategories = .specific(categoriesToBlock)
+              store.shield.webDomains = webDomainsToBlock
 
              isLocked = true
 
              status = """
              Bloqueo solicitado:
-             \(applicationsToBlock.count) aplicaciones individuales.
+             \(applicationsToBlock.count) aplicaciones individuales,
+             \(categoriesToBlock.count) categorías,
+             \(webDomainsToBlock.count) dominios web.
              """
          }
      }
