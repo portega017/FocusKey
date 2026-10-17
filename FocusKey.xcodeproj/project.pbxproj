@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6E3D905430828452004351BB /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3D905130828452004351B8 /* ScheduleView.swift */; };
+		6EAC6C18308370F300FF36F7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EAC6C17308370F300FF36F7 /* ContentView.swift */; };
 		6EB29E25307F90DC00466BF3 /* FocusKeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E24307F90D400466BF3 /* FocusKeyApp.swift */; };
 		6EB29E27307F90F200466BF3 /* FocusModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E26307F90ED00466BF3 /* FocusModel.swift */; };
-		6EB29E29307F910800466BF3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E28307F910300466BF3 /* ContentView.swift */; };
 		6EB29E2D307F912800466BF3 /* NFCScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E2C307F912800466BF3 /* NFCScanner.swift */; };
-		6ECF384D30821ACB00D0F135 /* focuskey.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6ECF384C30821ACB00D0F135 /* focuskey.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,39 +27,14 @@
 
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* FocusKey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FocusKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6E3D905130828452004351B8 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
+		6EAC6C17308370F300FF36F7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		6EAC6C193083714700FF36F7 /* FocusKey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FocusKey.entitlements; sourceTree = "<group>"; };
 		6EB26D65307FA7F400609348 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
 		6EB29E24307F90D400466BF3 /* FocusKeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusKeyApp.swift; sourceTree = "<group>"; };
 		6EB29E26307F90ED00466BF3 /* FocusModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusModel.swift; sourceTree = "<group>"; };
-		6EB29E28307F910300466BF3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		6EB29E2C307F912800466BF3 /* NFCScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFCScanner.swift; sourceTree = "<group>"; };
-		6ECF384C30821ACB00D0F135 /* focuskey.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = focuskey.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		6EB29E2E307F924B00466BF3 /* Exceptions for "FocusKey" folder in "FocusKey" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				ContentView.swift,
-			);
-			target = 000000000000000100000000 /* FocusKey */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		000000000000000000000010 /* FocusKey */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				6EB29E2E307F924B00466BF3 /* Exceptions for "FocusKey" folder in "FocusKey" target */,
-			);
-			path = FocusKey;
-			sourceTree = "<group>";
-		};
-		6EB26D67307FA7F400609348 /* monitor */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = monitor;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		000000000000000130000000 /* Frameworks */ = {
@@ -73,13 +48,11 @@
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				6ECF384C30821ACB00D0F135 /* focuskey.icon */,
 				6EB29E2C307F912800466BF3 /* NFCScanner.swift */,
-				6EB29E28307F910300466BF3 /* ContentView.swift */,
 				6EB29E26307F90ED00466BF3 /* FocusModel.swift */,
 				6EB29E24307F90D400466BF3 /* FocusKeyApp.swift */,
-				000000000000000000000010 /* FocusKey */,
-				6EB26D67307FA7F400609348 /* monitor */,
+				6E3D905130828452004351B8 /* ScheduleView.swift */,
+				6EAC6C17308370F300FF36F7 /* ContentView.swift */,
 				6EB26D64307FA7F400609348 /* Frameworks */,
 				000000000000000000000020 /* Products */,
 			);
@@ -96,6 +69,7 @@
 		6EB26D64307FA7F400609348 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6EAC6C193083714700FF36F7 /* FocusKey.entitlements */,
 				6EB26D65307FA7F400609348 /* DeviceActivity.framework */,
 			);
 			name = Frameworks;
@@ -114,9 +88,6 @@
 				6EB26D73307FA7F400609348 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
-			);
-			fileSystemSynchronizedGroups = (
-				000000000000000000000010 /* FocusKey */,
 			);
 			name = FocusKey;
 			productName = MyApp;
@@ -161,7 +132,6 @@
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
-				6ECF384D30821ACB00D0F135 /* focuskey.icon in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -171,9 +141,10 @@
 			isa = PBXSourcesBuildPhase;
 			files = (
 				6EB29E25307F90DC00466BF3 /* FocusKeyApp.swift in Sources */,
-				6EB29E29307F910800466BF3 /* ContentView.swift in Sources */,
+				6EAC6C18308370F300FF36F7 /* ContentView.swift in Sources */,
 				6EB29E27307F90F200466BF3 /* FocusModel.swift in Sources */,
 				6EB29E2D307F912800466BF3 /* NFCScanner.swift in Sources */,
+				6E3D905430828452004351BB /* ScheduleView.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */
@@ -314,7 +285,7 @@
 		000000000000000111000000 /* Debug configuration for PBXNativeTarget "FocusKey" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = FocusKey/FocusKey.entitlements;
+				CODE_SIGN_ENTITLEMENTS = FocusKey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
@@ -357,7 +328,7 @@
 		000000000000000112000000 /* Release configuration for PBXNativeTarget "FocusKey" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = FocusKey/FocusKey.entitlements;
+				CODE_SIGN_ENTITLEMENTS = FocusKey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
