@@ -26,6 +26,9 @@
 
                  Text(model.status)
                      .multilineTextAlignment(.center)
+                 Text(model.isLocked ? "Bloqueado" : "Desbloqueado")
+                 .font(.headline)
+                 .foregroundColor(model.isLocked ? .red : .green)
 
                  if AuthorizationCenter.shared.authorizationStatus != .approved {
                      Button("Autorizar bloqueo") {
