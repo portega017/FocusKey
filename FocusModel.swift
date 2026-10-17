@@ -46,6 +46,11 @@
              selection = saved
          }
          // The didSet will save the full selection (including categories and web domains).
+
+         // Observe scheduled lock notifications
+         NotificationCenter.default.addObserver(forName: Notification.Name("LockScheduleNotification"), object: nil, queue: .main) { [weak self] _ in
+             self?.toggleLock()
+         }
      }
 
      var selectedBundleIdentifiers: Set<String> {
