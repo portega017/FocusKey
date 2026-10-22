@@ -28,12 +28,14 @@ The app lets you:
 - Lock selected web domains
 - Persist the current selection between launches
 - Toggle locking with a valid NFC tag
+- Create weekly start and end intervals for automatic blocking through a Device Activity monitor extension
 
 ## Notes
 
 - The app checks whether Screen Time has been authorized before applying restrictions.
 - Locking is not possible if no apps, categories, or web domains are selected.
 - NFC scanning only accepts NDEF tags that contain exactly `FOCUSKEY:TOGGLE`.
+- Automatic schedules must be tested on an authorized physical device; `DeviceActivity` callbacks are not available in the iOS Simulator.
 
 ## Project
 
