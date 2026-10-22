@@ -25,6 +25,9 @@
 
                  Text(model.status)
                      .multilineTextAlignment(.center)
+                 Text(model.isLocked ? "Bloqueado" : "Desbloqueado")
+                 .font(.headline)
+                 .foregroundColor(model.isLocked ? .red : .green)
 
                  if AuthorizationCenter.shared.authorizationStatus != .approved {
                      Button("Autorizar bloqueo") {
@@ -46,10 +49,17 @@
                  .font(.subheadline)
 
 
-                 Button("Leer etiqueta NFC") {
-                     nfc.start()
+                 if model.isLocked {
+                     Button("Desbloquear") {
+                         nfc.start()
+                     }
+                     .buttonStyle(.bordered)
+                 } else {
+                     Button("Bloquear") {
+                         model.toggleLock()
+                     }
+                     .buttonStyle(.bordered)
                  }
-                 .buttonStyle(.bordered)
 
                  Spacer()
              }
