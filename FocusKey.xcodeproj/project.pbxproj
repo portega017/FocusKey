@@ -9,19 +9,21 @@
 /* Begin PBXBuildFile section */
 		6E3D905430828452004351BB /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3D905130828452004351B8 /* ScheduleView.swift */; };
 		6EAC6C18308370F300FF36F7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EAC6C17308370F300FF36F7 /* ContentView.swift */; };
+		6EAC6C29308386AC00FF36F7 /* FocusKeyMonitor.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 6EAC6C1E3083835500FF36F7 /* FocusKeyMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6EB29E25307F90DC00466BF3 /* FocusKeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E24307F90D400466BF3 /* FocusKeyApp.swift */; };
 		6EB29E27307F90F200466BF3 /* FocusModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E26307F90ED00466BF3 /* FocusModel.swift */; };
 		6EB29E2D307F912800466BF3 /* NFCScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E2C307F912800466BF3 /* NFCScanner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		6EB26D73307FA7F400609348 /* Embed Foundation Extensions */ = {
+		6EB26D73307FA7F400609348 /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			dstPath = "";
 			dstSubfolder = PlugIns;
 			files = (
+				6EAC6C29308386AC00FF36F7 /* FocusKeyMonitor.appex in Embed App Extensions */,
 			);
-			name = "Embed Foundation Extensions";
+			name = "Embed App Extensions";
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -30,14 +32,42 @@
 		6E3D905130828452004351B8 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
 		6EAC6C17308370F300FF36F7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		6EAC6C193083714700FF36F7 /* FocusKey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FocusKey.entitlements; sourceTree = "<group>"; };
+		6EAC6C1E3083835500FF36F7 /* FocusKeyMonitor.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = FocusKeyMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		6EAC6C28308386AC00FF36F7 /* FocusKey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FocusKey.entitlements; sourceTree = "<group>"; };
 		6EB26D65307FA7F400609348 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
 		6EB29E24307F90D400466BF3 /* FocusKeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusKeyApp.swift; sourceTree = "<group>"; };
 		6EB29E26307F90ED00466BF3 /* FocusModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusModel.swift; sourceTree = "<group>"; };
 		6EB29E2C307F912800466BF3 /* NFCScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFCScanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		6EAC6C233083835500FF36F7 /* Exceptions for "FocusKeyMonitor" folder in "FocusKeyMonitor" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 6EAC6C1D3083835500FF36F7 /* FocusKeyMonitor */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		6EAC6C1F3083835500FF36F7 /* FocusKeyMonitor */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				6EAC6C233083835500FF36F7 /* Exceptions for "FocusKeyMonitor" folder in "FocusKeyMonitor" target */,
+			);
+			path = FocusKeyMonitor;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		000000000000000130000000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		6EAC6C1B3083835500FF36F7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
@@ -53,7 +83,9 @@
 				6EB29E24307F90D400466BF3 /* FocusKeyApp.swift */,
 				6E3D905130828452004351B8 /* ScheduleView.swift */,
 				6EAC6C17308370F300FF36F7 /* ContentView.swift */,
+				6EAC6C1F3083835500FF36F7 /* FocusKeyMonitor */,
 				6EB26D64307FA7F400609348 /* Frameworks */,
+				6EAC6C28308386AC00FF36F7 /* FocusKey.entitlements */,
 				000000000000000000000020 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -62,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000120 /* FocusKey.app */,
+				6EAC6C1E3083835500FF36F7 /* FocusKeyMonitor.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -85,16 +118,47 @@
 				000000000000000120000000 /* Sources */,
 				000000000000000130000000 /* Frameworks */,
 				000000000000000140000000 /* Resources */,
-				6EB26D73307FA7F400609348 /* Embed Foundation Extensions */,
+				6EB26D73307FA7F400609348 /* Embed App Extensions */,
 			);
 			buildRules = (
+			);
+			dependencies = (
+				6EAC6C2B308386AC00FF36F7 /* PBXTargetDependency */,
 			);
 			name = FocusKey;
 			productName = MyApp;
 			productReference = 000000000000000000000120 /* FocusKey.app */;
 			productType = "com.apple.product-type.application";
 		};
+		6EAC6C1D3083835500FF36F7 /* FocusKeyMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6EAC6C243083835500FF36F7 /* Build configuration list for PBXNativeTarget "FocusKeyMonitor" */;
+			buildPhases = (
+				6EAC6C1A3083835500FF36F7 /* Sources */,
+				6EAC6C1B3083835500FF36F7 /* Frameworks */,
+				6EAC6C1C3083835500FF36F7 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				6EAC6C1F3083835500FF36F7 /* FocusKeyMonitor */,
+			);
+			name = FocusKeyMonitor;
+			productName = FocusKeyMonitor;
+			productReference = 6EAC6C1E3083835500FF36F7 /* FocusKeyMonitor.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		6EAC6C2A308386AC00FF36F7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6EAC6C1D3083835500FF36F7;
+			remoteInfo = FocusKeyMonitor;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXProject section */
 		000000000000000000000000 /* Project object */ = {
@@ -106,6 +170,9 @@
 				TargetAttributes = {
 					000000000000000100000000 = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					6EAC6C1D3083835500FF36F7 = {
+						CreatedOnToolsVersion = 27.0;
 					};
 				};
 			};
@@ -124,12 +191,26 @@
 			projectRoot = "";
 			targets = (
 				000000000000000100000000 /* FocusKey */,
+				6EAC6C1D3083835500FF36F7 /* FocusKeyMonitor */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXTargetDependency section */
+		6EAC6C2B308386AC00FF36F7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6EAC6C1D3083835500FF36F7 /* FocusKeyMonitor */;
+			targetProxy = 6EAC6C2A308386AC00FF36F7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXResourcesBuildPhase section */
 		000000000000000140000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		6EAC6C1C3083835500FF36F7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
 			);
@@ -145,6 +226,11 @@
 				6EB29E27307F90F200466BF3 /* FocusModel.swift in Sources */,
 				6EB29E2D307F912800466BF3 /* NFCScanner.swift in Sources */,
 				6E3D905430828452004351BB /* ScheduleView.swift in Sources */,
+			);
+		};
+		6EAC6C1A3083835500FF36F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
 			);
 		};
 /* End PBXSourcesBuildPhase section */
@@ -288,7 +374,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusKey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = GN38L85668;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -305,7 +391,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
@@ -331,7 +417,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusKey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = GN38L85668;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -348,7 +434,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
@@ -368,6 +454,88 @@
 			};
 			name = Release;
 		};
+		6EAC6C253083835500FF36F7 /* Debug configuration for PBXNativeTarget "FocusKeyMonitor" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FocusKeyMonitor/FocusKeyMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GN38L85668;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FocusKeyMonitor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FocusKeyMonitor;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.FocusKeyMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 27.0;
+			};
+			name = Debug;
+		};
+		6EAC6C263083835500FF36F7 /* Release configuration for PBXNativeTarget "FocusKeyMonitor" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FocusKeyMonitor/FocusKeyMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GN38L85668;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FocusKeyMonitor/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FocusKeyMonitor;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.FocusKeyMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 27.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -384,6 +552,14 @@
 			buildConfigurations = (
 				000000000000000111000000 /* Debug configuration for PBXNativeTarget "FocusKey" */,
 				000000000000000112000000 /* Release configuration for PBXNativeTarget "FocusKey" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		6EAC6C243083835500FF36F7 /* Build configuration list for PBXNativeTarget "FocusKeyMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6EAC6C253083835500FF36F7 /* Debug configuration for PBXNativeTarget "FocusKeyMonitor" */,
+				6EAC6C263083835500FF36F7 /* Release configuration for PBXNativeTarget "FocusKeyMonitor" */,
 			);
 			defaultConfigurationName = Release;
 		};

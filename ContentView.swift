@@ -50,10 +50,17 @@
                  .font(.subheadline)
 
 
-                 Button(model.isLocked ? "Desbloquear" : "Bloquear") {
-                     nfc.start()
+                 if model.isLocked {
+                     Button("Desbloquear") {
+                         nfc.start()
+                     }
+                     .buttonStyle(.bordered)
+                 } else {
+                     Button("Bloquear") {
+                         model.toggleLock()
+                     }
+                     .buttonStyle(.bordered)
                  }
-                 .buttonStyle(.bordered)
 
                  Spacer()
              }
