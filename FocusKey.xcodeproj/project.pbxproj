@@ -15,6 +15,16 @@
 		6EB29E2D307F912800466BF3 /* NFCScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E2C307F912800466BF3 /* NFCScanner.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		6EAC6C2A308386AC00FF36F7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6EAC6C1D3083835500FF36F7;
+			remoteInfo = FocusKeyMonitor;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		6EB26D73307FA7F400609348 /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -32,7 +42,7 @@
 		6E3D905130828452004351B8 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
 		6EAC6C17308370F300FF36F7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		6EAC6C193083714700FF36F7 /* FocusKey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FocusKey.entitlements; sourceTree = "<group>"; };
-		6EAC6C1E3083835500FF36F7 /* FocusKeyMonitor.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = FocusKeyMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		6EAC6C1E3083835500FF36F7 /* FocusKeyMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FocusKeyMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6EAC6C28308386AC00FF36F7 /* FocusKey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FocusKey.entitlements; sourceTree = "<group>"; };
 		6EB26D65307FA7F400609348 /* DeviceActivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeviceActivity.framework; path = System/Library/Frameworks/DeviceActivity.framework; sourceTree = SDKROOT; };
 		6EB29E24307F90D400466BF3 /* FocusKeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusKeyApp.swift; sourceTree = "<group>"; };
@@ -150,16 +160,6 @@
 		};
 /* End PBXNativeTarget section */
 
-/* Begin PBXContainerItemProxy section */
-		6EAC6C2A308386AC00FF36F7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 000000000000000000000000 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6EAC6C1D3083835500FF36F7;
-			remoteInfo = FocusKeyMonitor;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXProject section */
 		000000000000000000000000 /* Project object */ = {
 			isa = PBXProject;
@@ -196,14 +196,6 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXTargetDependency section */
-		6EAC6C2B308386AC00FF36F7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 6EAC6C1D3083835500FF36F7 /* FocusKeyMonitor */;
-			targetProxy = 6EAC6C2A308386AC00FF36F7 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin PBXResourcesBuildPhase section */
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
@@ -234,6 +226,14 @@
 			);
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6EAC6C2B308386AC00FF36F7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6EAC6C1D3083835500FF36F7 /* FocusKeyMonitor */;
+			targetProxy = 6EAC6C2A308386AC00FF36F7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		000000000000000011000000 /* Debug configuration for PBXProject "FocusKey" */ = {
@@ -374,7 +374,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusKey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GN38L85668;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -417,7 +417,7 @@
 				CODE_SIGN_ENTITLEMENTS = FocusKey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GN38L85668;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -479,7 +479,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.FocusKeyMonitor;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.FocusKey.FocusKeyMonitor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -520,7 +520,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.FocusKeyMonitor;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.FocusKey.FocusKeyMonitor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;

@@ -56,44 +56,57 @@ struct ScheduleView: View {
 }
 
 private struct ScheduleCard: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     let schedule: FocusModel.Schedule
     let onUpdate: (FocusModel.Schedule) -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            HStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
+            HStack(alignment: .top, spacing: 14) {
                 Image(systemName: "calendar.badge.clock")
-                    .font(.title2)
+                    .font(.title)
                     .foregroundStyle(.white)
-                    .frame(width: 64, height: 64)
-                    .background(Color.indigo, in: RoundedRectangle(cornerRadius: 20))
+                    .frame(width: 56, height: 56)
+                    .background(Color.indigo, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(schedule.name.isEmpty ? "Horario de concentración" : schedule.name)
                         .font(.title3.bold())
                     Text("Bloqueo programado")
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
-                Toggle(
-                    schedule.isEnabled ? "Activo" : "Inactivo",
-                    isOn: Binding(get: { schedule.isEnabled }, set: { update(isEnabled: $0) })
-                )
-                .labelsHidden()
-                .tint(.green)
-                .accessibilityLabel(schedule.isEnabled ? "Horario activo" : "Horario inactivo")
+                VStack(alignment: .trailing, spacing: 8) {
+                    Text(schedule.isEnabled ? "Activo" : "Inactivo")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(schedule.isEnabled ? .green : .secondary)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 5)
+                        .background(
+                            (schedule.isEnabled ? Color.green : Color.secondary).opacity(0.14),
+                            in: Capsule()
+                        )
+
+                    Toggle(
+                        schedule.isEnabled ? "Activo" : "Inactivo",
+                        isOn: Binding(get: { schedule.isEnabled }, set: { update(isEnabled: $0) })
+                    )
+                    .labelsHidden()
+                    .tint(.green)
+                    .accessibilityLabel(schedule.isEnabled ? "Horario activo" : "Horario inactivo")
+                }
             }
 
-            Divider()
-
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
                 Text("Días de la semana")
                     .font(.headline)
-                HStack {
+                HStack(spacing: 6) {
                     ForEach(FocusModel.Weekday.mondayFirst) { weekday in
                         Button(weekday.initial) {
                             var repeats = schedule.repeats
@@ -106,33 +119,50 @@ private struct ScheduleCard: View {
                         }
                         .font(.headline)
                         .foregroundStyle(schedule.repeats.contains(weekday) ? .white : .primary)
-                        .frame(width: 42, height: 42)
-                        .background(schedule.repeats.contains(weekday) ? Color.blue : .clear, in: Circle())
+                        .frame(maxWidth: .infinity, minHeight: 40)
+                        .background(schedule.repeats.contains(weekday) ? Color.indigo : .clear, in: Circle())
                         .accessibilityLabel(weekday.shortName)
                         .accessibilityAddTraits(schedule.repeats.contains(weekday) ? .isSelected : [])
                     }
                 }
             }
 
-            HStack(spacing: 16) {
-                timePicker(title: "Hora de inicio", time: schedule.startTime) { update(startTime: $0) }
-                timePicker(title: "Hora de fin", time: schedule.endTime) { update(endTime: $0) }
-            }
+            timeControls
 
             Text(summary)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
             HStack {
                 Button("Editar", action: onEdit)
+                    .buttonStyle(.bordered)
                 Spacer()
                 Button("Eliminar", role: .destructive, action: onDelete)
+                    .buttonStyle(.bordered)
             }
             .font(.subheadline.weight(.medium))
         }
         .padding()
-        .background(.background, in: RoundedRectangle(cornerRadius: 28))
-        .overlay { RoundedRectangle(cornerRadius: 28).stroke(Color.secondary.opacity(0.25)) }
+        .background(.background, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay { RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Color.secondary.opacity(0.2)) }
+    }
+
+    @ViewBuilder
+    private var timeControls: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 12) {
+                timePicker(title: "Hora de inicio", time: schedule.startTime) { update(startTime: $0) }
+                timePicker(title: "Hora de fin", time: schedule.endTime) { update(endTime: $0) }
+            }
+        } else {
+            HStack(spacing: 12) {
+                timePicker(title: "Hora de inicio", time: schedule.startTime) { update(startTime: $0) }
+                timePicker(title: "Hora de fin", time: schedule.endTime) { update(endTime: $0) }
+            }
+        }
     }
 
     private var summary: String {
@@ -140,7 +170,8 @@ private struct ScheduleCard: View {
             .filter { schedule.repeats.contains($0) }
             .map(\.shortName)
             .joined(separator: ", ")
-        return "\(days.isEmpty ? "Sin días seleccionados" : days): \(schedule.startTime.formatted(date: .omitted, time: .shortened))–\(schedule.endTime.formatted(date: .omitted, time: .shortened))."
+        let recurrence = days.isEmpty ? "Sin días seleccionados" : "Se repite \(days)"
+        return "\(recurrence), de \(schedule.startTime.formatted(date: .omitted, time: .shortened)) a \(schedule.endTime.formatted(date: .omitted, time: .shortened))."
     }
 
     private func timePicker(title: String, time: Date, onChange: @escaping (Date) -> Void) -> some View {
@@ -198,12 +229,24 @@ struct ScheduleForm: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Información básica") {
-                    TextField("Nombre", text: $name)
-                    DatePicker("Hora de inicio", selection: $startTime, displayedComponents: .hourAndMinute)
-                    DatePicker("Hora de fin", selection: $endTime, displayedComponents: .hourAndMinute)
+                Section {
+                    TextField("Nombre del horario", text: $name)
+                } header: {
+                    Text("Nombre")
+                } footer: {
+                    Text("Opcional. Usa un nombre que te ayude a identificar este bloqueo.")
                 }
-                Section("Días de la semana") {
+
+                Section {
+                    DatePicker("Inicio", selection: $startTime, displayedComponents: .hourAndMinute)
+                    DatePicker("Fin", selection: $endTime, displayedComponents: .hourAndMinute)
+                } header: {
+                    Text("Horario")
+                } footer: {
+                    Text("La hora de fin debe ser posterior a la hora de inicio.")
+                }
+
+                Section {
                     ForEach(FocusModel.Weekday.mondayFirst) { weekday in
                         Toggle(weekday.shortName, isOn: Binding(
                             get: { repeats.contains(weekday) },
@@ -216,8 +259,40 @@ struct ScheduleForm: View {
                             }
                         ))
                     }
+                } header: {
+                    Text("Repetición")
+                } footer: {
+                    Text("Elige al menos un día para activar este horario.")
                 }
-                Section { Toggle("Activado", isOn: $isEnabled) }
+
+                Section {
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "calendar.badge.clock")
+                            .font(.title3)
+                            .foregroundStyle(.white)
+                            .frame(width: 40, height: 40)
+                            .background(Color.indigo, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(name.isEmpty ? "Horario de concentración" : name)
+                                .font(.headline)
+                            Text(recurrenceSummary)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("Vista previa")
+                }
+
+                Section {
+                    Toggle("Horario activado", isOn: $isEnabled)
+                } header: {
+                    Text("Estado")
+                } footer: {
+                    Text(isEnabled ? "El bloqueo se aplicará en el horario indicado." : "Puedes guardarlo ahora y activarlo más tarde.")
+                }
             }
             .navigationTitle(schedule == nil ? "Nuevo horario" : "Editar horario")
             .toolbar {
@@ -243,6 +318,15 @@ struct ScheduleForm: View {
                 }
             }
         }
+    }
+
+    private var recurrenceSummary: String {
+        let days = FocusModel.Weekday.mondayFirst
+            .filter { repeats.contains($0) }
+            .map(\.shortName)
+            .joined(separator: ", ")
+        let recurrence = days.isEmpty ? "Sin días seleccionados" : "Se repite \(days)"
+        return "\(recurrence), de \(startTime.formatted(date: .omitted, time: .shortened)) a \(endTime.formatted(date: .omitted, time: .shortened))."
     }
 }
 
