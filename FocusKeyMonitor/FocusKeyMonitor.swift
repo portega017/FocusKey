@@ -69,11 +69,24 @@ final class FocusKeyMonitor: DeviceActivityMonitor {
             + calendar.component(.minute, from: now)
 
         return loadSchedules().contains { schedule in
-            guard schedule.isEnabled, schedule.repeats.contains(currentWeekday) else {
+            guard schedule.isEnabled else {
                 return false
             }
-            return currentMinutes >= minutes(for: schedule.startTime, calendar: calendar)
-                && currentMinutes < minutes(for: schedule.endTime, calendar: calendar)
+            let startMinutes = minutes(for: schedule.startTime, calendar: calendar)
+            let endMinutes = minutes(for: schedule.endTime, calendar: calendar)
+
+            if startMinutes < endMinutes {
+                return schedule.repeats.contains(currentWeekday)
+                    && currentMinutes >= startMinutes
+                    && currentMinutes < endMinutes
+            }
+
+            if currentMinutes >= startMinutes {
+                return schedule.repeats.contains(currentWeekday)
+            }
+
+            return currentMinutes < endMinutes
+                && schedule.repeats.contains(previousWeekday)
         }
     }
 
@@ -86,6 +99,18 @@ final class FocusKeyMonitor: DeviceActivityMonitor {
         case 5: return "thursday"
         case 6: return "friday"
         default: return "saturday"
+        }
+    }
+
+    private var previousWeekday: String {
+        switch Calendar.current.component(.weekday, from: Date()) {
+        case 1: return "saturday"
+        case 2: return "sunday"
+        case 3: return "monday"
+        case 4: return "tuesday"
+        case 5: return "wednesday"
+        case 6: return "thursday"
+        default: return "friday"
         }
     }
 
