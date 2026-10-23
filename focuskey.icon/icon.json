@@ -1,13 +1,22 @@
 {
-  "fill" : "automatic",
+  "fill" : {
+    "solid" : "srgb:0.66800,0.47512,0.25860,1.00000"
+  },
   "groups" : [
     {
       "layers" : [
         {
+          "glass" : true,
+          "hidden" : false,
           "image-name" : "Imagen_de_Codex_16_oct_2026__10_31_43-removebg-preview.png",
           "name" : "Imagen_de_Codex_16_oct_2026__10_31_43-removebg-preview"
         }
       ],
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : false,
+        "strength" : 0.5
+      },
       "shadow" : {
         "kind" : "neutral",
         "opacity" : 0.5
