@@ -121,6 +121,12 @@ final class FocusModel: ObservableObject {
     /// Updates an existing schedule.
     func updateSchedule(_ schedule: Schedule) {
         if let index = schedules.firstIndex(where: { $0.id == schedule.id }) {
+            let existing = schedules[index]
+            guard !(isScheduleActive(existing) && !schedule.isEnabled) else {
+                status = "No puedes desactivar un horario mientras el bloqueo está activo."
+                return
+            }
+
             schedules[index] = schedule
             if schedule.isEnabled {
                 startMonitoring(for: schedule)
@@ -132,8 +138,27 @@ final class FocusModel: ObservableObject {
 
     /// Deletes a schedule by its ID.
     func deleteSchedule(_ id: UUID) {
+        guard let schedule = schedules.first(where: { $0.id == id }) else { return }
+        guard !isScheduleActive(schedule) else {
+            status = "No puedes eliminar un horario mientras el bloqueo está activo."
+            return
+        }
+
         schedules.removeAll { $0.id == id }
         stopMonitoring(for: id)
+    }
+
+    func duplicateSchedule(_ id: UUID) {
+        guard let schedule = schedules.first(where: { $0.id == id }) else { return }
+
+        let copyName = schedule.name.isEmpty ? "" : "\(schedule.name) (copia)"
+        addSchedule(Schedule(
+            name: copyName,
+            startTime: schedule.startTime,
+            endTime: schedule.endTime,
+            repeats: schedule.repeats,
+            isEnabled: schedule.isEnabled
+        ))
     }
 
     /// Toggles the enabled state of a schedule.
@@ -182,6 +207,41 @@ final class FocusModel: ObservableObject {
         for id in schedules.map(\.id) {
             stopMonitoring(for: id)
         }
+    }
+
+    private func isScheduleActive(_ schedule: Schedule, at date: Date = .now) -> Bool {
+        guard schedule.isEnabled else { return false }
+
+        let calendar = Calendar.current
+        let currentMinutes = minutes(from: date, calendar: calendar)
+        let startMinutes = minutes(from: schedule.startTime, calendar: calendar)
+        let endMinutes = minutes(from: schedule.endTime, calendar: calendar)
+
+        if startMinutes < endMinutes {
+            return schedule.repeats.contains(weekday(for: date, calendar: calendar))
+                && currentMinutes >= startMinutes
+                && currentMinutes < endMinutes
+        }
+
+        if currentMinutes >= startMinutes {
+            return schedule.repeats.contains(weekday(for: date, calendar: calendar))
+        }
+
+        guard currentMinutes < endMinutes,
+              let previousDate = calendar.date(byAdding: .day, value: -1, to: date) else {
+            return false
+        }
+        return schedule.repeats.contains(weekday(for: previousDate, calendar: calendar))
+    }
+
+    private func weekday(for date: Date, calendar: Calendar) -> Weekday {
+        Weekday.allCases.first {
+            $0.calendarWeekday == calendar.component(.weekday, from: date)
+        } ?? .sunday
+    }
+
+    private func minutes(from date: Date, calendar: Calendar) -> Int {
+        calendar.component(.hour, from: date) * 60 + calendar.component(.minute, from: date)
     }
 
     /// Starts monitoring for all enabled schedules (called on launch).
@@ -342,7 +402,7 @@ final class FocusModel: ObservableObject {
             let end = calendar.dateComponents([.hour, .minute], from: endTime)
             guard let startHour = start.hour, let startMinute = start.minute,
                   let endHour = end.hour, let endMinute = end.minute,
-                  startHour * 60 + startMinute < endHour * 60 + endMinute else {
+                  startHour * 60 + startMinute != endHour * 60 + endMinute else {
                 return nil
             }
 
@@ -353,12 +413,22 @@ final class FocusModel: ObservableObject {
             var endComps = DateComponents()
             endComps.hour = endHour
             endComps.minute = endMinute
+            endComps.day = crossesMidnight ? 1 : nil
 
             return DeviceActivitySchedule(
                 intervalStart: startComps,
                 intervalEnd: endComps,
                 repeats: true
             )
+        }
+
+        var crossesMidnight: Bool {
+            let calendar = Calendar.current
+            return minutes(from: startTime, calendar: calendar) > minutes(from: endTime, calendar: calendar)
+        }
+
+        private func minutes(from date: Date, calendar: Calendar) -> Int {
+            calendar.component(.hour, from: date) * 60 + calendar.component(.minute, from: date)
         }
     }
 

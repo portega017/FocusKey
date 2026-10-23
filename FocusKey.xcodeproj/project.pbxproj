@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6E3D905430828452004351BB /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3D905130828452004351B8 /* ScheduleView.swift */; };
+		6E8507A0308B3076007FB5C8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6E85079F308B3076007FB5C8 /* Assets.xcassets */; };
 		6EAC6C18308370F300FF36F7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EAC6C17308370F300FF36F7 /* ContentView.swift */; };
 		6EAC6C29308386AC00FF36F7 /* FocusKeyMonitor.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 6EAC6C1E3083835500FF36F7 /* FocusKeyMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6EB29E25307F90DC00466BF3 /* FocusKeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB29E24307F90D400466BF3 /* FocusKeyApp.swift */; };
@@ -40,6 +41,7 @@
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* FocusKey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FocusKey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6E3D905130828452004351B8 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
+		6E85079F308B3076007FB5C8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6EAC6C17308370F300FF36F7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		6EAC6C193083714700FF36F7 /* FocusKey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FocusKey.entitlements; sourceTree = "<group>"; };
 		6EAC6C1E3083835500FF36F7 /* FocusKeyMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FocusKeyMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +90,7 @@
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				6E85079F308B3076007FB5C8 /* Assets.xcassets */,
 				6EB29E2C307F912800466BF3 /* NFCScanner.swift */,
 				6EB29E26307F90ED00466BF3 /* FocusModel.swift */,
 				6EB29E24307F90D400466BF3 /* FocusKeyApp.swift */,
@@ -200,6 +203,7 @@
 		000000000000000140000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				6E8507A0308B3076007FB5C8 /* Assets.xcassets in Resources */,
 			);
 		};
 		6EAC6C1C3083835500FF36F7 /* Resources */ = {
@@ -371,6 +375,8 @@
 		000000000000000111000000 /* Debug configuration for PBXNativeTarget "FocusKey" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = FocusKey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -414,6 +420,8 @@
 		000000000000000112000000 /* Release configuration for PBXNativeTarget "FocusKey" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = FocusKey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

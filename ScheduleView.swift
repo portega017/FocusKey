@@ -23,6 +23,7 @@ struct ScheduleView: View {
                             schedule: schedule,
                             onUpdate: model.updateSchedule,
                             onEdit: { editingSchedule = schedule },
+                            onDuplicate: { model.duplicateSchedule(schedule.id) },
                             onDelete: { model.deleteSchedule(schedule.id) }
                         )
                     }
@@ -61,6 +62,7 @@ private struct ScheduleCard: View {
     let schedule: FocusModel.Schedule
     let onUpdate: (FocusModel.Schedule) -> Void
     let onEdit: () -> Void
+    let onDuplicate: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
@@ -139,6 +141,8 @@ private struct ScheduleCard: View {
             HStack {
                 Button("Editar", action: onEdit)
                     .buttonStyle(.bordered)
+                Button("Duplicar", action: onDuplicate)
+                    .buttonStyle(.bordered)
                 Spacer()
                 Button("Eliminar", role: .destructive, action: onDelete)
                     .buttonStyle(.bordered)
@@ -171,7 +175,8 @@ private struct ScheduleCard: View {
             .map(\.shortName)
             .joined(separator: ", ")
         let recurrence = days.isEmpty ? "Sin días seleccionados" : "Se repite \(days)"
-        return "\(recurrence), de \(schedule.startTime.formatted(date: .omitted, time: .shortened)) a \(schedule.endTime.formatted(date: .omitted, time: .shortened))."
+        let overnight = schedule.crossesMidnight ? " (termina al día siguiente)" : ""
+        return "\(recurrence), de \(schedule.startTime.formatted(date: .omitted, time: .shortened)) a \(schedule.endTime.formatted(date: .omitted, time: .shortened))\(overnight)."
     }
 
     private func timePicker(title: String, time: Date, onChange: @escaping (Date) -> Void) -> some View {
@@ -214,6 +219,20 @@ struct ScheduleForm: View {
     @State private var repeats: Set<FocusModel.Weekday>
     @State private var isEnabled: Bool
 
+    private struct ScheduleTemplate: Identifiable {
+        let id: String
+        let name: String
+        let startHour: Int
+        let endHour: Int
+        let repeats: Set<FocusModel.Weekday>
+    }
+
+    private static let templates: [ScheduleTemplate] = [
+        .init(id: "study", name: "Estudio", startHour: 9, endHour: 14, repeats: [.monday, .tuesday, .wednesday, .thursday, .friday]),
+        .init(id: "work", name: "Trabajo", startHour: 9, endHour: 17, repeats: [.monday, .tuesday, .wednesday, .thursday, .friday]),
+        .init(id: "sleep", name: "Dormir", startHour: 23, endHour: 7, repeats: Set(FocusModel.Weekday.allCases))
+    ]
+
     init(schedule: FocusModel.Schedule?, onSave: @escaping (FocusModel.Schedule?) -> Void) {
         self.schedule = schedule
         self.onSave = onSave
@@ -229,6 +248,21 @@ struct ScheduleForm: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("Plantillas") {
+                    ForEach(Self.templates) { template in
+                        Button {
+                            apply(template)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(template.name)
+                                Text("\(formattedHour(template.startHour))–\(formattedHour(template.endHour))")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+
                 Section {
                     TextField("Nombre del horario", text: $name)
                 } header: {
@@ -243,7 +277,7 @@ struct ScheduleForm: View {
                 } header: {
                     Text("Horario")
                 } footer: {
-                    Text("La hora de fin debe ser posterior a la hora de inicio.")
+                    Text("El horario puede terminar al día siguiente.")
                 }
 
                 Section {
@@ -314,7 +348,7 @@ struct ScheduleForm: View {
                         ))
                         dismiss()
                     }
-                    .disabled(repeats.isEmpty || startTime >= endTime)
+                    .disabled(repeats.isEmpty || startTime == endTime)
                 }
             }
         }
@@ -326,7 +360,20 @@ struct ScheduleForm: View {
             .map(\.shortName)
             .joined(separator: ", ")
         let recurrence = days.isEmpty ? "Sin días seleccionados" : "Se repite \(days)"
-        return "\(recurrence), de \(startTime.formatted(date: .omitted, time: .shortened)) a \(endTime.formatted(date: .omitted, time: .shortened))."
+        let overnight = startTime > endTime ? " · Termina al día siguiente" : ""
+        return "\(recurrence), de \(startTime.formatted(date: .omitted, time: .shortened)) a \(endTime.formatted(date: .omitted, time: .shortened))\(overnight)."
+    }
+
+    private func apply(_ template: ScheduleTemplate) {
+        let calendar = Calendar.current
+        name = template.name
+        startTime = calendar.date(from: DateComponents(hour: template.startHour)) ?? startTime
+        endTime = calendar.date(from: DateComponents(hour: template.endHour)) ?? endTime
+        repeats = template.repeats
+    }
+
+    private func formattedHour(_ hour: Int) -> String {
+        String(format: "%02d:00", hour)
     }
 }
 
