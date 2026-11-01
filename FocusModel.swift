@@ -18,7 +18,10 @@ final class FocusModel: ObservableObject {
     static let appGroupID = "group.com.example.FocusKey"
     static let sharedDefaults = UserDefaults(suiteName: appGroupID)!
     static let selectionKey = "FocusKeySelection"
+    /// Manual lock (button / NFC). Independent from schedules.
     static let lockStateKey = "FocusKey.isLocked"
+    /// Written by the monitor extension while a schedule interval is running.
+    static let scheduleLockStateKey = "FocusKey.isScheduleLocked"
     static let schedulesKey = "FocusKeySchedules"
 
     // MARK: - Published Properties
@@ -44,7 +47,11 @@ final class FocusModel: ObservableObject {
     }
 
     // MARK: - Private Properties
-    private let store = ManagedSettingsStore()
+    /// Each kind of lock has its own store, so ending a schedule never clears a manual lock
+    /// (and vice versa). iOS combines the shields of every store.
+    private let manualStore = ManagedSettingsStore(named: .init("FocusKey.manual"))
+    /// Store used by older versions; cleared on manual unlock so stale shields don't linger.
+    private let legacyStore = ManagedSettingsStore()
     private let deviceActivityCenter = DeviceActivityCenter()
 
     // MARK: - Initialization
@@ -121,8 +128,10 @@ final class FocusModel: ObservableObject {
     func updateSchedule(_ schedule: Schedule) {
         if let index = schedules.firstIndex(where: { $0.id == schedule.id }) {
             let existing = schedules[index]
-            guard !(isScheduleActive(existing) && !schedule.isEnabled) else {
-                status = "No puedes desactivar un horario mientras el bloqueo está activo."
+            // A running schedule can't be changed at all: any change re-registers it with iOS,
+            // which ends the current interval and lifts the block.
+            guard existing == schedule || !isScheduleActive(existing) else {
+                status = "No puedes modificar un horario mientras está en curso."
                 return
             }
 
@@ -163,6 +172,10 @@ final class FocusModel: ObservableObject {
     /// Toggles the enabled state of a schedule.
     func toggleScheduleEnabled(_ id: UUID) {
         if let index = schedules.firstIndex(where: { $0.id == id }) {
+            guard !isScheduleActive(schedules[index]) else {
+                status = "No puedes desactivar un horario mientras está en curso."
+                return
+            }
             schedules[index].isEnabled.toggle()
             if schedules[index].isEnabled {
                 startMonitoring(for: schedules[index])
@@ -208,7 +221,8 @@ final class FocusModel: ObservableObject {
         }
     }
 
-    private func isScheduleActive(_ schedule: Schedule, at date: Date = .now) -> Bool {
+    /// True while the schedule's interval is running right now.
+    func isScheduleActive(_ schedule: Schedule, at date: Date = .now) -> Bool {
         guard schedule.isEnabled else { return false }
 
         let calendar = Calendar.current
@@ -244,8 +258,18 @@ final class FocusModel: ObservableObject {
     }
 
     /// Starts monitoring for all enabled schedules (called on launch).
+    /// Only registers schedules not already monitored: restarting an active one can make
+    /// the system fire intervalDidEnd/intervalDidStart again.
     private func startMonitoringForEnabledSchedules() {
         for schedule in schedules where schedule.isEnabled {
+            let activityName = DeviceActivityName("FocusKeySchedule_\(schedule.id.uuidString)")
+            // Re-register if the system has a different interval (e.g. saved by an older version).
+            if let registered = deviceActivityCenter.schedule(for: activityName),
+               let expected = schedule.deviceActivitySchedule,
+               registered.intervalStart == expected.intervalStart,
+               registered.intervalEnd == expected.intervalEnd {
+                continue
+            }
             startMonitoring(for: schedule)
         }
     }
@@ -274,9 +298,9 @@ final class FocusModel: ObservableObject {
                 return
             }
 
-            store.shield.applications = applicationsToBlock
-            store.shield.applicationCategories = .specific(categoriesToBlock)
-            store.shield.webDomains = webDomainsToBlock
+            manualStore.shield.applications = applicationsToBlock
+            manualStore.shield.applicationCategories = .specific(categoriesToBlock)
+            manualStore.shield.webDomains = webDomainsToBlock
 
             isLocked = true
             status = statusMessage ?? "Bloqueo activado."
@@ -286,7 +310,8 @@ final class FocusModel: ObservableObject {
                 return
             }
 
-            store.clearAllSettings()
+            manualStore.clearAllSettings()
+            legacyStore.clearAllSettings()
             isLocked = false
             status = statusMessage ?? "Bloqueo desactivado."
         }
@@ -409,10 +434,10 @@ final class FocusModel: ObservableObject {
             startComps.hour = startHour
             startComps.minute = startMinute
 
+            // If end is earlier than start (e.g. 23:00–07:00), iOS ends the interval the next day.
             var endComps = DateComponents()
             endComps.hour = endHour
             endComps.minute = endMinute
-            endComps.day = crossesMidnight ? 1 : nil
 
             return DeviceActivitySchedule(
                 intervalStart: startComps,
