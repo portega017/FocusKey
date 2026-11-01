@@ -6,10 +6,11 @@ import ManagedSettings
 final class FocusKeyMonitor: DeviceActivityMonitor {
     private static let appGroupID = "group.com.example.FocusKey"
     private static let sharedDefaults = UserDefaults(suiteName: appGroupID)!
-    private static let lockStateKey = "FocusKey.isLocked"
+    private static let scheduleLockStateKey = "FocusKey.isScheduleLocked"
     private static let selectionKey = "FocusKeySelection"
     private static let schedulesKey = "FocusKeySchedules"
-    private let store = ManagedSettingsStore()
+    /// Only touches the schedule store; the manual lock lives in its own store.
+    private let store = ManagedSettingsStore(named: .init("FocusKey.schedule"))
 
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
@@ -32,12 +33,12 @@ final class FocusKeyMonitor: DeviceActivityMonitor {
         store.shield.applications = selection.applicationTokens
         store.shield.applicationCategories = .specific(selection.categoryTokens)
         store.shield.webDomains = selection.webDomainTokens
-        Self.sharedDefaults.set(true, forKey: Self.lockStateKey)
+        Self.sharedDefaults.set(true, forKey: Self.scheduleLockStateKey)
     }
 
     private func clearScheduledLock() {
         store.clearAllSettings()
-        Self.sharedDefaults.set(false, forKey: Self.lockStateKey)
+        Self.sharedDefaults.set(false, forKey: Self.scheduleLockStateKey)
     }
 
     private func loadSelection() -> FamilyControls.FamilyActivitySelection? {
