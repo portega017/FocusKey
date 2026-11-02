@@ -24,6 +24,9 @@ final class FocusModel: ObservableObject {
     /// Written by the monitor extension while a schedule interval is running.
     static let scheduleLockStateKey = "FocusKey.isScheduleLocked"
     static let schedulesKey = "FocusKeySchedules"
+    /// [schedule UUID string: end of the interval] for schedules skipped with the NFC tag.
+    /// The monitor extension reads it so it doesn't re-apply a skipped interval.
+    static let scheduleSkipsKey = "FocusKey.scheduleSkips"
 
     // MARK: - Published Properties
     @Published var selection = FamilyControls.FamilyActivitySelection() {
@@ -53,6 +56,8 @@ final class FocusModel: ObservableObject {
     private let manualStore = ManagedSettingsStore(named: .init("FocusKey.manual"))
     /// Store used by older versions; cleared on manual unlock so stale shields don't linger.
     private let legacyStore = ManagedSettingsStore()
+    /// Same named store the monitor extension writes to; cleared when a schedule is skipped.
+    private let scheduleStore = ManagedSettingsStore(named: .init("FocusKey.schedule"))
     private let deviceActivityCenter = DeviceActivityCenter()
 
     // MARK: - Initialization
@@ -96,8 +101,66 @@ final class FocusModel: ObservableObject {
         setLock(!isLocked)
     }
 
+    /// The tag is the master key: if anything is blocking (manual lock or a running schedule),
+    /// it unlocks everything; otherwise it locks manually.
     func handleNFC() {
-        toggleLock()
+        if isLocked || isScheduleBlocking() {
+            unlockWithTag()
+        } else {
+            setLock(true)
+        }
+    }
+
+    /// True while a schedule is running now and hasn't been skipped with the tag.
+    func isScheduleBlocking(at date: Date = .now) -> Bool {
+        schedules.contains { isScheduleActive($0, at: date) && !isScheduleSkipped($0, at: date) }
+    }
+
+    func isScheduleSkipped(_ schedule: Schedule, at date: Date = .now) -> Bool {
+        guard let until = scheduleSkips()[schedule.id.uuidString] else { return false }
+        return until > date
+    }
+
+    private func unlockWithTag() {
+        let now = Date.now
+        let active = schedules.filter { isScheduleActive($0, at: now) }
+
+        if !active.isEmpty {
+            // Skip each running schedule until its current interval ends; the next one blocks again.
+            var skips = scheduleSkips().filter { $0.value > now }
+            for schedule in active {
+                skips[schedule.id.uuidString] = currentIntervalEnd(of: schedule, after: now)
+            }
+            Self.sharedDefaults.set(skips, forKey: Self.scheduleSkipsKey)
+            scheduleStore.clearAllSettings()
+            Self.sharedDefaults.set(false, forKey: Self.scheduleLockStateKey)
+        }
+
+        if isLocked {
+            manualStore.clearAllSettings()
+            legacyStore.clearAllSettings()
+            isLocked = false
+        }
+
+        status = active.isEmpty
+            ? "Bloqueo desactivado."
+            : "Horario desbloqueado hasta el final del intervalo."
+        objectWillChange.send()
+    }
+
+    private func scheduleSkips() -> [String: Date] {
+        Self.sharedDefaults.dictionary(forKey: Self.scheduleSkipsKey) as? [String: Date] ?? [:]
+    }
+
+    /// Next occurrence of the schedule's end time after `date` (the end of the running interval).
+    private func currentIntervalEnd(of schedule: Schedule, after date: Date) -> Date {
+        let calendar = Calendar.current
+        let end = calendar.dateComponents([.hour, .minute], from: schedule.endTime)
+        return calendar.nextDate(
+            after: date,
+            matching: DateComponents(hour: end.hour, minute: end.minute),
+            matchingPolicy: .nextTime
+        ) ?? date.addingTimeInterval(24 * 60 * 60)
     }
 
     // MARK: - Schedule Management

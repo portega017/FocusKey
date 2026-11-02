@@ -375,7 +375,7 @@
 		000000000000000111000000 /* Debug configuration for PBXNativeTarget "FocusKey" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = FocusKey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -420,7 +420,7 @@
 		000000000000000112000000 /* Release configuration for PBXNativeTarget "FocusKey" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = FocusKey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
