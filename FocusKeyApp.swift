@@ -37,7 +37,7 @@ private struct RootTabView: View {
             model.refreshPersistedState()
             model.syncScheduledMonitoringFromStorage()
         }
-        .onChange(of: scenePhase, initial: false) { newPhase, _ in
+        .onChange(of: scenePhase, initial: false) { _, newPhase in
             if newPhase == .active {
                 model.refreshPersistedState()
                 model.syncScheduledMonitoringFromStorage()

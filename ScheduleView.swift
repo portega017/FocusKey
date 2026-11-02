@@ -18,14 +18,21 @@ struct ScheduleView: View {
                         .padding(.vertical, 72)
                     }
 
-                    ForEach(model.schedules) { schedule in
-                        ScheduleCard(
-                            schedule: schedule,
-                            onUpdate: model.updateSchedule,
-                            onEdit: { editingSchedule = schedule },
-                            onDuplicate: { model.duplicateSchedule(schedule.id) },
-                            onDelete: { model.deleteSchedule(schedule.id) }
-                        )
+                    // Re-evaluated every 30 s so cards lock/unlock when an interval starts or ends.
+                    TimelineView(.periodic(from: .now, by: 30)) { context in
+                        LazyVStack(spacing: 16) {
+                            ForEach(model.schedules) { schedule in
+                                ScheduleCard(
+                                    schedule: schedule,
+                                    isRunning: model.isScheduleActive(schedule, at: context.date),
+                                    wouldStartNow: { model.isScheduleActive($0) },
+                                    onUpdate: model.updateSchedule,
+                                    onEdit: { editingSchedule = schedule },
+                                    onDuplicate: { model.duplicateSchedule(schedule.id) },
+                                    onDelete: { model.deleteSchedule(schedule.id) }
+                                )
+                            }
+                        }
                     }
 
                     Button {
@@ -60,10 +67,15 @@ private struct ScheduleCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let schedule: FocusModel.Schedule
+    /// While running, the schedule can't be modified, disabled or deleted.
+    let isRunning: Bool
+    let wouldStartNow: (FocusModel.Schedule) -> Bool
     let onUpdate: (FocusModel.Schedule) -> Void
     let onEdit: () -> Void
     let onDuplicate: () -> Void
     let onDelete: () -> Void
+
+    @State private var showingStartNowAlert = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -85,24 +97,34 @@ private struct ScheduleCard: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 8) {
-                    Text(schedule.isEnabled ? "Activo" : "Inactivo")
+                    Text(badgeText)
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(schedule.isEnabled ? .green : .secondary)
+                        .foregroundStyle(badgeColor)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 5)
-                        .background(
-                            (schedule.isEnabled ? Color.green : Color.secondary).opacity(0.14),
-                            in: Capsule()
-                        )
+                        .background(badgeColor.opacity(0.14), in: Capsule())
 
                     Toggle(
                         schedule.isEnabled ? "Activo" : "Inactivo",
-                        isOn: Binding(get: { schedule.isEnabled }, set: { update(isEnabled: $0) })
+                        isOn: Binding(get: { schedule.isEnabled }, set: { setEnabled($0) })
                     )
                     .labelsHidden()
                     .tint(.green)
                     .accessibilityLabel(schedule.isEnabled ? "Horario activo" : "Horario inactivo")
+                    .disabled(isRunning)
                 }
+            }
+
+            if isRunning {
+                Label(
+                    "En curso — no se puede modificar hasta las \(schedule.endTime.formatted(date: .omitted, time: .shortened))",
+                    systemImage: "lock.fill"
+                )
+                .font(.footnote.weight(.medium))
+                .foregroundStyle(.orange)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
 
             VStack(alignment: .leading, spacing: 12) {
@@ -110,15 +132,7 @@ private struct ScheduleCard: View {
                     .font(.headline)
                 HStack(spacing: 6) {
                     ForEach(FocusModel.Weekday.mondayFirst) { weekday in
-                        Button(weekday.initial) {
-                            var repeats = schedule.repeats
-                            if repeats.contains(weekday) {
-                                repeats.remove(weekday)
-                            } else {
-                                repeats.insert(weekday)
-                            }
-                            update(repeats: repeats)
-                        }
+                        Text(weekday.initial)
                         .font(.headline)
                         .foregroundStyle(schedule.repeats.contains(weekday) ? .white : .primary)
                         .frame(maxWidth: .infinity, minHeight: 40)
@@ -141,32 +155,49 @@ private struct ScheduleCard: View {
             HStack {
                 Button("Editar", action: onEdit)
                     .buttonStyle(.bordered)
+                    .disabled(isRunning)
                 Button("Duplicar", action: onDuplicate)
                     .buttonStyle(.bordered)
                 Spacer()
                 Button("Eliminar", role: .destructive, action: onDelete)
                     .buttonStyle(.bordered)
+                    .disabled(isRunning)
             }
             .font(.subheadline.weight(.medium))
         }
         .padding()
         .background(.background, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay { RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Color.secondary.opacity(0.2)) }
+        .startsNowAlert(isPresented: $showingStartNowAlert, endTime: schedule.endTime) {
+            var updated = schedule
+            updated.isEnabled = true
+            onUpdate(updated)
+        }
     }
 
     @ViewBuilder
     private var timeControls: some View {
         if dynamicTypeSize.isAccessibilitySize {
             VStack(alignment: .leading, spacing: 12) {
-                timePicker(title: "Hora de inicio", time: schedule.startTime) { update(startTime: $0) }
-                timePicker(title: "Hora de fin", time: schedule.endTime) { update(endTime: $0) }
+                timeLabel(title: "Hora de inicio", time: schedule.startTime)
+                timeLabel(title: "Hora de fin", time: schedule.endTime)
             }
         } else {
             HStack(spacing: 12) {
-                timePicker(title: "Hora de inicio", time: schedule.startTime) { update(startTime: $0) }
-                timePicker(title: "Hora de fin", time: schedule.endTime) { update(endTime: $0) }
+                timeLabel(title: "Hora de inicio", time: schedule.startTime)
+                timeLabel(title: "Hora de fin", time: schedule.endTime)
             }
         }
+    }
+
+    private var badgeText: String {
+        if isRunning { return "En curso" }
+        return schedule.isEnabled ? "Activo" : "Inactivo"
+    }
+
+    private var badgeColor: Color {
+        if isRunning { return .orange }
+        return schedule.isEnabled ? .green : .secondary
     }
 
     private var summary: String {
@@ -179,12 +210,12 @@ private struct ScheduleCard: View {
         return "\(recurrence), de \(schedule.startTime.formatted(date: .omitted, time: .shortened)) a \(schedule.endTime.formatted(date: .omitted, time: .shortened))\(overnight)."
     }
 
-    private func timePicker(title: String, time: Date, onChange: @escaping (Date) -> Void) -> some View {
+    /// Read-only: times are changed only from the edit form, which has a Save button.
+    private func timeLabel(title: String, time: Date) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title).font(.headline)
-            DatePicker(title, selection: Binding(get: { time }, set: onChange), displayedComponents: .hourAndMinute)
-                .labelsHidden()
-                .datePickerStyle(.compact)
+            Text(time.formatted(date: .omitted, time: .shortened))
+                .font(.body.monospacedDigit())
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
@@ -193,23 +224,22 @@ private struct ScheduleCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func update(
-        startTime: Date? = nil,
-        endTime: Date? = nil,
-        repeats: Set<FocusModel.Weekday>? = nil,
-        isEnabled: Bool? = nil
-    ) {
+    private func setEnabled(_ enabled: Bool) {
         var updated = schedule
-        if let startTime { updated.startTime = startTime }
-        if let endTime { updated.endTime = endTime }
-        if let repeats { updated.repeats = repeats }
-        if let isEnabled { updated.isEnabled = isEnabled }
-        onUpdate(updated)
+        updated.isEnabled = enabled
+        // Turning on a schedule whose time range includes "now" blocks immediately: ask first.
+        if enabled && wouldStartNow(updated) {
+            showingStartNowAlert = true
+        } else {
+            onUpdate(updated)
+        }
     }
 }
 
 struct ScheduleForm: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var model: FocusModel
+    @State private var showingStartNowAlert = false
     let schedule: FocusModel.Schedule?
     var onSave: (FocusModel.Schedule?) -> Void
 
@@ -338,20 +368,33 @@ struct ScheduleForm: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Guardar") {
-                        onSave(FocusModel.Schedule(
-                            id: schedule?.id ?? UUID(),
-                            name: name,
-                            startTime: startTime,
-                            endTime: endTime,
-                            repeats: repeats,
-                            isEnabled: isEnabled
-                        ))
-                        dismiss()
+                        if model.isScheduleActive(draft) {
+                            showingStartNowAlert = true
+                        } else {
+                            save()
+                        }
                     }
                     .disabled(repeats.isEmpty || startTime == endTime)
                 }
             }
+            .startsNowAlert(isPresented: $showingStartNowAlert, endTime: endTime, onConfirm: save)
         }
+    }
+
+    private var draft: FocusModel.Schedule {
+        FocusModel.Schedule(
+            id: schedule?.id ?? UUID(),
+            name: name,
+            startTime: startTime,
+            endTime: endTime,
+            repeats: repeats,
+            isEnabled: isEnabled
+        )
+    }
+
+    private func save() {
+        onSave(draft)
+        dismiss()
     }
 
     private var recurrenceSummary: String {
@@ -389,6 +432,18 @@ private extension FocusModel.Weekday {
         case .friday: return "V"
         case .saturday: return "S"
         case .sunday: return "D"
+        }
+    }
+}
+
+private extension View {
+    /// Warns that saving/enabling will block apps right away and lock the schedule until it ends.
+    func startsNowAlert(isPresented: Binding<Bool>, endTime: Date, onConfirm: @escaping () -> Void) -> some View {
+        alert("El bloqueo empezará ahora", isPresented: isPresented) {
+            Button("Cancelar", role: .cancel) {}
+            Button("Bloquear ahora", role: .destructive, action: onConfirm)
+        } message: {
+            Text("Este horario incluye la hora actual. Las apps se bloquearán ya y no podrás modificar ni desactivar el horario hasta las \(endTime.formatted(date: .omitted, time: .shortened)).")
         }
     }
 }
