@@ -45,5 +45,9 @@ This is a Swift iOS project built with:
 - ManagedSettings
 - CoreNFC
 
+## Android
+
+The `android/` folder contains the Android version of FocusKey (Kotlin + Jetpack Compose) with the same features. See [android/README.md](android/README.md).
+
 ## Roadmap
 
