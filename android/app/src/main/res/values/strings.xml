@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">FocusKey</string>
+    <string name="accessibility_service_label">FocusKey – Bloqueo</string>
+    <string name="accessibility_service_description">FocusKey usa este servicio solo para saber qué aplicación o sitio web está en pantalla y bloquear los que hayas seleccionado mientras el bloqueo está activo. No recoge, guarda ni envía ningún dato.</string>
+</resources>
