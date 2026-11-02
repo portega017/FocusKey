@@ -1,0 +1,50 @@
+<style>
+  .schedule-preview { max-width: 850px; margin: 28px auto; padding: 28px; background: #f7f7f8; border-radius: 34px; color: #111; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; }
+  .schedule-card { border: 1px solid #d7d7db; border-radius: 30px; background: rgba(255,255,255,.92); padding: 24px; box-shadow: 0 16px 38px rgba(19,28,55,.08); }
+  .schedule-head { display:flex; align-items:center; gap:15px; }
+  .schedule-icon { width:62px; height:62px; display:grid; place-items:center; background:#17265d; border-radius:21px; color:white; font-size:30px; }
+  .schedule-title { font-size:25px; font-weight:700; letter-spacing:-.5px; }
+  .schedule-subtitle { margin-top:3px; font-size:16px; color:#69696e; }
+  .status { margin-left:auto; padding:7px 12px; border-radius:999px; background:#dcf5e2; color:#08782f; font-weight:600; font-size:15px; }
+  .rule { height:1px; background:#e3e3e7; margin:24px 0; }
+  .section-title { margin:0 0 18px; font-size:19px; font-weight:700; }
+  .week { display:flex; justify-content:space-between; gap:8px; max-width:640px; }
+  .day { width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-size:17px; font-weight:500; }
+  .day.selected { color:white; background:#2d64e8; box-shadow:0 5px 12px rgba(45,100,232,.24); }
+  .time-row { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:25px; }
+  .time-label { display:block; margin:0 0 8px; font-size:18px; font-weight:650; }
+  .time-field { padding:13px 17px; border:1px solid #d6d6da; background:#fff; border-radius:21px; font-size:19px; letter-spacing:.2px; }
+  .note { margin:22px 0 0; color:#65656a; font-size:16px; line-height:1.42; }
+  .action { width:100%; margin-top:22px; padding:14px; border:0; border-radius:22px; background:#111; color:#fff; font:600 18px -apple-system; }
+</style>
+
+<h2>Propuesta: tarjeta de horario con lenguaje iOS premium</h2>
+<p class="subtitle">Reconstruida a partir de tu referencia: controles reales sustituirían estos campos visuales en SwiftUI.</p>
+
+<div class="schedule-preview">
+  <div class="schedule-card">
+    <div class="schedule-head">
+      <div class="schedule-icon">◷</div>
+      <div><div class="schedule-title">Estudio</div><div class="schedule-subtitle">Bloqueo programado</div></div>
+      <div class="status">Activo</div>
+    </div>
+    <div class="rule"></div>
+    <p class="section-title">Días de la semana</p>
+    <div class="week">
+      <div class="day selected">L</div><div class="day selected">M</div><div class="day selected">X</div><div class="day selected">J</div><div class="day selected">V</div><div class="day">S</div><div class="day">D</div>
+    </div>
+    <div class="time-row">
+      <div><label class="time-label">Hora de inicio</label><div class="time-field">09:00</div></div>
+      <div><label class="time-label">Hora de fin</label><div class="time-field">14:00</div></div>
+    </div>
+    <p class="note">De lunes a viernes, de 09:00 a 14:00. El bloqueo se activa automáticamente en los días seleccionados.</p>
+    <button class="action">Editar horario</button>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="reference-card" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content"><h3>Usar esta dirección</h3><p>Tarjetas con superficie translúcida, controles compactos y una jerarquía exactamente como la referencia.</p></div>
+  </div>
+</div>
