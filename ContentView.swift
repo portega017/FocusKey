@@ -25,9 +25,10 @@
 
                  Text(model.status)
                      .multilineTextAlignment(.center)
-                 Text(model.isLocked ? "Bloqueado" : "Desbloqueado")
-                 .font(.headline)
-                 .foregroundColor(model.isLocked ? .red : .green)
+                 // Re-evaluated every 30 s so the state follows schedules starting or ending.
+                 TimelineView(.periodic(from: .now, by: 30)) { context in
+                     lockControls(scheduleBlocking: model.isScheduleBlocking(at: context.date))
+                 }
 
                  if AuthorizationCenter.shared.authorizationStatus != .approved {
                      Button("Autorizar bloqueo") {
@@ -49,18 +50,6 @@
                  .font(.subheadline)
 
 
-                 if model.isLocked {
-                     Button("Desbloquear") {
-                         nfc.start()
-                     }
-                     .buttonStyle(.bordered)
-                 } else {
-                     Button("Bloquear") {
-                         model.toggleLock()
-                     }
-                     .buttonStyle(.bordered)
-                 }
-
                  Spacer()
              }
              .padding()
@@ -77,6 +66,27 @@
                      }
                  }
              }
+         }
+     }
+
+     @ViewBuilder
+     private func lockControls(scheduleBlocking: Bool) -> some View {
+         let blocked = model.isLocked || scheduleBlocking
+
+         Text(model.isLocked ? "Bloqueado" : scheduleBlocking ? "Bloqueado por horario" : "Desbloqueado")
+             .font(.headline)
+             .foregroundColor(blocked ? .red : .green)
+
+         if blocked {
+             Button("Desbloquear con NFC") {
+                 nfc.start()
+             }
+             .buttonStyle(.bordered)
+         } else {
+             Button("Bloquear") {
+                 model.toggleLock()
+             }
+             .buttonStyle(.bordered)
          }
      }
  }
