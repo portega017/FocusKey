@@ -1,26 +1,9 @@
-# macOS
+*.iml
+.gradle/
+/local.properties
+.idea/
 .DS_Store
-
-# Xcode user-specific data
-xcuserdata/
-**/xcuserdata/
-*.xcuserstate
-
-# Xcode build artifacts
-DerivedData/
 build/
-
-# Swift Package Manager
-.build/
-.swiftpm/
-Package.resolved
-
-# Playgrounds
-timeline.xctimeline
-playground.xcworkspace
-
-# Fastlane
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/
-fastlane/test_output/
+/captures
+.externalNativeBuild
+.cxx
