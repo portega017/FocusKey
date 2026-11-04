@@ -1,53 +1,58 @@
-# FocusKey
+# FocusKey para Android
 
-FocusKey is an OpenSource iOS app designed to help you stay focused by controlling access to apps, app categories, and websites using Apple's Screen Time and Family Controls APIs.
+Versión Android de FocusKey, con las mismas funciones que la app de iOS, escrita en Kotlin y Jetpack Compose.
 
-The app lets you:
-- select the apps, categories, and web domains you want to restrict;
-- lock or unlock those selections from the app interface;
-- use a compatible NFC tag as a physical key to toggle the lock state.
+## Funciones
 
-## How it works
+- **Seleccionar qué bloquear**: aplicaciones instaladas, categorías de apps (redes sociales, juegos, vídeo…) y sitios web.
+- **Bloquear** desde la app y **desbloquear sólo con la llave NFC** (etiqueta con el texto `FOCUSKEY:TOGGLE`).
+- **Horarios semanales** con hora de inicio y fin (pueden terminar al día siguiente), días de la semana, plantillas (Estudio, Trabajo, Dormir), duplicar, editar y eliminar.
+- Bloqueo manual y bloqueo por horario **independientes**: al terminar un horario no se quita un bloqueo manual.
+- La llave NFC es la llave maestra: si hay algo bloqueado (manual u horario en curso) lo desbloquea todo; el horario en curso queda saltado hasta el final de su intervalo y el siguiente vuelve a bloquear.
+- Un horario **en curso no se puede modificar, desactivar ni eliminar**.
+- Aviso **"El bloqueo empezará ahora"** al guardar o activar un horario que incluye la hora actual.
+- Al cambiar la selección mientras hay un bloqueo activo, el bloqueo sigue usando la selección del momento en que empezó.
 
-1. Authorize Screen Time access.
-2. Choose the apps, categories, or websites you want to restrict.
-3. Turn the lock on from the app.
-4. If you have a valid FocusKey NFC tag, tap it to your iPhone to toggle the lock automatically.
+## Equivalencias con iOS
 
-## Requirements
+| iOS | Android |
+| --- | --- |
+| Screen Time / FamilyControls (autorización) | Servicio de accesibilidad "FocusKey – Bloqueo" |
+| ManagedSettings (shield) | `FocusAccessibilityService` + pantalla `BlockedActivity` |
+| FamilyActivityPicker | `AppPickerScreen` (apps, categorías y webs) |
+| DeviceActivityMonitor (extensión) | `FocusEngine.syncScheduleLock`, que el servicio ejecuta al cambiar de app y la app cada 30 s |
+| CoreNFC | `NfcAdapter` en modo lector (`NfcKeyReader`) |
+| UserDefaults del App Group | `SharedPreferences` (`FocusStore`) |
 
-- An iPhone or iPad compatible with Screen Time and NFC features
-- A version of iOS that supports Family Controls and CoreNFC
-- Screen Time permissions granted when prompted by the app
-- An NFC tag containing the text `FOCUSKEY:TOGGLE` to use the NFC unlock/lock flow
+## Requisitos
 
-## Main features
+- Android 8.0 (API 26) o superior.
+- NFC para usar la llave física.
+- Activar el servicio de accesibilidad de FocusKey cuando la app lo pida (botón **Autorizar bloqueo**).
 
-- Lock selected apps
-- Lock entire app categories
-- Lock selected web domains
-- Persist the current selection between launches
-- Toggle locking with a valid NFC tag
-- Create weekly start and end intervals for automatic blocking through a Device Activity monitor extension
+## Compilar
 
-## Notes
+Abre la raíz del repositorio en Android Studio, o desde terminal:
 
-- The app checks whether Screen Time has been authorized before applying restrictions.
-- Locking is not possible if no apps, categories, or web domains are selected.
-- NFC scanning only accepts NDEF tags that contain exactly `FOCUSKEY:TOGGLE`.
-- Automatic schedules must be tested on an authorized physical device; `DeviceActivity` callbacks are not available in the iOS Simulator.
+```bash
+./gradlew assembleDebug
+```
 
-## Project
+El APK queda en `app/build/outputs/apk/debug/`.
 
-This is a Swift iOS project built with:
-- SwiftUI
-- FamilyControls
-- ManagedSettings
-- CoreNFC
+## Estructura
 
-## Android
+```
+app/src/main/java/com/focuskey/app/
+├── data/       Schedule, Weekday, Selection, FocusStore (persistencia)
+├── logic/      FocusEngine (reglas de bloqueo manual, horarios y llave NFC)
+├── blocking/   FocusAccessibilityService y BlockedActivity
+├── nfc/        NfcKeyReader
+└── ui/         MainActivity, ViewModel y pantallas Compose
+```
 
-The `android/` folder contains the Android version of FocusKey (Kotlin + Jetpack Compose) with the same features. See [android/README.md](android/README.md).
+## Notas
 
-## Roadmap
-
+- El bloqueo de webs funciona en Chrome, Firefox, Edge, Brave, Samsung Internet, Opera, DuckDuckGo y otros navegadores basados en Chromium; lee la barra de direcciones y bloquea el dominio y sus subdominios.
+- Las categorías las declara cada app; las que no indican ninguna sólo se pueden bloquear de forma individual.
+- Google Play exige justificar el uso de la API de accesibilidad; la app muestra un aviso explicando su uso antes de abrir los ajustes.
