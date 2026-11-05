@@ -73,3 +73,7 @@ Built with SwiftUI, FamilyControls, ManagedSettings, DeviceActivity and CoreNFC.
 ## Contributing
 
 Issues and pull requests are welcome. iOS changes go to `dev`; Android changes go to `android`.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
