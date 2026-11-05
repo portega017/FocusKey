@@ -56,3 +56,7 @@ app/src/main/java/com/focuskey/app/
 - El bloqueo de webs funciona en Chrome, Firefox, Edge, Brave, Samsung Internet, Opera, DuckDuckGo y otros navegadores basados en Chromium; lee la barra de direcciones y bloquea el dominio y sus subdominios.
 - Las categorías las declara cada app; las que no indican ninguna sólo se pueden bloquear de forma individual.
 - Google Play exige justificar el uso de la API de accesibilidad; la app muestra un aviso explicando su uso antes de abrir los ajustes.
+
+## Licencia
+
+MIT — ver [LICENSE](LICENSE).
