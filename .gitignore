@@ -24,3 +24,12 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/
 fastlane/test_output/
+
+# Local signing (team ID) — never commit
+Config/Signing.local.xcconfig
+
+# Local tool state
+.superpowers/
+
+# Claude Code local settings
+.claude/
