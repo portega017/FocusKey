@@ -39,6 +39,15 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Label("Ajustes › Concentración › elige un modo › Filtros de concentración › FocusKey", systemImage: "moon.fill")
+                        .font(.subheadline)
+                } header: {
+                    Text("Modos de concentración")
+                } footer: {
+                    Text("Al activar ese modo se bloquea el perfil que elijas. Al desactivarlo el bloqueo sigue: solo tu llave lo quita.")
+                }
+
+                Section {
                     LabeledContent("Texto de la etiqueta") {
                         Text(verbatim: NFCScanner.tagText)
                             .font(.body.monospaced())

@@ -21,6 +21,7 @@ FocusKey is available for **iOS** (this branch) and **Android** (see [`android` 
 - **Daily usage limits**: once a profile has been used for N minutes today, it stays blocked until midnight. The NFC tag can't lift a reached limit, but it can grant 5, 15 or 30 extra minutes of use.
 - **Custom shield screen** explaining why an app is blocked and until when.
 - **Widgets** for the Home and Lock Screen, and **Control Center** buttons to lock or open the NFC reader.
+- **Focus filters**: turning on an iOS Focus (Work, Sleep…) blocks a profile. Turning it off doesn't unlock — only the NFC tag does.
 - **Siri and Shortcuts**: lock a profile (optionally for a duration), check the status, or open the NFC reader. There is deliberately no unlock shortcut.
 - **Statistics**: time blocked per day, streak and recent blocks.
 - **Uninstall protection**: while anything is blocked, iOS won't let apps be deleted (can be turned off in Settings).

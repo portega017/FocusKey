@@ -86,7 +86,7 @@ final class FocusModel: ObservableObject {
     func refreshFromStorage() {
         reload()
         if let error = FocusStore.lastIntentError {
-            status = String(localized: "El widget no pudo bloquear: \(error)")
+            status = String(localized: "No se pudo bloquear automáticamente: \(error)")
             FocusStore.lastIntentError = nil
         }
         startMonitoringForEnabledSchedules()

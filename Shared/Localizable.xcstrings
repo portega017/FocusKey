@@ -437,6 +437,26 @@
         }
       }
     },
+    "Ajustes › Concentración › elige un modo › Filtros de concentración › FocusKey": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings › Focus › choose a Focus › Focus Filters › FocusKey"
+          }
+        }
+      }
+    },
+    "Al activar ese modo se bloquea el perfil que elijas. Al desactivarlo el bloqueo sigue: solo tu llave lo quita.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turning that Focus on blocks the profile you choose. Turning it off keeps the block: only your key lifts it."
+          }
+        }
+      }
+    },
     "Alcanzado hoy": {
       "localizations": {
         "en": {
@@ -577,6 +597,16 @@
         }
       }
     },
+    "Bloquea un perfil cuando se activa este modo de concentración. Al desactivarlo, el bloqueo sigue hasta que uses tu llave.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocks a profile when this Focus turns on. When it turns off, the block stays until you use your key."
+          }
+        }
+      }
+    },
     "Bloquea un perfil de FocusKey. Solo tu llave NFC puede desbloquearlo antes de tiempo.": {
       "localizations": {
         "en": {
@@ -647,6 +677,16 @@
         }
       }
     },
+    "Bloquear al activar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block when turned on"
+          }
+        }
+      }
+    },
     "Bloquear apps": {
       "localizations": {
         "en": {
@@ -657,12 +697,32 @@
         }
       }
     },
+    "Bloquear con FocusKey": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block with FocusKey"
+          }
+        }
+      }
+    },
     "Bloquear las apps que te distraen es fácil. Para desbloquearlas necesitas tu llave NFC: tendrás que levantarte a por ella.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Blocking distracting apps is easy. To unlock them you need your NFC key, so you'll have to get up and fetch it."
+          }
+        }
+      }
+    },
+    "Bloquear «%@»": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block “%@”"
           }
         }
       }
@@ -1003,16 +1063,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Time is counted from midnight. Once it's reached, the apps stay blocked until the next day. With your NFC key you can extend a reached limit by a few minutes."
-          }
-        }
-      }
-    },
-    "El widget no pudo bloquear: %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The widget couldn't block: %@"
           }
         }
       }
@@ -1665,6 +1715,16 @@
         }
       }
     },
+    "Modos de concentración": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus modes"
+          }
+        }
+      }
+    },
     "Nada seleccionado": {
       "localizations": {
         "en": {
@@ -1721,6 +1781,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "You can't change a schedule while it's running."
+          }
+        }
+      }
+    },
+    "No se pudo bloquear automáticamente: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't block automatically: %@"
           }
         }
       }
@@ -1831,6 +1901,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Profile to block"
+          }
+        }
+      }
+    },
+    "Perfil seleccionado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selected profile"
           }
         }
       }
@@ -2065,6 +2145,16 @@
         }
       }
     },
+    "Sin bloqueo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No block"
+          }
+        }
+      }
+    },
     "Sin días seleccionados": {
       "localizations": {
         "en": {
@@ -2101,6 +2191,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "No profile"
+          }
+        }
+      }
+    },
+    "Solo la llave desbloquea": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the key unlocks"
           }
         }
       }
