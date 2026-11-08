@@ -24,6 +24,7 @@ struct ScheduleView: View {
                             ForEach(model.schedules) { schedule in
                                 ScheduleCard(
                                     schedule: schedule,
+                                    profile: model.profile(schedule.profileID),
                                     isRunning: model.isScheduleActive(schedule, at: context.date),
                                     wouldStartNow: { model.isScheduleActive($0) },
                                     onUpdate: model.updateSchedule,
@@ -67,6 +68,7 @@ private struct ScheduleCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let schedule: FocusModel.Schedule
+    let profile: FocusProfile?
     /// While running, the schedule can't be modified, disabled or deleted.
     let isRunning: Bool
     let wouldStartNow: (FocusModel.Schedule) -> Bool
@@ -89,7 +91,7 @@ private struct ScheduleCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(schedule.name.isEmpty ? "Horario de concentración" : schedule.name)
                         .font(.title3.bold())
-                    Text("Bloqueo programado")
+                    Label(profile?.displayName ?? "Sin perfil", systemImage: profile?.symbol ?? "lock.shield")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -248,6 +250,7 @@ struct ScheduleForm: View {
     @State private var endTime: Date
     @State private var repeats: Set<FocusModel.Weekday>
     @State private var isEnabled: Bool
+    @State private var profileID: UUID?
 
     private struct ScheduleTemplate: Identifiable {
         let id: String
@@ -273,6 +276,7 @@ struct ScheduleForm: View {
         _endTime = State(initialValue: schedule?.endTime ?? defaultEnd)
         _repeats = State(initialValue: schedule?.repeats ?? [.monday, .tuesday, .wednesday, .thursday, .friday])
         _isEnabled = State(initialValue: schedule?.isEnabled ?? true)
+        _profileID = State(initialValue: schedule?.profileID)
     }
 
     var body: some View {
@@ -299,6 +303,18 @@ struct ScheduleForm: View {
                     Text("Nombre")
                 } footer: {
                     Text("Opcional. Usa un nombre que te ayude a identificar este bloqueo.")
+                }
+
+                Section {
+                    Picker("Perfil", selection: $profileID) {
+                        ForEach(model.profiles) { profile in
+                            Label(profile.displayName, systemImage: profile.symbol).tag(Optional(profile.id))
+                        }
+                    }
+                } header: {
+                    Text("Qué bloquear")
+                } footer: {
+                    Text(model.profile(profileID)?.summary ?? "")
                 }
 
                 Section {
@@ -378,6 +394,11 @@ struct ScheduleForm: View {
                 }
             }
             .startsNowAlert(isPresented: $showingStartNowAlert, endTime: endTime, onConfirm: save)
+            .onAppear {
+                if profileID == nil || model.profiles.allSatisfy({ $0.id != profileID }) {
+                    profileID = schedule == nil ? model.activeProfileID : model.profile(profileID)?.id
+                }
+            }
         }
     }
 
@@ -388,7 +409,8 @@ struct ScheduleForm: View {
             startTime: startTime,
             endTime: endTime,
             repeats: repeats,
-            isEnabled: isEnabled
+            isEnabled: isEnabled,
+            profileID: profileID
         )
     }
 

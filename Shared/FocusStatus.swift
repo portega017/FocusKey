@@ -1,0 +1,108 @@
+//
+//  FocusStatus.swift
+//  FocusKey
+//
+//  Snapshot of everything that is blocking right now, for the app, widgets and shield screen.
+//
+
+import Foundation
+import ManagedSettings
+
+nonisolated struct FocusStatus {
+    struct RunningSchedule {
+        var schedule: FocusSchedule
+        var profile: FocusProfile?
+        var end: Date
+    }
+
+    struct ReachedLimit {
+        var limit: UsageLimit
+        var profile: FocusProfile?
+    }
+
+    var date: Date
+    /// Profile locked manually (button, NFC, intent or session), if any.
+    var manualProfile: FocusProfile?
+    var isManualLocked: Bool
+    var sessionEnd: Date?
+    var schedules: [RunningSchedule]
+    var limits: [ReachedLimit]
+
+    var isBlocked: Bool { isManualLocked || !schedules.isEmpty || !limits.isEmpty }
+
+    /// The NFC tag lifts the manual lock and schedules, not daily limits.
+    var canUnlockWithKey: Bool { isManualLocked || !schedules.isEmpty }
+
+    static func current(at date: Date = .now) -> FocusStatus {
+        let profiles = FocusStore.profiles()
+        let isManual = FocusStore.isManualLocked
+        var sessionEnd = FocusStore.sessionEnd
+        if let end = sessionEnd, end <= date { sessionEnd = nil }
+
+        let schedules = FocusStore.schedules()
+            .filter { $0.isActive(at: date) && !FocusStore.isSkipped($0, at: date) }
+            .map { RunningSchedule(schedule: $0, profile: FocusStore.profile($0.profileID, in: profiles), end: $0.intervalEnd(after: date)) }
+
+        let limits = FocusStore.limits()
+            .filter { FocusStore.isBlocking($0, at: date) }
+            .map { ReachedLimit(limit: $0, profile: FocusStore.profile($0.profileID, in: profiles)) }
+
+        return FocusStatus(
+            date: date,
+            manualProfile: isManual ? FocusStore.profile(FocusStore.manualProfileID, in: profiles) : nil,
+            isManualLocked: isManual,
+            sessionEnd: isManual ? sessionEnd : nil,
+            schedules: schedules,
+            limits: limits
+        )
+    }
+
+    var headline: String {
+        if isManualLocked { return sessionEnd == nil ? "Bloqueado" : "Sesión en curso" }
+        if !schedules.isEmpty { return "Bloqueado por horario" }
+        if !limits.isEmpty { return "Límite alcanzado" }
+        return "Desbloqueado"
+    }
+
+    /// One line describing why things are blocked.
+    var detail: String? {
+        if isManualLocked {
+            let name = manualProfile?.displayName ?? "Perfil"
+            if let end = sessionEnd {
+                return "«\(name)» hasta las \(end.formatted(date: .omitted, time: .shortened))"
+            }
+            return "«\(name)» hasta que uses tu llave"
+        }
+        if let first = schedules.first {
+            return "«\(first.schedule.displayName)» hasta las \(first.end.formatted(date: .omitted, time: .shortened))"
+        }
+        if let first = limits.first {
+            return "«\(first.limit.displayName)» hasta medianoche"
+        }
+        return nil
+    }
+
+    /// Next moment the status changes on its own (session end or schedule end).
+    var nextChange: Date? {
+        ([sessionEnd].compactMap { $0 } + schedules.map(\.end)).min()
+    }
+
+    // MARK: Shield reasons
+
+    /// Explanation for the shield screen, picking the source that blocks this item.
+    func reason(matching contains: (FocusProfile) -> Bool) -> String {
+        if isManualLocked, let profile = manualProfile, contains(profile) {
+            if let end = sessionEnd {
+                return "Sesión de concentración hasta las \(end.formatted(date: .omitted, time: .shortened))."
+            }
+            return "Acerca tu llave FocusKey al iPhone para desbloquear."
+        }
+        if let running = schedules.first(where: { $0.profile.map(contains) ?? false }) {
+            return "Horario «\(running.schedule.displayName)» hasta las \(running.end.formatted(date: .omitted, time: .shortened))."
+        }
+        if let reached = limits.first(where: { $0.profile.map(contains) ?? false }) {
+            return "Has usado tus \(UsageLimit.formatted(minutes: reached.limit.minutes)) de hoy. Se desbloquea a medianoche, o amplíalo con tu llave en FocusKey."
+        }
+        return "Esta app está bloqueada por FocusKey."
+    }
+}

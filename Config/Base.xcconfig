@@ -1,0 +1,6 @@
+// Shared build settings for every target.
+//
+// Signing is kept out of the public repo: create Config/Signing.local.xcconfig (git-ignored) with
+//     DEVELOPMENT_TEAM = YOUR_TEAM_ID
+// Don't pick the team in Xcode's Signing UI: it writes the team ID into project.pbxproj.
+#include? "Signing.local.xcconfig"

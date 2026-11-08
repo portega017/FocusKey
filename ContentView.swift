@@ -1,92 +1,198 @@
 //
- //  ContentView.swift
- //  FocusKey
- //
- //
+//  ContentView.swift
+//  FocusKey
+//
+//
 
+import SwiftUI
+import FamilyControls
 
- import SwiftUI
- import FamilyControls
- import ManagedSettings
+struct ContentView: View {
+    @EnvironmentObject private var model: FocusModel
+    @EnvironmentObject private var nfc: NFCScanner
+    @State private var showingCustomSession = false
 
- struct ContentView: View {
-     @EnvironmentObject var model: FocusModel
-     @State private var showPicker = false
-     @StateObject private var nfc = NFCScanner()
+    private static let sessionOptions = [15, 30, 60, 120, 240]
 
-     var body: some View {
-         NavigationStack {
-             VStack(spacing: 20) {
-                 Image(systemName: "lock.shield")
-                     .font(.system(size: 48))
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Re-evaluated every 30 s so the state follows schedules, limits and sessions.
+                    TimelineView(.periodic(from: .now, by: 30)) { context in
+                        statusCard(FocusStatus.current(at: context.date))
+                    }
 
-                 Text("FocusKey")
-                     .font(.largeTitle.bold())
+                    if !FocusLock.isAuthorized {
+                        Button("Autorizar Screen Time") {
+                            Task { await model.authorize() }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
 
-                 Text(model.status)
-                     .multilineTextAlignment(.center)
-                 // Re-evaluated every 30 s so the state follows schedules starting or ending.
-                 TimelineView(.periodic(from: .now, by: 30)) { context in
-                     lockControls(scheduleBlocking: model.isScheduleBlocking(at: context.date))
-                 }
+                    profileSection
 
-                 if AuthorizationCenter.shared.authorizationStatus != .approved {
-                     Button("Autorizar bloqueo") {
-                         Task {
-                             await model.authorize()
-                         }
-                     }
-                     .buttonStyle(.borderedProminent)
-                 }
+                    Text(model.status)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                }
+                .padding()
+            }
+            .background(Color(uiColor: .systemGroupedBackground))
+            .navigationTitle("FocusKey")
+            .task { await model.authorize() }
+            .sheet(isPresented: $showingCustomSession) {
+                CustomSessionSheet { minutes in model.lock(minutes: minutes) }
+            }
+        }
+    }
 
-                 Button("Seleccionar aplicaciones") {
-                     showPicker = true
-                 }
-                 .buttonStyle(.bordered)
+    // MARK: Status
 
-                 Text(
-                     "\(model.selection.applicationTokens.count) aplicaciones seleccionadas"
-                 )
-                 .font(.subheadline)
+    private func statusCard(_ status: FocusStatus) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: status.isBlocked ? "lock.fill" : "lock.open.fill")
+                .font(.system(size: 44))
+                .foregroundStyle(status.isBlocked ? .red : .green)
+                .contentTransition(.symbolEffect(.replace))
 
+            VStack(spacing: 4) {
+                Text(status.headline)
+                    .font(.title2.bold())
+                if let detail = status.detail {
+                    Text(detail)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                if let end = status.sessionEnd {
+                    Text(end, style: .timer)
+                        .font(.largeTitle.monospacedDigit().bold())
+                        .padding(.top, 4)
+                }
+            }
 
-                 Spacer()
-             }
-             .padding()
-             .familyActivityPicker(
-                 isPresented: $showPicker,
-                 selection: $model.selection
-             )
-             .navigationTitle("Concentración")
-             .task { await model.authorize() }
-             .onAppear {
-                 nfc.onValidTag = {
-                     Task { @MainActor in
-                         model.handleNFC()
-                     }
-                 }
-             }
-         }
-     }
+            if !status.limits.isEmpty {
+                ExtendLimitButton()
+                    .controlSize(.large)
+            }
 
-     @ViewBuilder
-     private func lockControls(scheduleBlocking: Bool) -> some View {
-         let blocked = model.isLocked || scheduleBlocking
+            if status.canUnlockWithKey {
+                Button {
+                    nfc.start()
+                } label: {
+                    Label("Desbloquear con llave", systemImage: "wave.3.right")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .tint(.indigo)
+            }
 
-         Text(model.isLocked ? "Bloqueado" : scheduleBlocking ? "Bloqueado por horario" : "Desbloqueado")
-             .font(.headline)
-             .foregroundColor(blocked ? .red : .green)
+            if !status.isManualLocked {
+                lockButtons
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(.background, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
 
-         if blocked {
-             Button("Desbloquear con NFC") {
-                 nfc.start()
-             }
-             .buttonStyle(.bordered)
-         } else {
-             Button("Bloquear") {
-                 model.toggleLock()
-             }
-             .buttonStyle(.bordered)
-         }
-     }
- }
+    private var lockButtons: some View {
+        HStack(spacing: 12) {
+            Button {
+                model.lock()
+            } label: {
+                Label("Bloquear", systemImage: "lock.fill")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+
+            Menu {
+                ForEach(Self.sessionOptions, id: \.self) { minutes in
+                    Button(UsageLimit.formatted(minutes: minutes)) { model.lock(minutes: minutes) }
+                }
+                Divider()
+                Button("Otra duración…") { showingCustomSession = true }
+            } label: {
+                Label("Durante…", systemImage: "timer")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+        }
+        .controlSize(.large)
+    }
+
+    // MARK: Profile
+
+    private var profileSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Perfil para bloquear")
+                .font(.headline)
+
+            Picker("Perfil", selection: $model.activeProfileID) {
+                ForEach(model.profiles) { profile in
+                    Label(profile.displayName, systemImage: profile.symbol).tag(Optional(profile.id))
+                }
+            }
+            .pickerStyle(.menu)
+            .disabled(model.isLocked)
+
+            if let profile = model.activeProfile {
+                Text(profile.summary)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            NavigationLink {
+                ProfilesView()
+            } label: {
+                Label("Gestionar perfiles", systemImage: "square.stack.3d.up")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.background, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+}
+
+// MARK: - Custom session
+
+private struct CustomSessionSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var minutes = 45
+    let onStart: (Int) -> Void
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Stepper(value: $minutes, in: FocusLock.minimumSessionMinutes...720, step: 5) {
+                        Text(UsageLimit.formatted(minutes: minutes))
+                            .font(.title3.monospacedDigit())
+                    }
+                } footer: {
+                    Text("Se desbloquea solo al terminar, o antes con tu llave NFC. Mínimo \(FocusLock.minimumSessionMinutes) minutos.")
+                }
+            }
+            .navigationTitle("Sesión")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancelar") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Empezar") {
+                        onStart(minutes)
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+}
