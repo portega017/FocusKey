@@ -84,7 +84,7 @@ private struct LimitRow: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(limit.displayName)
                         .foregroundStyle(.primary)
-                    Text("\(UsageLimit.formatted(minutes: limit.minutes)) al día · \(profile?.displayName ?? "Sin perfil")")
+                    Text("\(UsageLimit.formatted(minutes: limit.minutes)) al día · \(profile?.displayName ?? String(localized: "Sin perfil"))")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     if isBlocking {
@@ -158,7 +158,7 @@ private struct LimitForm: View {
                     Toggle("Límite activado", isOn: $draft.isEnabled)
                 }
             }
-            .navigationTitle(isNew ? "Nuevo límite" : "Editar límite")
+            .navigationTitle(isNew ? String(localized: "Nuevo límite") : String(localized: "Editar límite"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

@@ -89,9 +89,9 @@ private struct ScheduleCard: View {
                     .background(Color.indigo, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(schedule.name.isEmpty ? "Horario de concentración" : schedule.name)
+                    Text(schedule.displayName)
                         .font(.title3.bold())
-                    Label(profile?.displayName ?? "Sin perfil", systemImage: profile?.symbol ?? "lock.shield")
+                    Label(profile?.displayName ?? String(localized: "Sin perfil"), systemImage: profile?.symbol ?? "lock.shield")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -107,12 +107,12 @@ private struct ScheduleCard: View {
                         .background(badgeColor.opacity(0.14), in: Capsule())
 
                     Toggle(
-                        schedule.isEnabled ? "Activo" : "Inactivo",
+                        schedule.isEnabled ? String(localized: "Activo") : String(localized: "Inactivo"),
                         isOn: Binding(get: { schedule.isEnabled }, set: { setEnabled($0) })
                     )
                     .labelsHidden()
                     .tint(.green)
-                    .accessibilityLabel(schedule.isEnabled ? "Horario activo" : "Horario inactivo")
+                    .accessibilityLabel(schedule.isEnabled ? String(localized: "Horario activo") : String(localized: "Horario inactivo"))
                     .disabled(isRunning)
                 }
             }
@@ -181,20 +181,20 @@ private struct ScheduleCard: View {
     private var timeControls: some View {
         if dynamicTypeSize.isAccessibilitySize {
             VStack(alignment: .leading, spacing: 12) {
-                timeLabel(title: "Hora de inicio", time: schedule.startTime)
-                timeLabel(title: "Hora de fin", time: schedule.endTime)
+                timeLabel(title: String(localized: "Hora de inicio"), time: schedule.startTime)
+                timeLabel(title: String(localized: "Hora de fin"), time: schedule.endTime)
             }
         } else {
             HStack(spacing: 12) {
-                timeLabel(title: "Hora de inicio", time: schedule.startTime)
-                timeLabel(title: "Hora de fin", time: schedule.endTime)
+                timeLabel(title: String(localized: "Hora de inicio"), time: schedule.startTime)
+                timeLabel(title: String(localized: "Hora de fin"), time: schedule.endTime)
             }
         }
     }
 
     private var badgeText: String {
-        if isRunning { return "En curso" }
-        return schedule.isEnabled ? "Activo" : "Inactivo"
+        if isRunning { return String(localized: "En curso") }
+        return schedule.isEnabled ? String(localized: "Activo") : String(localized: "Inactivo")
     }
 
     private var badgeColor: Color {
@@ -207,9 +207,9 @@ private struct ScheduleCard: View {
             .filter { schedule.repeats.contains($0) }
             .map(\.shortName)
             .joined(separator: ", ")
-        let recurrence = days.isEmpty ? "Sin días seleccionados" : "Se repite \(days)"
-        let overnight = schedule.crossesMidnight ? " (termina al día siguiente)" : ""
-        return "\(recurrence), de \(schedule.startTime.formatted(date: .omitted, time: .shortened)) a \(schedule.endTime.formatted(date: .omitted, time: .shortened))\(overnight)."
+        let recurrence = days.isEmpty ? String(localized: "Sin días seleccionados") : String(localized: "Se repite \(days)")
+        let overnight = schedule.crossesMidnight ? String(localized: " (termina al día siguiente)") : ""
+        return String(localized: "\(recurrence), de \(schedule.startTime.formatted(date: .omitted, time: .shortened)) a \(schedule.endTime.formatted(date: .omitted, time: .shortened))\(overnight).")
     }
 
     /// Read-only: times are changed only from the edit form, which has a Save button.
@@ -261,9 +261,9 @@ struct ScheduleForm: View {
     }
 
     private static let templates: [ScheduleTemplate] = [
-        .init(id: "study", name: "Estudio", startHour: 9, endHour: 14, repeats: [.monday, .tuesday, .wednesday, .thursday, .friday]),
-        .init(id: "work", name: "Trabajo", startHour: 9, endHour: 17, repeats: [.monday, .tuesday, .wednesday, .thursday, .friday]),
-        .init(id: "sleep", name: "Dormir", startHour: 23, endHour: 7, repeats: Set(FocusModel.Weekday.allCases))
+        .init(id: "study", name: String(localized: "Estudio"), startHour: 9, endHour: 14, repeats: [.monday, .tuesday, .wednesday, .thursday, .friday]),
+        .init(id: "work", name: String(localized: "Trabajo"), startHour: 9, endHour: 17, repeats: [.monday, .tuesday, .wednesday, .thursday, .friday]),
+        .init(id: "sleep", name: String(localized: "Dormir"), startHour: 23, endHour: 7, repeats: Set(FocusModel.Weekday.allCases))
     ]
 
     init(schedule: FocusModel.Schedule?, onSave: @escaping (FocusModel.Schedule?) -> Void) {
@@ -354,7 +354,7 @@ struct ScheduleForm: View {
                             .background(Color.indigo, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(name.isEmpty ? "Horario de concentración" : name)
+                            Text(name.isEmpty ? String(localized: "Horario de concentración") : name)
                                 .font(.headline)
                             Text(recurrenceSummary)
                                 .font(.subheadline)
@@ -371,10 +371,10 @@ struct ScheduleForm: View {
                 } header: {
                     Text("Estado")
                 } footer: {
-                    Text(isEnabled ? "El bloqueo se aplicará en el horario indicado." : "Puedes guardarlo ahora y activarlo más tarde.")
+                    Text(isEnabled ? String(localized: "El bloqueo se aplicará en el horario indicado.") : String(localized: "Puedes guardarlo ahora y activarlo más tarde."))
                 }
             }
-            .navigationTitle(schedule == nil ? "Nuevo horario" : "Editar horario")
+            .navigationTitle(schedule == nil ? String(localized: "Nuevo horario") : String(localized: "Editar horario"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancelar") {
@@ -424,9 +424,9 @@ struct ScheduleForm: View {
             .filter { repeats.contains($0) }
             .map(\.shortName)
             .joined(separator: ", ")
-        let recurrence = days.isEmpty ? "Sin días seleccionados" : "Se repite \(days)"
-        let overnight = startTime > endTime ? " · Termina al día siguiente" : ""
-        return "\(recurrence), de \(startTime.formatted(date: .omitted, time: .shortened)) a \(endTime.formatted(date: .omitted, time: .shortened))\(overnight)."
+        let recurrence = days.isEmpty ? String(localized: "Sin días seleccionados") : String(localized: "Se repite \(days)")
+        let overnight = startTime > endTime ? String(localized: " · Termina al día siguiente") : ""
+        return String(localized: "\(recurrence), de \(startTime.formatted(date: .omitted, time: .shortened)) a \(endTime.formatted(date: .omitted, time: .shortened))\(overnight).")
     }
 
     private func apply(_ template: ScheduleTemplate) {
@@ -447,13 +447,13 @@ private extension FocusModel.Weekday {
 
     var initial: String {
         switch self {
-        case .monday: return "L"
-        case .tuesday: return "M"
-        case .wednesday: return "X"
-        case .thursday: return "J"
-        case .friday: return "V"
-        case .saturday: return "S"
-        case .sunday: return "D"
+        case .monday: return String(localized: "L")
+        case .tuesday: return String(localized: "M")
+        case .wednesday: return String(localized: "X")
+        case .thursday: return String(localized: "J")
+        case .friday: return String(localized: "V")
+        case .saturday: return String(localized: "S")
+        case .sunday: return String(localized: "D")
         }
     }
 }

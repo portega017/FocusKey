@@ -1,5 +1,6 @@
 import Foundation
 import DeviceActivity
+import UserNotifications
 
 /// Receives DeviceActivity callbacks for schedules, timed sessions and daily usage limits.
 /// Shared logic lives in `Shared/` (FocusLock, FocusStore).
@@ -64,6 +65,13 @@ final class FocusKeyMonitor: DeviceActivityMonitor {
             FocusLock.endLimitExtension(id)
             return
         }
+        if event == UsageLimit.warningEventName {
+            if let id = FocusActivity.limitID(from: activity),
+               let limit = FocusStore.limits().first(where: { $0.id == id }) {
+                notifyWarning(for: limit)
+            }
+            return
+        }
         guard event == UsageLimit.eventName,
               let id = FocusActivity.limitID(from: activity),
               let limit = FocusStore.limits().first(where: { $0.id == id }),
@@ -78,5 +86,16 @@ final class FocusKeyMonitor: DeviceActivityMonitor {
             FocusStore.openRecord(kind: .limit, title: limit.displayName, sourceID: id.uuidString, at: now)
         }
         FocusLock.reloadWidgets()
+    }
+
+    private func notifyWarning(for limit: UsageLimit) {
+        guard FocusStore.limitWarnings, limit.isEnabled, let lead = limit.warningLeadMinutes,
+              !FocusStore.isReachedToday(limit) else { return }
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "Casi en tu límite")
+        content.body = String(localized: "Te quedan \(UsageLimit.formatted(minutes: lead)) de «\(limit.displayName)» por hoy.")
+        content.sound = .default
+        let request = UNNotificationRequest(identifier: "limit-warning-\(limit.id.uuidString)", content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
     }
 }

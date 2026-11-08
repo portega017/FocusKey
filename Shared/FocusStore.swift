@@ -38,6 +38,10 @@ nonisolated enum FocusStore {
         static let records = "FocusKey.blockRecords"
         /// Set by the "unlock with key" intent so the app starts an NFC scan when it opens.
         static let pendingNFCScan = "FocusKey.pendingNFCScan"
+        /// While anything is blocked, iOS won't let apps be deleted (on by default).
+        static let preventAppRemoval = "FocusKey.preventAppRemoval"
+        /// Notify a few minutes before a daily limit is reached (on by default).
+        static let limitWarnings = "FocusKey.limitWarnings"
         /// Last error of an intent run from a widget or Control Center, shown by the app.
         static let lastIntentError = "FocusKey.lastIntentError"
     }
@@ -199,6 +203,16 @@ nonisolated enum FocusStore {
         guard defaults.bool(forKey: Key.pendingNFCScan) else { return false }
         defaults.set(false, forKey: Key.pendingNFCScan)
         return true
+    }
+
+    static var preventAppRemoval: Bool {
+        get { defaults.object(forKey: Key.preventAppRemoval) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Key.preventAppRemoval) }
+    }
+
+    static var limitWarnings: Bool {
+        get { defaults.object(forKey: Key.limitWarnings) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Key.limitWarnings) }
     }
 
     static var lastIntentError: String? {

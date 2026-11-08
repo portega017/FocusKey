@@ -58,26 +58,26 @@ nonisolated struct FocusStatus {
     }
 
     var headline: String {
-        if isManualLocked { return sessionEnd == nil ? "Bloqueado" : "Sesión en curso" }
-        if !schedules.isEmpty { return "Bloqueado por horario" }
-        if !limits.isEmpty { return "Límite alcanzado" }
-        return "Desbloqueado"
+        if isManualLocked { return sessionEnd == nil ? String(localized: "Bloqueado") : String(localized: "Sesión en curso") }
+        if !schedules.isEmpty { return String(localized: "Bloqueado por horario") }
+        if !limits.isEmpty { return String(localized: "Límite alcanzado") }
+        return String(localized: "Desbloqueado")
     }
 
     /// One line describing why things are blocked.
     var detail: String? {
         if isManualLocked {
-            let name = manualProfile?.displayName ?? "Perfil"
+            let name = manualProfile?.displayName ?? String(localized: "Perfil")
             if let end = sessionEnd {
-                return "«\(name)» hasta las \(end.formatted(date: .omitted, time: .shortened))"
+                return String(localized: "«\(name)» hasta las \(end.formatted(date: .omitted, time: .shortened))")
             }
-            return "«\(name)» hasta que uses tu llave"
+            return String(localized: "«\(name)» hasta que uses tu llave")
         }
         if let first = schedules.first {
-            return "«\(first.schedule.displayName)» hasta las \(first.end.formatted(date: .omitted, time: .shortened))"
+            return String(localized: "«\(first.schedule.displayName)» hasta las \(first.end.formatted(date: .omitted, time: .shortened))")
         }
         if let first = limits.first {
-            return "«\(first.limit.displayName)» hasta medianoche"
+            return String(localized: "«\(first.limit.displayName)» hasta medianoche")
         }
         return nil
     }
@@ -93,12 +93,12 @@ nonisolated struct FocusStatus {
     func reason(matching contains: (FocusProfile) -> Bool) -> String {
         if isManualLocked, let profile = manualProfile, contains(profile) {
             if let end = sessionEnd {
-                return "Sesión de concentración hasta las \(end.formatted(date: .omitted, time: .shortened))."
+                return String(localized: "Sesión de concentración hasta las \(end.formatted(date: .omitted, time: .shortened)).")
             }
-            return "Acerca tu llave FocusKey al iPhone para desbloquear."
+            return String(localized: "Acerca tu llave FocusKey al iPhone para desbloquear.")
         }
         if let running = schedules.first(where: { $0.profile.map(contains) ?? false }) {
-            return "Horario «\(running.schedule.displayName)» hasta las \(running.end.formatted(date: .omitted, time: .shortened))."
+            return String(localized: "Horario «\(running.schedule.displayName)» hasta las \(running.end.formatted(date: .omitted, time: .shortened)).")
         }
         if let reached = limits.first(where: { $0.profile.map(contains) ?? false }) {
             return "Has usado tus \(UsageLimit.formatted(minutes: reached.limit.minutes)) de hoy. Se desbloquea a medianoche, o amplíalo con tu llave en FocusKey."

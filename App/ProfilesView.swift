@@ -143,7 +143,7 @@ private struct ProfileEditor: View {
                     Text(lockReason ?? draft.summary)
                 }
             }
-            .navigationTitle(isNew ? "Nuevo perfil" : "Editar perfil")
+            .navigationTitle(isNew ? String(localized: "Nuevo perfil") : String(localized: "Editar perfil"))
             .navigationBarTitleDisplayMode(.inline)
             .familyActivityPicker(isPresented: $showingPicker, selection: $draft.selection)
             .toolbar {

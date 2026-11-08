@@ -13,6 +13,9 @@
                          ObservableObject,
                          NFCNDEFReaderSessionDelegate {
      private var session: NFCNDEFReaderSession?
+     /// Text record a FocusKey tag must contain.
+     static let tagText = "FOCUSKEY:TOGGLE"
+
      var onValidTag: (() -> Void)?
      /// Runs instead of `onValidTag` for the next scan only (e.g. extending a limit).
      private var oneShot: (() -> Void)?
@@ -83,7 +86,7 @@
                      return false
                  }
 
-                 return text == "FOCUSKEY:TOGGLE"
+                 return text == Self.tagText
              }
      }
 

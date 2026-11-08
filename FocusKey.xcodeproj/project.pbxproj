@@ -40,6 +40,13 @@
 			remoteGlobalIDString = AA0000000000000000000020;
 			remoteInfo = FocusKeyWidget;
 		};
+		AA0000000000000000000049 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 000000000000000100000000;
+			remoteInfo = FocusKey;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -68,9 +75,10 @@
 		6EB29E24307F90D400466BF3 /* FocusKeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusKeyApp.swift; sourceTree = "<group>"; };
 		6EB29E26307F90ED00466BF3 /* FocusModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusModel.swift; sourceTree = "<group>"; };
 		6EB29E2C307F912800466BF3 /* NFCScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFCScanner.swift; sourceTree = "<group>"; };
+		AA0000000000000000000003 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Base.xcconfig; path = Config/Base.xcconfig; sourceTree = "<group>"; };
 		AA0000000000000000000011 /* FocusKeyShield.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FocusKeyShield.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000021 /* FocusKeyWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FocusKeyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA0000000000000000000003 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Base.xcconfig; path = Config/Base.xcconfig; sourceTree = "<group>"; };
+		AA0000000000000000000041 /* FocusKeyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FocusKeyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -106,6 +114,16 @@
 			path = FocusKeyMonitor;
 			sourceTree = "<group>";
 		};
+		AA0000000000000000000001 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000002 /* App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = App;
+			sourceTree = "<group>";
+		};
 		AA0000000000000000000018 /* FocusKeyShield */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -122,14 +140,9 @@
 			path = FocusKeyWidget;
 			sourceTree = "<group>";
 		};
-		AA0000000000000000000001 /* Shared */ = {
+		AA0000000000000000000048 /* FocusKeyTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		AA0000000000000000000002 /* App */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = App;
+			path = FocusKeyTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -155,6 +168,11 @@
 			files = (
 			);
 		};
+		AA0000000000000000000043 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -173,6 +191,7 @@
 				AA0000000000000000000003 /* Base.xcconfig */,
 				AA0000000000000000000001 /* Shared */,
 				AA0000000000000000000002 /* App */,
+				AA0000000000000000000048 /* FocusKeyTests */,
 				6EB26D64307FA7F400609348 /* Frameworks */,
 				6EAC6C28308386AC00FF36F7 /* FocusKey.entitlements */,
 				000000000000000000000020 /* Products */,
@@ -186,6 +205,7 @@
 				6EAC6C1E3083835500FF36F7 /* FocusKeyMonitor.appex */,
 				AA0000000000000000000011 /* FocusKeyShield.appex */,
 				AA0000000000000000000021 /* FocusKeyWidget.appex */,
+				AA0000000000000000000041 /* FocusKeyTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -257,8 +277,8 @@
 			buildRules = (
 			);
 			fileSystemSynchronizedGroups = (
-				AA0000000000000000000018 /* FocusKeyShield */,
 				AA0000000000000000000001 /* Shared */,
+				AA0000000000000000000018 /* FocusKeyShield */,
 			);
 			name = FocusKeyShield;
 			productName = FocusKeyShield;
@@ -276,13 +296,34 @@
 			buildRules = (
 			);
 			fileSystemSynchronizedGroups = (
-				AA0000000000000000000028 /* FocusKeyWidget */,
 				AA0000000000000000000001 /* Shared */,
+				AA0000000000000000000028 /* FocusKeyWidget */,
 			);
 			name = FocusKeyWidget;
 			productName = FocusKeyWidget;
 			productReference = AA0000000000000000000021 /* FocusKeyWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		AA0000000000000000000040 /* FocusKeyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000045 /* Build configuration list for PBXNativeTarget "FocusKeyTests" */;
+			buildPhases = (
+				AA0000000000000000000042 /* Sources */,
+				AA0000000000000000000043 /* Frameworks */,
+				AA0000000000000000000044 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA000000000000000000004A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA0000000000000000000048 /* FocusKeyTests */,
+			);
+			name = FocusKeyTests;
+			productName = FocusKeyTests;
+			productReference = AA0000000000000000000041 /* FocusKeyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -306,12 +347,17 @@
 					AA0000000000000000000020 = {
 						CreatedOnToolsVersion = 27.0;
 					};
+					AA0000000000000000000040 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 000000000000000100000000;
+					};
 				};
 			};
 			buildConfigurationList = 000000000000000010000000 /* Build configuration list for PBXProject "FocusKey" */;
-			developmentRegion = en;
+			developmentRegion = es;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				es,
 				en,
 				Base,
 			);
@@ -326,6 +372,7 @@
 				6EAC6C1D3083835500FF36F7 /* FocusKeyMonitor */,
 				AA0000000000000000000010 /* FocusKeyShield */,
 				AA0000000000000000000020 /* FocusKeyWidget */,
+				AA0000000000000000000040 /* FocusKeyTests */,
 			);
 		};
 /* End PBXProject section */
@@ -348,6 +395,11 @@
 			);
 		};
 		AA0000000000000000000024 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		AA0000000000000000000044 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
 			);
@@ -380,6 +432,11 @@
 			files = (
 			);
 		};
+		AA0000000000000000000042 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -397,6 +454,11 @@
 			isa = PBXTargetDependency;
 			target = AA0000000000000000000020 /* FocusKeyWidget */;
 			targetProxy = AA000000000000000000002A /* PBXContainerItemProxy */;
+		};
+		AA000000000000000000004A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000100000000 /* FocusKey */;
+			targetProxy = AA0000000000000000000049 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -575,7 +637,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -619,7 +681,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -653,12 +715,12 @@
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 27.0;
 			};
 			name = Debug;
@@ -693,12 +755,12 @@
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 27.0;
 			};
 			name = Release;
@@ -835,6 +897,50 @@
 			};
 			name = Release;
 		};
+		AA0000000000000000000046 /* Debug configuration for PBXNativeTarget "FocusKeyTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.FocusKeyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FocusKey.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FocusKey";
+			};
+			name = Debug;
+		};
+		AA0000000000000000000047 /* Release configuration for PBXNativeTarget "FocusKeyTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.FocusKeyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FocusKey.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FocusKey";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -875,6 +981,14 @@
 			buildConfigurations = (
 				AA0000000000000000000026 /* Debug configuration for PBXNativeTarget "FocusKeyWidget" */,
 				AA0000000000000000000027 /* Release configuration for PBXNativeTarget "FocusKeyWidget" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		AA0000000000000000000045 /* Build configuration list for PBXNativeTarget "FocusKeyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000046 /* Debug configuration for PBXNativeTarget "FocusKeyTests" */,
+				AA0000000000000000000047 /* Release configuration for PBXNativeTarget "FocusKeyTests" */,
 			);
 			defaultConfigurationName = Release;
 		};

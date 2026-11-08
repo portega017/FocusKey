@@ -21,7 +21,7 @@ struct StatsView: View {
                 VStack(spacing: 16) {
                     HStack(spacing: 12) {
                         StatTile(title: "Hoy", value: FocusStats.format(minutes: stats.today), symbol: "lock.fill")
-                        StatTile(title: "Racha", value: "\(stats.streak) \(stats.streak == 1 ? "día" : "días")", symbol: "flame.fill")
+                        StatTile(title: "Racha", value: String(localized: "\(stats.streak) días"), symbol: "flame.fill")
                     }
                     StatTile(title: "Últimos 7 días", value: FocusStats.format(minutes: stats.week.map(\.minutes).reduce(0, +)), symbol: "calendar")
 
@@ -106,7 +106,7 @@ struct StatsView: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Text(record.end == nil ? "En curso" : FocusStats.format(minutes: Int((record.end ?? .now).timeIntervalSince(record.start) / 60)))
+                    Text(record.end == nil ? String(localized: "En curso") : FocusStats.format(minutes: Int((record.end ?? .now).timeIntervalSince(record.start) / 60)))
                         .font(.subheadline.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
@@ -119,7 +119,7 @@ struct StatsView: View {
 }
 
 private struct StatTile: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let symbol: String
 
@@ -137,68 +137,5 @@ private struct StatTile: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.background, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .accessibilityElement(children: .combine)
-    }
-}
-
-// MARK: - Computation
-
-struct FocusStats {
-    struct Day: Identifiable {
-        var date: Date
-        var minutes: Int
-        var id: Date { date }
-    }
-
-    let week: [Day]
-    let today: Int
-    let streak: Int
-    let recent: [BlockRecord]
-
-    init(records: [BlockRecord], now: Date = .now, calendar: Calendar = .current) {
-        let intervals = Self.merged(records.map { ($0.start, min($0.end ?? now, now)) })
-        let todayStart = calendar.startOfDay(for: now)
-
-        func minutes(on dayStart: Date) -> Int {
-            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
-            let seconds = intervals.reduce(0.0) { total, interval in
-                let start = max(interval.0, dayStart)
-                let end = min(interval.1, dayEnd)
-                return total + max(0, end.timeIntervalSince(start))
-            }
-            return Int(seconds / 60)
-        }
-
-        week = (0..<7).reversed().compactMap { offset in
-            calendar.date(byAdding: .day, value: -offset, to: todayStart).map { Day(date: $0, minutes: minutes(on: $0)) }
-        }
-        today = minutes(on: todayStart)
-
-        // Consecutive days with at least one minute blocked; today counts only once it has some.
-        var streak = 0
-        var day = today > 0 ? todayStart : calendar.date(byAdding: .day, value: -1, to: todayStart)!
-        while minutes(on: day) > 0, streak < 365 {
-            streak += 1
-            day = calendar.date(byAdding: .day, value: -1, to: day)!
-        }
-        self.streak = streak
-
-        recent = Array(records.sorted { $0.start > $1.start }.prefix(15))
-    }
-
-    /// Overlapping blocks (e.g. a schedule during a manual lock) count once.
-    private static func merged(_ intervals: [(Date, Date)]) -> [(Date, Date)] {
-        var result: [(Date, Date)] = []
-        for interval in intervals.filter({ $0.1 > $0.0 }).sorted(by: { $0.0 < $1.0 }) {
-            if let last = result.last, interval.0 <= last.1 {
-                result[result.count - 1].1 = max(last.1, interval.1)
-            } else {
-                result.append(interval)
-            }
-        }
-        return result
-    }
-
-    static func format(minutes: Int) -> String {
-        minutes < 60 ? "\(minutes) min" : UsageLimit.formatted(minutes: minutes)
     }
 }

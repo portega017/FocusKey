@@ -1,0 +1,2454 @@
+{
+  "sourceLanguage": "es",
+  "strings": {
+    " (termina al día siguiente)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " (ends the next day)"
+          }
+        }
+      }
+    },
+    " · Termina al día siguiente": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " · Ends the next day"
+          }
+        }
+      }
+    },
+    "%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        }
+      }
+    },
+    "%@ (copia)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (copy)"
+          }
+        }
+      }
+    },
+    "%@ al día · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ per day · %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ al día · %2$@"
+          }
+        }
+      }
+    },
+    "%@ está bloqueada": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is blocked"
+          }
+        }
+      }
+    },
+    "%@ h": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ h"
+          }
+        }
+      }
+    },
+    "%@ · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@, de %@ a %@%@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, from %2$@ to %3$@%4$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@, de %2$@ a %3$@%4$@."
+          }
+        }
+      }
+    },
+    "%@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@."
+          }
+        }
+      }
+    },
+    "%@: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@–%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@–%2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@–%2$@"
+          }
+        }
+      }
+    },
+    "%lld apps": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld app"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld apps"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld app"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld apps"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld categorías": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld category"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld categories"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld categoría"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld categorías"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld días": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld day"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld days"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld día"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld h %lld min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld h %2$lld min"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld h %2$lld min"
+          }
+        }
+      }
+    },
+    "%lld webs": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld website"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld websites"
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld web"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld webs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "+%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%@"
+          }
+        }
+      }
+    },
+    "1 hora": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 hour"
+          }
+        }
+      }
+    },
+    "Abre FocusKey para leer tu llave NFC.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens FocusKey to read your NFC key."
+          }
+        }
+      }
+    },
+    "Abre FocusKey y prepara la lectura de tu llave NFC.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens FocusKey and gets ready to read your NFC key."
+          }
+        }
+      }
+    },
+    "Acceso a Tiempo de uso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen Time access"
+          }
+        }
+      }
+    },
+    "Acceso concedido": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access granted"
+          }
+        }
+      }
+    },
+    "Acerca tu llave FocusKey al iPhone para desbloquear.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold your FocusKey tag near your iPhone to unlock."
+          }
+        }
+      }
+    },
+    "Acerca tu llave FocusKey para confirmar. Cuando gastes ese tiempo, se volverá a bloquear.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold your FocusKey tag near your iPhone to confirm. When that time is used up, it will block again."
+          }
+        }
+      }
+    },
+    "Activar notificaciones en Ajustes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on notifications in Settings"
+          }
+        }
+      }
+    },
+    "Activo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
+          }
+        }
+      }
+    },
+    "Ajustes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "Alcanzado hoy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reached today"
+          }
+        }
+      }
+    },
+    "Ampliado con la llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extended with the key"
+          }
+        }
+      }
+    },
+    "Ampliar con la llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extend with the key"
+          }
+        }
+      }
+    },
+    "Autoriza Screen Time en FocusKey antes de bloquear.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Screen Time in FocusKey before blocking."
+          }
+        }
+      }
+    },
+    "Autoriza Screen Time para empezar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Screen Time to get started."
+          }
+        }
+      }
+    },
+    "Autorización concedida.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access granted."
+          }
+        }
+      }
+    },
+    "Autorizar Screen Time": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Screen Time"
+          }
+        }
+      }
+    },
+    "Avisar antes de un límite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warn before a limit"
+          }
+        }
+      }
+    },
+    "Avisos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerts"
+          }
+        }
+      }
+    },
+    "Añadir horario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add schedule"
+          }
+        }
+      }
+    },
+    "Añadir límite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add limit"
+          }
+        }
+      }
+    },
+    "Aún no hay bloqueos registrados.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No blocks recorded yet."
+          }
+        }
+      }
+    },
+    "Bienvenido a FocusKey": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome to FocusKey"
+          }
+        }
+      }
+    },
+    "Bloquea el perfil seleccionado en FocusKey.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocks the profile selected in FocusKey."
+          }
+        }
+      }
+    },
+    "Bloquea un perfil de FocusKey. Solo tu llave NFC puede desbloquearlo antes de tiempo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocks a FocusKey profile. Only your NFC key can unlock it early."
+          }
+        }
+      }
+    },
+    "Bloqueado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocked"
+          }
+        }
+      }
+    },
+    "Bloqueado por FocusKey": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocked by FocusKey"
+          }
+        }
+      }
+    },
+    "Bloqueado por horario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocked by schedule"
+          }
+        }
+      }
+    },
+    "Bloquear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block"
+          }
+        }
+      }
+    },
+    "Bloquear ${profile} durante ${minutes} minutos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block ${profile} for ${minutes} minutes"
+          }
+        }
+      }
+    },
+    "Bloquear ahora": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block now"
+          }
+        }
+      }
+    },
+    "Bloquear apps": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block apps"
+          }
+        }
+      }
+    },
+    "Bloquear las apps que te distraen es fácil. Para desbloquearlas necesitas tu llave NFC: tendrás que levantarte a por ella.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocking distracting apps is easy. To unlock them you need your NFC key, so you'll have to get up and fetch it."
+          }
+        }
+      }
+    },
+    "Bloqueo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block"
+          }
+        }
+      }
+    },
+    "Bloqueo manual": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manual block"
+          }
+        }
+      }
+    },
+    "Bloqueos recientes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent blocks"
+          }
+        }
+      }
+    },
+    "Cada perfil es un grupo de apps, categorías y webs. Úsalos en el bloqueo manual, los horarios y los límites.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each profile is a group of apps, categories and websites. Use them for manual blocks, schedules and limits."
+          }
+        }
+      }
+    },
+    "Cancelar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Casi en tu límite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Almost at your limit"
+          }
+        }
+      }
+    },
+    "Consultar bloqueo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check block status"
+          }
+        }
+      }
+    },
+    "Continuar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        }
+      }
+    },
+    "Copiado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        }
+      }
+    },
+    "Copiar texto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy text"
+          }
+        }
+      }
+    },
+    "Crea un horario para bloquear tus selecciones automáticamente.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a schedule to block your selections automatically."
+          }
+        }
+      }
+    },
+    "Crea un límite para bloquear un perfil cuando lo hayas usado cierto tiempo al día.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a limit to block a profile once you've used it for a set time each day."
+          }
+        }
+      }
+    },
+    "D": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "S"
+          }
+        }
+      }
+    },
+    "Desbloqueado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlocked"
+          }
+        }
+      }
+    },
+    "Desbloquear con llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock with key"
+          }
+        }
+      }
+    },
+    "Dom": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sun"
+          }
+        }
+      }
+    },
+    "Dormir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sleep"
+          }
+        }
+      }
+    },
+    "Duplicar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplicate"
+          }
+        }
+      }
+    },
+    "Duración (minutos)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duration (minutes)"
+          }
+        }
+      }
+    },
+    "Durante…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For…"
+          }
+        }
+      }
+    },
+    "Déjalo vacío para bloquear hasta usar la llave. Mínimo 15 minutos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave empty to block until you use the key. At least 15 minutes."
+          }
+        }
+      }
+    },
+    "Día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        }
+      }
+    },
+    "Días de la semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days of the week"
+          }
+        }
+      }
+    },
+    "Editar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        }
+      }
+    },
+    "Editar horario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit schedule"
+          }
+        }
+      }
+    },
+    "Editar límite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit limit"
+          }
+        }
+      }
+    },
+    "Editar perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit profile"
+          }
+        }
+      }
+    },
+    "El bloqueo empezará ahora": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The block will start now"
+          }
+        }
+      }
+    },
+    "El bloqueo se aplicará en el horario indicado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The block will apply at the set times."
+          }
+        }
+      }
+    },
+    "El bloqueo ya está activo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The block is already on."
+          }
+        }
+      }
+    },
+    "El horario puede terminar al día siguiente.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The schedule can end the next day."
+          }
+        }
+      }
+    },
+    "El perfil del límite «%@» no tiene apps seleccionadas.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The profile of the limit “%@” has no apps selected."
+          }
+        }
+      }
+    },
+    "El perfil «%@» no tiene apps, categorías ni webs seleccionadas.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The profile “%@” has no apps, categories or websites selected."
+          }
+        }
+      }
+    },
+    "El tiempo se cuenta desde medianoche. Al alcanzarlo, las apps quedan bloqueadas hasta el día siguiente. Con tu llave NFC puedes ampliar un límite alcanzado unos minutos más.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time is counted from midnight. Once it's reached, the apps stay blocked until the next day. With your NFC key you can extend a reached limit by a few minutes."
+          }
+        }
+      }
+    },
+    "El widget no pudo bloquear: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The widget couldn't block: %@"
+          }
+        }
+      }
+    },
+    "Elegir apps": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose apps"
+          }
+        }
+      }
+    },
+    "Elegir apps y webs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose apps and websites"
+          }
+        }
+      }
+    },
+    "Elige al menos un día para activar este horario.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose at least one day to turn on this schedule."
+          }
+        }
+      }
+    },
+    "Elige apps, categorías o webs para tu primer perfil. Luego podrás crear más perfiles, como Trabajo o Noche.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose apps, categories or websites for your first profile. Later you can create more profiles, like Work or Night."
+          }
+        }
+      }
+    },
+    "Eliminar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        }
+      }
+    },
+    "Empezar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get started"
+          }
+        }
+      }
+    },
+    "En curso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running"
+          }
+        }
+      }
+    },
+    "En curso — no se puede modificar hasta las %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running — can't be changed until %@"
+          }
+        }
+      }
+    },
+    "Error al crear el horario «%@».": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't create the schedule “%@”."
+          }
+        }
+      }
+    },
+    "Error al programar el límite «%@»: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't schedule the limit “%1$@”: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Error al programar el límite «%1$@»: %2$@"
+          }
+        }
+      }
+    },
+    "Error al programar «%@»: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't schedule “%1$@”: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Error al programar «%1$@»: %2$@"
+          }
+        }
+      }
+    },
+    "Error de autorización: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authorization error: %@"
+          }
+        }
+      }
+    },
+    "Estado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status"
+          }
+        }
+      }
+    },
+    "Estado de FocusKey": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FocusKey status"
+          }
+        }
+      }
+    },
+    "Estado de autorización desconocido.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown authorization status."
+          }
+        }
+      }
+    },
+    "Estadísticas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statistics"
+          }
+        }
+      }
+    },
+    "Este horario incluye la hora actual. Las apps se bloquearán ya y no podrás modificar ni desactivar el horario hasta las %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This schedule includes the current time. The apps will be blocked right away and you won't be able to change or turn off the schedule until %@."
+          }
+        }
+      }
+    },
+    "Este límite ya se alcanzó hoy. Podrás cambiarlo mañana.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This limit was already reached today. You can change it tomorrow."
+          }
+        }
+      }
+    },
+    "Este límite ya se alcanzó hoy. Podrás eliminarlo mañana.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This limit was already reached today. You can delete it tomorrow."
+          }
+        }
+      }
+    },
+    "Este perfil está bloqueado ahora. Desbloquéalo con tu llave para cambiar sus apps.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This profile is blocked right now. Unlock it with your key to change its apps."
+          }
+        }
+      }
+    },
+    "Este perfil lo usan horarios o límites. Cámbialos antes de eliminarlo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schedules or limits use this profile. Change them before deleting it."
+          }
+        }
+      }
+    },
+    "Estudio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Study"
+          }
+        }
+      }
+    },
+    "Fin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End"
+          }
+        }
+      }
+    },
+    "FocusKey": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FocusKey"
+          }
+        }
+      }
+    },
+    "FocusKey usa Tiempo de uso de Apple para bloquear apps. Tus datos no salen del iPhone.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FocusKey uses Apple's Screen Time to block apps. Your data never leaves your iPhone."
+          }
+        }
+      }
+    },
+    "General": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General"
+          }
+        }
+      }
+    },
+    "Gestionar perfiles": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage profiles"
+          }
+        }
+      }
+    },
+    "Graba este texto en una etiqueta NFC (NDEF, registro de texto) con cualquier app de escritura NFC, como NFC Tools.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write this text to an NFC tag (NDEF, text record) with any NFC writer app, such as NFC Tools."
+          }
+        }
+      }
+    },
+    "Graba este texto en una etiqueta NFC con una app como NFC Tools y déjala lejos del móvil, por ejemplo en otra habitación.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write this text to an NFC tag with an app like NFC Tools and leave it away from your phone, for example in another room."
+          }
+        }
+      }
+    },
+    "Guardar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "Hora de fin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End time"
+          }
+        }
+      }
+    },
+    "Hora de inicio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start time"
+          }
+        }
+      }
+    },
+    "Horario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schedule"
+          }
+        }
+      }
+    },
+    "Horario activado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schedule on"
+          }
+        }
+      }
+    },
+    "Horario activo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schedule on"
+          }
+        }
+      }
+    },
+    "Horario de concentración": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus schedule"
+          }
+        }
+      }
+    },
+    "Horario inactivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schedule off"
+          }
+        }
+      }
+    },
+    "Horario «%@» hasta las %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schedule “%1$@” until %2$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Horario «%1$@» hasta las %2$@."
+          }
+        }
+      }
+    },
+    "Horarios": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schedules"
+          }
+        }
+      }
+    },
+    "Horas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hours"
+          }
+        }
+      }
+    },
+    "Hoy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "Icono": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icon"
+          }
+        }
+      }
+    },
+    "Impedir borrar apps": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prevent deleting apps"
+          }
+        }
+      }
+    },
+    "Inactivo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
+    },
+    "Indica si FocusKey está bloqueando apps ahora mismo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tells whether FocusKey is blocking apps right now."
+          }
+        }
+      }
+    },
+    "Inicio": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start"
+          }
+        }
+      }
+    },
+    "J": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T"
+          }
+        }
+      }
+    },
+    "Jue": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thu"
+          }
+        }
+      }
+    },
+    "L": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "M"
+          }
+        }
+      }
+    },
+    "La autorización no está aprobada.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access wasn't granted."
+          }
+        }
+      }
+    },
+    "Listo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Llave NFC": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NFC key"
+          }
+        }
+      }
+    },
+    "Lun": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mon"
+          }
+        }
+      }
+    },
+    "Límite activado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limit on"
+          }
+        }
+      }
+    },
+    "Límite alcanzado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limit reached"
+          }
+        }
+      }
+    },
+    "Límite diario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily limit"
+          }
+        }
+      }
+    },
+    "Límite «%@» creado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limit “%@” created."
+          }
+        }
+      }
+    },
+    "Límites": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limits"
+          }
+        }
+      }
+    },
+    "M": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "T"
+          }
+        }
+      }
+    },
+    "Mar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tue"
+          }
+        }
+      }
+    },
+    "Mientras haya algo bloqueado, iOS no deja eliminar ninguna app, incluida FocusKey. Así no se puede saltar el bloqueo desinstalándola.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While anything is blocked, iOS won't let you delete any app, including FocusKey, so the block can't be bypassed by uninstalling it."
+          }
+        }
+      }
+    },
+    "Mira si tus apps están bloqueadas y bloquéalas con un toque.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See whether your apps are blocked and block them with one tap."
+          }
+        }
+      }
+    },
+    "Mié": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wed"
+          }
+        }
+      }
+    },
+    "Nada seleccionado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing selected"
+          }
+        }
+      }
+    },
+    "Necesitas al menos un perfil.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You need at least one profile."
+          }
+        }
+      }
+    },
+    "No había nada bloqueado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing was blocked."
+          }
+        }
+      }
+    },
+    "No hay ningún límite alcanzado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No limit has been reached."
+          }
+        }
+      }
+    },
+    "No puedes eliminar un horario mientras el bloqueo está activo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can't delete a schedule while its block is on."
+          }
+        }
+      }
+    },
+    "No puedes modificar un horario mientras está en curso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can't change a schedule while it's running."
+          }
+        }
+      }
+    },
+    "No se pudo programar el final de la sesión: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't schedule the end of the session: %@"
+          }
+        }
+      }
+    },
+    "Nombre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "Nombre del horario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schedule name"
+          }
+        }
+      }
+    },
+    "Nuevo horario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New schedule"
+          }
+        }
+      }
+    },
+    "Nuevo límite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New limit"
+          }
+        }
+      }
+    },
+    "Nuevo perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New profile"
+          }
+        }
+      }
+    },
+    "Opcional. Usa un nombre que te ayude a identificar este bloqueo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optional. Use a name that helps you recognize this block."
+          }
+        }
+      }
+    },
+    "Otra duración…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other duration…"
+          }
+        }
+      }
+    },
+    "Perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile"
+          }
+        }
+      }
+    },
+    "Perfil de bloqueo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block profile"
+          }
+        }
+      }
+    },
+    "Perfil para bloquear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile to block"
+          }
+        }
+      }
+    },
+    "Perfil sin nombre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untitled profile"
+          }
+        }
+      }
+    },
+    "Perfil «%@» creado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile “%@” created."
+          }
+        }
+      }
+    },
+    "Perfiles": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profiles"
+          }
+        }
+      }
+    },
+    "Permitir acceso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow access"
+          }
+        }
+      }
+    },
+    "Plantillas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Templates"
+          }
+        }
+      }
+    },
+    "Prepara tu llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up your key"
+          }
+        }
+      }
+    },
+    "Protección": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protection"
+          }
+        }
+      }
+    },
+    "Puedes guardarlo ahora y activarlo más tarde.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can save it now and turn it on later."
+          }
+        }
+      }
+    },
+    "Qué bloquear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What to block"
+          }
+        }
+      }
+    },
+    "Qué limitar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What to limit"
+          }
+        }
+      }
+    },
+    "Racha": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streak"
+          }
+        }
+      }
+    },
+    "Recibirás una notificación cuando te queden 5 minutos de un límite (1 minuto en límites cortos).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You'll get a notification when 5 minutes of a limit are left (1 minute for short limits)."
+          }
+        }
+      }
+    },
+    "Redes sociales, juegos…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Social media, games…"
+          }
+        }
+      }
+    },
+    "Repetición": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat"
+          }
+        }
+      }
+    },
+    "S": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "S"
+          }
+        }
+      }
+    },
+    "Screen Time está autorizado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen Time is allowed."
+          }
+        }
+      }
+    },
+    "Se desbloquea solo al terminar, o antes con tu llave NFC. Mínimo %lld minutos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It unlocks on its own when time is up, or earlier with your NFC key. At least %lld minutes."
+          }
+        }
+      }
+    },
+    "Se repite %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeats %@"
+          }
+        }
+      }
+    },
+    "Se suma el tiempo de todas las apps, categorías y webs del perfil: %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time from all of the profile's apps, categories and websites adds up: %@."
+          }
+        }
+      }
+    },
+    "Sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session"
+          }
+        }
+      }
+    },
+    "Sesión de concentración hasta las %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus session until %@."
+          }
+        }
+      }
+    },
+    "Sesión en curso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session running"
+          }
+        }
+      }
+    },
+    "Si no eliges ninguno, se usa el perfil seleccionado en la app.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you don't choose one, the profile selected in the app is used."
+          }
+        }
+      }
+    },
+    "Sin días seleccionados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No days selected"
+          }
+        }
+      }
+    },
+    "Sin horarios": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No schedules"
+          }
+        }
+      }
+    },
+    "Sin límites": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No limits"
+          }
+        }
+      }
+    },
+    "Sin perfil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No profile"
+          }
+        }
+      }
+    },
+    "Sáb": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sat"
+          }
+        }
+      }
+    },
+    "Te quedan %@ de «%@» por hoy.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have %1$@ of “%2$@” left today."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Te quedan %1$@ de «%2$@» por hoy."
+          }
+        }
+      }
+    },
+    "Texto de la etiqueta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tag text"
+          }
+        }
+      }
+    },
+    "Tiempo bloqueado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time blocked"
+          }
+        }
+      }
+    },
+    "Tiempo máximo al día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maximum time per day"
+          }
+        }
+      }
+    },
+    "Tienes %@ más. Después se volverá a bloquear.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have %@ more. Then it will block again."
+          }
+        }
+      }
+    },
+    "Toca una barra para ver el detalle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a bar to see the details"
+          }
+        }
+      }
+    },
+    "Trabajo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work"
+          }
+        }
+      }
+    },
+    "Trabajo, Estudio, Noche…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work, Study, Night…"
+          }
+        }
+      }
+    },
+    "Un horario en curso usa este perfil. Podrás cambiar sus apps cuando termine.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A running schedule uses this profile. You can change its apps when it ends."
+          }
+        }
+      }
+    },
+    "Un límite alcanzado hoy usa este perfil. Podrás cambiar sus apps mañana.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A limit reached today uses this profile. You can change its apps tomorrow."
+          }
+        }
+      }
+    },
+    "Una sesión debe durar al menos %lld minutos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A session must last at least %lld minutes."
+          }
+        }
+      }
+    },
+    "Usar llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use key"
+          }
+        }
+      }
+    },
+    "V": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "F"
+          }
+        }
+      }
+    },
+    "Ver la introducción": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the introduction"
+          }
+        }
+      }
+    },
+    "Vie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fri"
+          }
+        }
+      }
+    },
+    "Vista previa": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preview"
+          }
+        }
+      }
+    },
+    "Volver a concentrarme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to focus"
+          }
+        }
+      }
+    },
+    "X": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "W"
+          }
+        }
+      }
+    },
+    "bloqueo manual desactivado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "manual block turned off"
+          }
+        }
+      }
+    },
+    "horario desbloqueado hasta el final del intervalo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "schedule unlocked until the end of the interval"
+          }
+        }
+      }
+    },
+    "los límites alcanzados siguen activos hasta medianoche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "reached limits stay on until midnight"
+          }
+        }
+      }
+    },
+    "«%@» bloqueado durante %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” blocked for %2$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "«%1$@» bloqueado durante %2$@."
+          }
+        }
+      }
+    },
+    "«%@» bloqueado hasta las %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” blocked until %2$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "«%1$@» bloqueado hasta las %2$@."
+          }
+        }
+      }
+    },
+    "«%@» bloqueado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” blocked."
+          }
+        }
+      }
+    },
+    "«%@» bloqueado. Usa tu llave para desbloquear.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” blocked. Use your key to unlock."
+          }
+        }
+      }
+    },
+    "«%@» hasta las %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” until %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "new",
+            "value": "«%1$@» hasta las %2$@"
+          }
+        }
+      }
+    },
+    "«%@» hasta medianoche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” until midnight"
+          }
+        }
+      }
+    },
+    "«%@» hasta que uses tu llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” until you use your key"
+          }
+        }
+      }
+    },
+    "¿Cuánto tiempo más?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How much more time?"
+          }
+        }
+      }
+    },
+    "¿Qué quieres bloquear?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What do you want to block?"
+          }
+        }
+      }
+    },
+    "Últimos 7 días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 7 days"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

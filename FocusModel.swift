@@ -11,6 +11,7 @@ import Combine
 import FamilyControls
 import ManagedSettings
 import DeviceActivity
+import UserNotifications
 
 @MainActor
 final class FocusModel: ObservableObject {
@@ -30,7 +31,20 @@ final class FocusModel: ObservableObject {
     @Published private(set) var schedules: [Schedule] = []
     @Published private(set) var limits: [UsageLimit] = []
     @Published private(set) var records: [BlockRecord] = []
-    @Published var status = "Autoriza Screen Time para empezar."
+    @Published var status = String(localized: "Autoriza Screen Time para empezar.")
+    @Published var preventAppRemoval = FocusStore.preventAppRemoval {
+        didSet {
+            guard preventAppRemoval != oldValue else { return }
+            FocusStore.preventAppRemoval = preventAppRemoval
+            FocusLock.refreshAppRemovalProtection()
+        }
+    }
+    @Published var limitWarnings = FocusStore.limitWarnings {
+        didSet {
+            FocusStore.limitWarnings = limitWarnings
+            if limitWarnings { requestNotificationPermission() }
+        }
+    }
 
     private let deviceActivityCenter = DeviceActivityCenter()
 
@@ -72,7 +86,7 @@ final class FocusModel: ObservableObject {
     func refreshFromStorage() {
         reload()
         if let error = FocusStore.lastIntentError {
-            status = "El widget no pudo bloquear: \(error)"
+            status = String(localized: "El widget no pudo bloquear: \(error)")
             FocusStore.lastIntentError = nil
         }
         startMonitoringForEnabledSchedules()
@@ -86,16 +100,16 @@ final class FocusModel: ObservableObject {
 
         switch center.authorizationStatus {
         case .approved, .approvedWithDataAccess:
-            status = "Screen Time está autorizado."
+            status = String(localized: "Screen Time está autorizado.")
         case .notDetermined, .denied:
             do {
                 try await center.requestAuthorization(for: .individual)
-                status = FocusLock.isAuthorized ? "Autorización concedida." : "La autorización no está aprobada."
+                status = FocusLock.isAuthorized ? String(localized: "Autorización concedida.") : String(localized: "La autorización no está aprobada.")
             } catch {
-                status = "Error de autorización: \(error.localizedDescription)"
+                status = String(localized: "Error de autorización: \(error.localizedDescription)")
             }
         @unknown default:
-            status = "Estado de autorización desconocido."
+            status = String(localized: "Estado de autorización desconocido.")
         }
     }
 
@@ -106,9 +120,9 @@ final class FocusModel: ObservableObject {
         do {
             let profile = try FocusLock.lockManually(profileID: activeProfileID, minutes: minutes)
             if let minutes {
-                status = "«\(profile.displayName)» bloqueado durante \(UsageLimit.formatted(minutes: minutes))."
+                status = String(localized: "«\(profile.displayName)» bloqueado durante \(UsageLimit.formatted(minutes: minutes)).")
             } else {
-                status = "«\(profile.displayName)» bloqueado."
+                status = String(localized: "«\(profile.displayName)» bloqueado.")
             }
         } catch {
             status = error.localizedDescription
@@ -125,10 +139,10 @@ final class FocusModel: ObservableObject {
         }
         let result = FocusLock.unlockWithKey()
         var parts: [String] = []
-        if result.manual { parts.append("bloqueo manual desactivado") }
-        if !result.schedules.isEmpty { parts.append("horario desbloqueado hasta el final del intervalo") }
-        if !FocusStatus.current().limits.isEmpty { parts.append("los límites alcanzados siguen activos hasta medianoche") }
-        status = parts.isEmpty ? "No había nada bloqueado." : parts.joined(separator: ", ").capitalizedFirst + "."
+        if result.manual { parts.append(String(localized: "bloqueo manual desactivado")) }
+        if !result.schedules.isEmpty { parts.append(String(localized: "horario desbloqueado hasta el final del intervalo")) }
+        if !FocusStatus.current().limits.isEmpty { parts.append(String(localized: "los límites alcanzados siguen activos hasta medianoche")) }
+        status = parts.isEmpty ? String(localized: "No había nada bloqueado.") : parts.joined(separator: ", ").capitalizedFirst + "."
         reload()
     }
 
@@ -136,8 +150,8 @@ final class FocusModel: ObservableObject {
     func extendLimits(minutes: Int) {
         let extended = FocusLock.extendReachedLimits(minutes: minutes)
         status = extended.isEmpty
-            ? "No hay ningún límite alcanzado."
-            : "Tienes \(UsageLimit.formatted(minutes: minutes)) más. Después se volverá a bloquear."
+            ? String(localized: "No hay ningún límite alcanzado.")
+            : String(localized: "Tienes \(UsageLimit.formatted(minutes: minutes)) más. Después se volverá a bloquear.")
         reload()
     }
 
@@ -155,7 +169,7 @@ final class FocusModel: ObservableObject {
     func addProfile(_ profile: FocusProfile) -> Bool {
         profiles.append(profile)
         FocusStore.saveProfiles(profiles)
-        status = "Perfil «\(profile.displayName)» creado."
+        status = String(localized: "Perfil «\(profile.displayName)» creado.")
         return true
     }
 
@@ -181,7 +195,7 @@ final class FocusModel: ObservableObject {
 
     func deleteProfile(_ id: UUID) {
         guard profiles.count > 1 else {
-            status = "Necesitas al menos un perfil."
+            status = String(localized: "Necesitas al menos un perfil.")
             return
         }
         if let reason = profileLockReason(id) {
@@ -191,7 +205,7 @@ final class FocusModel: ObservableObject {
         let usedBySchedule = schedules.contains { profileID(of: $0) == id }
         let usedByLimit = limits.contains { profileID(of: $0) == id }
         guard !usedBySchedule, !usedByLimit else {
-            status = "Este perfil lo usan horarios o límites. Cámbialos antes de eliminarlo."
+            status = String(localized: "Este perfil lo usan horarios o límites. Cámbialos antes de eliminarlo.")
             return
         }
         profiles.removeAll { $0.id == id }
@@ -204,13 +218,13 @@ final class FocusModel: ObservableObject {
     func profileLockReason(_ id: UUID, at date: Date = .now) -> String? {
         let status = FocusStatus.current(at: date)
         if status.isManualLocked, status.manualProfile?.id == id {
-            return "Este perfil está bloqueado ahora. Desbloquéalo con tu llave para cambiar sus apps."
+            return String(localized: "Este perfil está bloqueado ahora. Desbloquéalo con tu llave para cambiar sus apps.")
         }
         if status.schedules.contains(where: { $0.profile?.id == id }) {
-            return "Un horario en curso usa este perfil. Podrás cambiar sus apps cuando termine."
+            return String(localized: "Un horario en curso usa este perfil. Podrás cambiar sus apps cuando termine.")
         }
         if status.limits.contains(where: { $0.profile?.id == id }) {
-            return "Un límite alcanzado hoy usa este perfil. Podrás cambiar sus apps mañana."
+            return String(localized: "Un límite alcanzado hoy usa este perfil. Podrás cambiar sus apps mañana.")
         }
         return nil
     }
@@ -242,7 +256,7 @@ final class FocusModel: ObservableObject {
         // A running schedule can't be changed at all: any change re-registers it with iOS,
         // which ends the current interval and lifts the block.
         guard existing == schedule || !existing.isActive() else {
-            status = "No puedes modificar un horario mientras está en curso."
+            status = String(localized: "No puedes modificar un horario mientras está en curso.")
             return
         }
         schedules[index] = schedule
@@ -258,7 +272,7 @@ final class FocusModel: ObservableObject {
     func deleteSchedule(_ id: UUID) {
         guard let schedule = schedules.first(where: { $0.id == id }) else { return }
         guard !schedule.isActive() else {
-            status = "No puedes eliminar un horario mientras el bloqueo está activo."
+            status = String(localized: "No puedes eliminar un horario mientras el bloqueo está activo.")
             return
         }
         schedules.removeAll { $0.id == id }
@@ -270,7 +284,7 @@ final class FocusModel: ObservableObject {
     func duplicateSchedule(_ id: UUID) {
         guard let schedule = schedules.first(where: { $0.id == id }) else { return }
         addSchedule(Schedule(
-            name: schedule.name.isEmpty ? "" : "\(schedule.name) (copia)",
+            name: schedule.name.isEmpty ? "" : String(localized: "\(schedule.name) (copia)"),
             startTime: schedule.startTime,
             endTime: schedule.endTime,
             repeats: schedule.repeats,
@@ -282,13 +296,13 @@ final class FocusModel: ObservableObject {
     private func startMonitoring(_ schedule: Schedule) {
         deviceActivityCenter.stopMonitoring([schedule.activityName])
         guard let interval = schedule.deviceActivitySchedule else {
-            status = "Error al crear el horario «\(schedule.displayName)»."
+            status = String(localized: "Error al crear el horario «\(schedule.displayName)».")
             return
         }
         do {
             try deviceActivityCenter.startMonitoring(schedule.activityName, during: interval)
         } catch {
-            status = "Error al programar «\(schedule.displayName)»: \(error.localizedDescription)"
+            status = String(localized: "Error al programar «\(schedule.displayName)»: \(error.localizedDescription)")
         }
     }
 
@@ -313,16 +327,17 @@ final class FocusModel: ObservableObject {
     }
 
     func addLimit(_ limit: UsageLimit) {
+        if limitWarnings { requestNotificationPermission() }
         limits.append(limit)
         FocusStore.saveLimits(limits)
         if limit.isEnabled { startMonitoring(limit) }
-        status = "Límite «\(limit.displayName)» creado."
+        status = String(localized: "Límite «\(limit.displayName)» creado.")
     }
 
     func updateLimit(_ limit: UsageLimit) {
         guard let index = limits.firstIndex(where: { $0.id == limit.id }) else { return }
         guard !isLimitBlocking(limits[index]) else {
-            status = "Este límite ya se alcanzó hoy. Podrás cambiarlo mañana."
+            status = String(localized: "Este límite ya se alcanzó hoy. Podrás cambiarlo mañana.")
             return
         }
         limits[index] = limit
@@ -337,7 +352,7 @@ final class FocusModel: ObservableObject {
     func deleteLimit(_ id: UUID) {
         guard let limit = limits.first(where: { $0.id == id }) else { return }
         guard !isLimitBlocking(limit) else {
-            status = "Este límite ya se alcanzó hoy. Podrás eliminarlo mañana."
+            status = String(localized: "Este límite ya se alcanzó hoy. Podrás eliminarlo mañana.")
             return
         }
         limits.removeAll { $0.id == id }
@@ -348,24 +363,39 @@ final class FocusModel: ObservableObject {
     private func startMonitoring(_ limit: UsageLimit) {
         deviceActivityCenter.stopMonitoring([limit.activityName])
         guard let profile = profile(limit.profileID), !profile.isEmpty else {
-            status = "El perfil del límite «\(limit.displayName)» no tiene apps seleccionadas."
+            status = String(localized: "El perfil del límite «\(limit.displayName)» no tiene apps seleccionadas.")
             return
         }
         do {
             try deviceActivityCenter.startMonitoring(
                 limit.activityName,
                 during: UsageLimit.dailySchedule,
-                events: [UsageLimit.eventName: limit.event(for: profile.selection)]
+                events: limit.events(for: profile.selection)
             )
         } catch {
-            status = "Error al programar el límite «\(limit.displayName)»: \(error.localizedDescription)"
+            status = String(localized: "Error al programar el límite «\(limit.displayName)»: \(error.localizedDescription)")
         }
     }
 
     private func startMonitoringForEnabledLimits() {
         let registered = Set(deviceActivityCenter.activities)
-        for limit in limits where limit.isEnabled && !registered.contains(limit.activityName) {
-            startMonitoring(limit)
+        for limit in limits where limit.isEnabled {
+            if !registered.contains(limit.activityName) {
+                startMonitoring(limit)
+            } else if limit.warningLeadMinutes != nil,
+                      deviceActivityCenter.events(for: limit.activityName)[UsageLimit.warningEventName] == nil,
+                      !FocusStore.isReachedToday(limit) {
+                // Registered by an older build without the warning event.
+                startMonitoring(limit)
+            }
+        }
+    }
+
+    // MARK: - Notifications
+
+    func requestNotificationPermission() {
+        Task {
+            _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
         }
     }
 }

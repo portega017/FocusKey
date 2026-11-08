@@ -11,6 +11,7 @@ struct ContentView: View {
     @EnvironmentObject private var model: FocusModel
     @EnvironmentObject private var nfc: NFCScanner
     @State private var showingCustomSession = false
+    @State private var showingSettings = false
 
     private static let sessionOptions = [15, 30, 60, 120, 240]
 
@@ -42,6 +43,16 @@ struct ContentView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle("FocusKey")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Label("Ajustes", systemImage: "gearshape")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingSettings) { SettingsView() }
             .task { await model.authorize() }
             .sheet(isPresented: $showingCustomSession) {
                 CustomSessionSheet { minutes in model.lock(minutes: minutes) }

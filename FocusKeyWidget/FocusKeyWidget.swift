@@ -33,7 +33,7 @@ struct FocusEntry: TimelineEntry {
             headline: status.headline,
             detail: status.detail,
             sessionEnd: status.sessionEnd,
-            profileName: profile?.displayName ?? "Sin perfil",
+            profileName: profile?.displayName ?? String(localized: "Sin perfil"),
             profileSymbol: profile?.symbol ?? "lock.shield"
         )
     }
@@ -41,7 +41,7 @@ struct FocusEntry: TimelineEntry {
 
 struct FocusProvider: TimelineProvider {
     func placeholder(in context: Context) -> FocusEntry {
-        FocusEntry(date: .now, isBlocked: false, canUnlockWithKey: false, headline: "Desbloqueado", detail: nil, sessionEnd: nil, profileName: "General", profileSymbol: "lock.shield")
+        FocusEntry(date: .now, isBlocked: false, canUnlockWithKey: false, headline: String(localized: "Desbloqueado"), detail: nil, sessionEnd: nil, profileName: String(localized: "General"), profileSymbol: "lock.shield")
     }
 
     func getSnapshot(in context: Context, completion: @escaping (FocusEntry) -> Void) {

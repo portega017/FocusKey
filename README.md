@@ -23,6 +23,10 @@ FocusKey is available for **iOS** (this branch) and **Android** (see [`android` 
 - **Widgets** for the Home and Lock Screen, and **Control Center** buttons to lock or open the NFC reader.
 - **Siri and Shortcuts**: lock a profile (optionally for a duration), check the status, or open the NFC reader. There is deliberately no unlock shortcut.
 - **Statistics**: time blocked per day, streak and recent blocks.
+- **Uninstall protection**: while anything is blocked, iOS won't let apps be deleted (can be turned off in Settings).
+- **Limit warnings**: a notification when 5 minutes of a daily limit are left.
+- **Onboarding** on first launch, and a Settings screen.
+- Available in **Spanish and English**.
 - The NFC tag is the master key for the manual lock and running schedules.
 
 ## How it works
@@ -74,10 +78,23 @@ NFCScanner.swift         NFC key reading
 FocusKeyMonitor/         Device Activity monitor (schedules, sessions, limits)
 FocusKeyShield/          Custom shield screen
 FocusKeyWidget/          Widgets and Control Center controls
+FocusKeyTests/           Unit tests for the shared logic
 Config/                  Build settings (signing stays local)
 ```
 
 Built with SwiftUI, FamilyControls, ManagedSettings, DeviceActivity, WidgetKit, App Intents and CoreNFC.
+
+## Tests
+
+Logic tests (schedules, limits, statistics, data migration) use Swift Testing and run hosted in the app:
+
+```
+xcodebuild test -project FocusKey.xcodeproj -scheme FocusKey -destination 'id=<your device or simulator>'
+```
+
+## Localization
+
+Spanish is the development language; English lives in `Shared/Localizable.xcstrings` (shared by every target), `App/AppShortcuts.xcstrings` (Siri phrases) and `App/InfoPlist.xcstrings`.
 
 ## Notes
 
@@ -86,6 +103,7 @@ Built with SwiftUI, FamilyControls, ManagedSettings, DeviceActivity, WidgetKit, 
 - Timed sessions must last at least 15 minutes (minimum `DeviceActivity` interval).
 - Daily limits are monitored from 00:00 to 23:59, so the last minute of the day is not blocked.
 - Opening attempts can't be counted: iOS doesn't let shield extensions write any data.
+- Uninstall protection is global: iOS only lets an app block deleting *all* apps, not just itself.
 
 ## Contributing
 

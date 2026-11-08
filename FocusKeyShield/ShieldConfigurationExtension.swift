@@ -31,7 +31,7 @@ final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     private func configuration(title name: String?, contains: (FocusProfile) -> Bool) -> ShieldConfiguration {
         let reason = FocusStatus.current().reason(matching: contains)
-        let title = name.map { "\($0) está bloqueada" } ?? "Bloqueado por FocusKey"
+        let title = name.map { String(localized: "\($0) está bloqueada") } ?? String(localized: "Bloqueado por FocusKey")
 
         return ShieldConfiguration(
             backgroundBlurStyle: .systemUltraThinMaterial,
@@ -39,7 +39,7 @@ final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             icon: UIImage(named: "shieldLogo"),
             title: ShieldConfiguration.Label(text: title, color: .label),
             subtitle: ShieldConfiguration.Label(text: reason, color: .secondaryLabel),
-            primaryButtonLabel: ShieldConfiguration.Label(text: "Volver a concentrarme", color: .white),
+            primaryButtonLabel: ShieldConfiguration.Label(text: String(localized: "Volver a concentrarme"), color: .white),
             primaryButtonBackgroundColor: .systemIndigo
         )
     }
