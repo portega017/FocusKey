@@ -23,6 +23,8 @@ nonisolated enum FocusStore {
         static let manualProfile = "FocusKey.manualProfile"
         /// End of a timed session; absent for an indefinite manual lock.
         static let sessionEnd = "FocusKey.sessionEnd"
+        /// Start of the timed session, for progress rings.
+        static let sessionStart = "FocusKey.sessionStart"
         /// Written by the monitor extension while a schedule interval is running.
         static let scheduleLockState = "FocusKey.isScheduleLocked"
         static let schedules = "FocusKeySchedules"
@@ -90,6 +92,11 @@ nonisolated enum FocusStore {
     static var manualProfileID: UUID? {
         get { defaults.string(forKey: Key.manualProfile).flatMap(UUID.init(uuidString:)) }
         set { defaults.set(newValue?.uuidString, forKey: Key.manualProfile) }
+    }
+
+    static var sessionStart: Date? {
+        get { defaults.object(forKey: Key.sessionStart) as? Date }
+        set { defaults.set(newValue, forKey: Key.sessionStart) }
     }
 
     static var sessionEnd: Date? {

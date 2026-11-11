@@ -76,6 +76,21 @@ struct ScheduleTests {
         #expect(schedule.endTime == start.addingTimeInterval(15 * 60))
     }
 
+    @Test func weekSegmentsSplitOvernightIntervals() {
+        let night = FocusSchedule(startTime: time(23), endTime: time(7), repeats: [.sunday])
+        let segments = night.weekSegments(calendar: calendar)
+        #expect(segments.count == 2)
+        #expect(segments.contains(.init(weekday: .sunday, startMinute: 23 * 60, endMinute: 24 * 60)))
+        #expect(segments.contains(.init(weekday: .monday, startMinute: 0, endMinute: 7 * 60)), "Sunday night wraps to Monday")
+
+        let midnightEnd = FocusSchedule(startTime: time(22), endTime: time(0), repeats: [.friday])
+        #expect(midnightEnd.weekSegments(calendar: calendar) == [.init(weekday: .friday, startMinute: 22 * 60, endMinute: 24 * 60)])
+
+        var disabled = night
+        disabled.isEnabled = false
+        #expect(disabled.weekSegments(calendar: calendar).isEmpty)
+    }
+
     @Test func deviceActivityScheduleRejectsEmptyOrZeroLength() {
         #expect(FocusSchedule(startTime: time(9), endTime: time(10), repeats: []).deviceActivitySchedule == nil)
         #expect(FocusSchedule(startTime: time(9), endTime: time(9), repeats: workdays).deviceActivitySchedule == nil)
@@ -137,6 +152,15 @@ struct StatsTests {
         #expect(FocusStats(records: Array(records.dropLast()), now: date(8, 9), calendar: calendar).streak == 0)
     }
 
+    @Test func calendarHasFiveMondayFirstWeeks() {
+        // Sunday the 8th: the current week started on Monday the 2nd.
+        let stats = FocusStats(records: [record(date(8, 10), date(8, 11))], now: date(8, 12), calendar: calendar)
+        #expect(stats.calendarDays.count == 35)
+        #expect(calendar.component(.weekday, from: stats.calendarDays.first!.date) == 2, "Starts on a Monday")
+        #expect(calendar.isDate(stats.calendarDays.last!.date, inSameDayAs: date(8, 12)), "Ends on this Sunday")
+        #expect(stats.calendarDays.last?.minutes == 60)
+    }
+
     @Test func weekHasSevenDaysEndingToday() {
         let stats = FocusStats(records: [], now: date(8, 12), calendar: calendar)
         #expect(stats.week.count == 7)
@@ -154,5 +178,34 @@ struct ShieldTests {
     @Test func profileSummaryWhenEmpty() {
         #expect(FocusProfile(name: "").displayName == "Perfil sin nombre")
         #expect(FocusProfile(name: "Trabajo").isEmpty)
+    }
+}
+
+@Suite("Profiles and sessions")
+struct ProfileTests {
+    @Test func decodesProfilesSavedBeforeColors() throws {
+        // Older builds didn't store colorName; those profiles must still load.
+        let data = try JSONEncoder().encode([FocusProfile(name: "Trabajo", symbol: "briefcase.fill")])
+        var json = try #require(try JSONSerialization.jsonObject(with: data) as? [[String: Any]])
+        json[0].removeValue(forKey: "colorName")
+        let legacy = try JSONSerialization.data(withJSONObject: json)
+
+        let profiles = try JSONDecoder().decode([FocusProfile].self, from: legacy)
+        #expect(profiles.first?.name == "Trabajo")
+        #expect(profiles.first?.symbol == "briefcase.fill")
+        #expect(profiles.first?.colorName == "indigo")
+    }
+
+    @Test func nextColorAvoidsUsedOnes() {
+        let profiles = [FocusProfile(name: "A", colorName: "indigo"), FocusProfile(name: "B", colorName: "blue")]
+        #expect(FocusPalette.nextName(after: profiles) == "teal")
+    }
+
+    @Test func sessionProgressGoesFromZeroToOne() {
+        let status = FocusStatus(date: date(8, 10), manualProfile: nil, isManualLocked: true,
+                                 sessionEnd: date(8, 11), sessionStart: date(8, 10), schedules: [], limits: [])
+        #expect(status.sessionProgress(at: date(8, 10)) == 0)
+        #expect(status.sessionProgress(at: date(8, 10, 30)) == 0.5)
+        #expect(status.sessionProgress(at: date(8, 12)) == 1)
     }
 }

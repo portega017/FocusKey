@@ -547,6 +547,16 @@
         }
       }
     },
+    "Azul": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blue"
+          }
+        }
+      }
+    },
     "Añadir horario": {
       "localizations": {
         "en": {
@@ -767,6 +777,16 @@
         }
       }
     },
+    "Cada vez que resistes, el hábito se hace más fuerte.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every time you resist, the habit gets stronger."
+          }
+        }
+      }
+    },
     "Cancelar": {
       "localizations": {
         "en": {
@@ -783,6 +803,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Almost at your limit"
+          }
+        }
+      }
+    },
+    "Color": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color"
           }
         }
       }
@@ -873,6 +903,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unlock with key"
+          }
+        }
+      }
+    },
+    "Diez minutos de foco valen más que una hora de distracciones.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ten focused minutes beat an hour of distractions."
           }
         }
       }
@@ -1369,6 +1409,16 @@
         }
       }
     },
+    "Gris": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gray"
+          }
+        }
+      }
+    },
     "Guardar": {
       "localizations": {
         "en": {
@@ -1575,6 +1625,16 @@
         }
       }
     },
+    "La app seguirá ahí luego. Este momento no.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app will still be there later. This moment won't."
+          }
+        }
+      }
+    },
     "La autorización no está aprobada.": {
       "localizations": {
         "en": {
@@ -1601,6 +1661,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "NFC key"
+          }
+        }
+      }
+    },
+    "Lo que haces hoy cuenta más que lo que harás mañana.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you do today matters more than what you'll do tomorrow."
           }
         }
       }
@@ -1685,6 +1755,36 @@
         }
       }
     },
+    "Marrón": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brown"
+          }
+        }
+      }
+    },
+    "Menos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Less"
+          }
+        }
+      }
+    },
+    "Menos pantalla, más vida.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Less screen, more life."
+          }
+        }
+      }
+    },
     "Mientras haya algo bloqueado, iOS no deja eliminar ninguna app, incluida FocusKey. Así no se puede saltar el bloqueo desinstalándola.": {
       "localizations": {
         "en": {
@@ -1725,12 +1825,42 @@
         }
       }
     },
+    "Morado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Purple"
+          }
+        }
+      }
+    },
+    "Más": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More"
+          }
+        }
+      }
+    },
     "Nada seleccionado": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Nothing selected"
+          }
+        }
+      }
+    },
+    "Naranja": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orange"
           }
         }
       }
@@ -1871,6 +2001,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Other duration…"
+          }
+        }
+      }
+    },
+    "Pequeños bloques, grandes resultados.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Small blocks, big results."
           }
         }
       }
@@ -2055,6 +2195,36 @@
         }
       }
     },
+    "Respira. Vuelve a lo que estabas haciendo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breathe. Get back to what you were doing."
+          }
+        }
+      }
+    },
+    "Rojo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red"
+          }
+        }
+      }
+    },
+    "Rosa": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pink"
+          }
+        }
+      }
+    },
     "S": {
       "localizations": {
         "en": {
@@ -2151,6 +2321,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "No block"
+          }
+        }
+      }
+    },
+    "Sin bloqueos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No blocks"
           }
         }
       }
@@ -2271,6 +2451,16 @@
         }
       }
     },
+    "Toca un día para ver el detalle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a day to see the details"
+          }
+        }
+      }
+    },
     "Toca una barra para ver el detalle": {
       "localizations": {
         "en": {
@@ -2297,6 +2487,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Work, Study, Night…"
+          }
+        }
+      }
+    },
+    "Tu atención es tuya. Decide tú dónde ponerla.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your attention is yours. You decide where it goes."
+          }
+        }
+      }
+    },
+    "Tu semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your week"
           }
         }
       }
@@ -2357,6 +2567,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show the introduction"
+          }
+        }
+      }
+    },
+    "Verde": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Green"
+          }
+        }
+      }
+    },
+    "Verde azulado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teal"
           }
         }
       }
@@ -2535,6 +2765,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "What do you want to block?"
+          }
+        }
+      }
+    },
+    "Índigo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indigo"
+          }
+        }
+      }
+    },
+    "Últimas 5 semanas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 5 weeks"
           }
         }
       }

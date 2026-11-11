@@ -21,6 +21,10 @@ struct ScheduleView: View {
                     // Re-evaluated every 30 s so cards lock/unlock when an interval starts or ends.
                     TimelineView(.periodic(from: .now, by: 30)) { context in
                         LazyVStack(spacing: 16) {
+                            if !model.schedules.isEmpty {
+                                WeekOverview(schedules: model.schedules, profile: model.profile, now: context.date)
+                            }
+
                             ForEach(model.schedules) { schedule in
                                 ScheduleCard(
                                     schedule: schedule,
@@ -42,7 +46,8 @@ struct ScheduleView: View {
                         Label("Añadir horario", systemImage: "plus")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.glass)
+                    .controlSize(.large)
                 }
                 .padding()
             }
@@ -86,7 +91,7 @@ private struct ScheduleCard: View {
                     .font(.title)
                     .foregroundStyle(.white)
                     .frame(width: 56, height: 56)
-                    .background(Color.indigo, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .background((profile?.color ?? .indigo).gradient, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(schedule.displayName)
@@ -138,7 +143,7 @@ private struct ScheduleCard: View {
                         .font(.headline)
                         .foregroundStyle(schedule.repeats.contains(weekday) ? .white : .primary)
                         .frame(maxWidth: .infinity, minHeight: 40)
-                        .background(schedule.repeats.contains(weekday) ? Color.indigo : .clear, in: Circle())
+                        .background(schedule.repeats.contains(weekday) ? (profile?.color ?? .indigo) : .clear, in: Circle())
                         .accessibilityLabel(weekday.shortName)
                         .accessibilityAddTraits(schedule.repeats.contains(weekday) ? .isSelected : [])
                     }
@@ -167,9 +172,8 @@ private struct ScheduleCard: View {
             }
             .font(.subheadline.weight(.medium))
         }
-        .padding()
-        .background(.background, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay { RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Color.secondary.opacity(0.2)) }
+        .padding(20)
+        .glassEffect(.regular, in: .rect(cornerRadius: 28))
         .startsNowAlert(isPresented: $showingStartNowAlert, endTime: schedule.endTime) {
             var updated = schedule
             updated.isEnabled = true
@@ -351,7 +355,7 @@ struct ScheduleForm: View {
                             .font(.title3)
                             .foregroundStyle(.white)
                             .frame(width: 40, height: 40)
-                            .background(Color.indigo, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .background((model.profile(profileID)?.color ?? .indigo).gradient, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                         VStack(alignment: .leading, spacing: 4) {
                             Text(name.isEmpty ? String(localized: "Horario de concentración") : name)
@@ -439,6 +443,112 @@ struct ScheduleForm: View {
 
     private func formattedHour(_ hour: Int) -> String {
         String(format: "%02d:00", hour)
+    }
+}
+
+// MARK: - Week overview
+
+/// The whole week at a glance: one column per day, blocks colored by profile.
+private struct WeekOverview: View {
+    let schedules: [FocusModel.Schedule]
+    let profile: (UUID?) -> FocusProfile?
+    let now: Date
+
+    private let height: CGFloat = 150
+    private let dayMinutes = CGFloat(24 * 60)
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Tu semana")
+                .font(.headline)
+
+            HStack(alignment: .top, spacing: 6) {
+                hourLabels
+                ForEach(FocusModel.Weekday.mondayFirst) { day in
+                    column(for: day)
+                }
+            }
+
+            legend
+        }
+        .padding(20)
+        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+    }
+
+    private var hourLabels: some View {
+        VStack(alignment: .trailing, spacing: 0) {
+            ForEach([0, 6, 12, 18], id: \.self) { hour in
+                Text(verbatim: "\(hour)")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .frame(height: height / 4, alignment: .top)
+            }
+        }
+        .padding(.top, 22)
+        .accessibilityHidden(true)
+    }
+
+    private func column(for day: FocusModel.Weekday) -> some View {
+        let isToday = FocusModel.Weekday.of(now) == day
+        let pieces = schedules.flatMap { schedule in
+            schedule.weekSegments().filter { $0.weekday == day }.map { (schedule, $0) }
+        }
+        return VStack(spacing: 6) {
+            Text(day.initial)
+                .font(.caption.weight(isToday ? .bold : .regular))
+                .foregroundStyle(isToday ? .primary : .secondary)
+                .frame(height: 16)
+
+            ZStack(alignment: .top) {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(Color.secondary.opacity(0.1))
+                ForEach(Array(pieces.enumerated()), id: \.offset) { _, item in
+                    let (schedule, piece) = item
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill((profile(schedule.profileID)?.color ?? .indigo).gradient)
+                        .frame(height: max(3, CGFloat(piece.endMinute - piece.startMinute) / dayMinutes * height))
+                        .padding(.horizontal, 2)
+                        .offset(y: CGFloat(piece.startMinute) / dayMinutes * height)
+                }
+                if isToday {
+                    Rectangle()
+                        .fill(Color.primary)
+                        .frame(height: 2)
+                        .offset(y: CGFloat(FocusModel.Schedule.minutes(now)) / dayMinutes * height - 1)
+                }
+            }
+            .frame(height: height)
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(day.shortName)
+        .accessibilityValue(pieces.isEmpty
+            ? String(localized: "Sin bloqueos")
+            : pieces.map { "\($0.0.displayName) \(Self.hhmm($0.1.startMinute))–\(Self.hhmm($0.1.endMinute))" }.joined(separator: ", "))
+    }
+
+    /// One entry per profile in use, so colors never carry meaning on their own.
+    @ViewBuilder
+    private var legend: some View {
+        let ids = schedules.filter(\.isEnabled).map { profile($0.profileID)?.id }
+        let used = ids.reduce(into: [UUID]()) { result, id in
+            if let id, !result.contains(id) { result.append(id) }
+        }.compactMap { profile($0) }
+        if !used.isEmpty {
+            HStack(spacing: 14) {
+                ForEach(used) { item in
+                    HStack(spacing: 5) {
+                        Circle().fill(item.color).frame(width: 8, height: 8)
+                        Text(item.displayName).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
+    private static func hhmm(_ minutes: Int) -> String {
+        String(format: "%02d:%02d", minutes / 60 % 24, minutes % 60)
     }
 }
 

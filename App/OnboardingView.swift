@@ -42,7 +42,7 @@ struct OnboardingView: View {
                 Text(page < lastPage ? String(localized: "Continuar") : String(localized: "Empezar"))
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.glassProminent)
             .controlSize(.large)
             .tint(.indigo)
             .padding()
@@ -84,7 +84,7 @@ struct OnboardingView: View {
                         authorized = FocusLock.isAuthorized
                     }
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.glass)
                 .controlSize(.large)
             }
         }
@@ -98,7 +98,7 @@ struct OnboardingView: View {
         ) {
             VStack(spacing: 8) {
                 Button("Elegir apps") { showingPicker = true }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.glass)
                     .controlSize(.large)
                     .disabled(!authorized)
                 Text(model.activeProfile?.summary ?? "")

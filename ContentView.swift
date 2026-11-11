@@ -17,31 +17,40 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Re-evaluated every 30 s so the state follows schedules, limits and sessions.
-                    TimelineView(.periodic(from: .now, by: 30)) { context in
-                        statusCard(FocusStatus.current(at: context.date))
-                    }
+            // Re-evaluated every 30 s so the state follows schedules, limits and sessions.
+            TimelineView(.periodic(from: .now, by: 30)) { context in
+                let status = FocusStatus.current(at: context.date)
+                let tint = (status.blockingProfile ?? model.activeProfile)?.color ?? .indigo
 
-                    if !FocusLock.isAuthorized {
-                        Button("Autorizar Screen Time") {
-                            Task { await model.authorize() }
+                ScrollView {
+                    VStack(spacing: 20) {
+                        statusCard(status, tint: tint)
+
+                        if !FocusLock.isAuthorized {
+                            Button("Autorizar Screen Time") {
+                                Task { await model.authorize() }
+                            }
+                            .buttonStyle(.glassProminent)
+                            .tint(tint)
                         }
-                        .buttonStyle(.borderedProminent)
+
+                        profileSection(tint: tint)
+
+                        Text(model.status)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
                     }
-
-                    profileSection
-
-                    Text(model.status)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
+                    .padding()
                 }
-                .padding()
+                .background { background(tint: tint, blocked: status.isBlocked) }
+                .animation(.smooth(duration: 0.6), value: status.isBlocked)
+                .animation(.smooth, value: model.activeProfileID)
+                .sensoryFeedback(trigger: status.isBlocked) { _, blocked in
+                    blocked ? .impact(weight: .heavy) : .success
+                }
             }
-            .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle("FocusKey")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -60,28 +69,36 @@ struct ContentView: View {
         }
     }
 
+    // MARK: Background
+
+    /// Soft wash of the profile color behind the glass cards; stronger while blocked.
+    private func background(tint: Color, blocked: Bool) -> some View {
+        ZStack {
+            Color(uiColor: .systemGroupedBackground)
+            LinearGradient(
+                colors: [tint.opacity(blocked ? 0.35 : 0.18), tint.opacity(0.04), .clear],
+                startPoint: .top,
+                endPoint: .center
+            )
+        }
+        .ignoresSafeArea()
+    }
+
     // MARK: Status
 
-    private func statusCard(_ status: FocusStatus) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: status.isBlocked ? "lock.fill" : "lock.open.fill")
-                .font(.system(size: 44))
-                .foregroundStyle(status.isBlocked ? .red : .green)
-                .contentTransition(.symbolEffect(.replace))
+    private func statusCard(_ status: FocusStatus, tint: Color) -> some View {
+        VStack(spacing: 18) {
+            LockRing(status: status, tint: tint)
 
             VStack(spacing: 4) {
                 Text(status.headline)
                     .font(.title2.bold())
+                    .contentTransition(.opacity)
                 if let detail = status.detail {
                     Text(detail)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
-                }
-                if let end = status.sessionEnd {
-                    Text(end, style: .timer)
-                        .font(.largeTitle.monospacedDigit().bold())
-                        .padding(.top, 4)
                 }
             }
 
@@ -97,59 +114,67 @@ struct ContentView: View {
                     Label("Desbloquear con llave", systemImage: "wave.3.right")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.glassProminent)
                 .controlSize(.large)
-                .tint(.indigo)
+                .tint(tint)
             }
 
             if !status.isManualLocked {
-                lockButtons
+                lockButtons(tint: tint)
             }
         }
-        .padding()
+        .padding(20)
         .frame(maxWidth: .infinity)
-        .background(.background, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: 28))
     }
 
-    private var lockButtons: some View {
-        HStack(spacing: 12) {
-            Button {
-                model.lock()
-            } label: {
-                Label("Bloquear", systemImage: "lock.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-
-            Menu {
-                ForEach(Self.sessionOptions, id: \.self) { minutes in
-                    Button(UsageLimit.formatted(minutes: minutes)) { model.lock(minutes: minutes) }
+    private func lockButtons(tint: Color) -> some View {
+        GlassEffectContainer(spacing: 12) {
+            HStack(spacing: 12) {
+                Button {
+                    model.lock()
+                } label: {
+                    Label("Bloquear", systemImage: "lock.fill")
+                        .frame(maxWidth: .infinity)
                 }
-                Divider()
-                Button("Otra duración…") { showingCustomSession = true }
-            } label: {
-                Label("Durante…", systemImage: "timer")
-                    .frame(maxWidth: .infinity)
+                .buttonStyle(.glassProminent)
+                .tint(tint)
+
+                Menu {
+                    ForEach(Self.sessionOptions, id: \.self) { minutes in
+                        Button(UsageLimit.formatted(minutes: minutes)) { model.lock(minutes: minutes) }
+                    }
+                    Divider()
+                    Button("Otra duración…") { showingCustomSession = true }
+                } label: {
+                    Label("Durante…", systemImage: "timer")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.glass)
             }
-            .buttonStyle(.bordered)
+            .controlSize(.large)
         }
-        .controlSize(.large)
     }
 
     // MARK: Profile
 
-    private var profileSection: some View {
+    private func profileSection(tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Perfil para bloquear")
                 .font(.headline)
 
-            Picker("Perfil", selection: $model.activeProfileID) {
-                ForEach(model.profiles) { profile in
-                    Label(profile.displayName, systemImage: profile.symbol).tag(Optional(profile.id))
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(model.profiles) { profile in
+                        ProfileChip(profile: profile, isSelected: profile.id == model.activeProfileID) {
+                            model.activeProfileID = profile.id
+                        }
+                    }
                 }
+                .padding(.vertical, 2)
             }
-            .pickerStyle(.menu)
             .disabled(model.isLocked)
+            .opacity(model.isLocked ? 0.5 : 1)
 
             if let profile = model.activeProfile {
                 Text(profile.summary)
@@ -163,11 +188,77 @@ struct ContentView: View {
                 Label("Gestionar perfiles", systemImage: "square.stack.3d.up")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.glass)
         }
-        .padding()
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+    }
+}
+
+// MARK: - Lock ring
+
+/// Lock symbol inside a ring: full while blocked, draining during a timed session.
+private struct LockRing: View {
+    let status: FocusStatus
+    let tint: Color
+
+    var body: some View {
+        // Ticks every second only while a session runs.
+        TimelineView(.periodic(from: .now, by: status.sessionEnd == nil ? 3600 : 1)) { context in
+            let progress = status.sessionProgress(at: context.date)
+            let remaining = progress.map { 1 - $0 } ?? (status.isBlocked ? 1 : 0)
+
+            ZStack {
+                Circle()
+                    .stroke(tint.opacity(0.15), lineWidth: 12)
+                Circle()
+                    .trim(from: 0, to: remaining)
+                    .stroke(tint.gradient, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .animation(.smooth(duration: 0.8), value: remaining)
+
+                VStack(spacing: 6) {
+                    Image(systemName: status.isBlocked ? "lock.fill" : "lock.open.fill")
+                        .font(.system(size: 50, weight: .semibold))
+                        .foregroundStyle(status.isBlocked ? tint : .green)
+                        .contentTransition(.symbolEffect(.replace))
+                        .symbolEffect(.bounce, value: status.isBlocked)
+
+                    if let end = status.sessionEnd {
+                        Text(end, style: .timer)
+                            .font(.title3.monospacedDigit().bold())
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .frame(width: 170, height: 170)
+            .padding(.top, 4)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(status.headline)
+            .accessibilityValue(status.detail ?? "")
+        }
+    }
+}
+
+// MARK: - Profile chip
+
+private struct ProfileChip: View {
+    let profile: FocusProfile
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(profile.displayName, systemImage: profile.symbol)
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
+                .foregroundStyle(isSelected ? .white : profile.color)
+                .background(isSelected ? profile.color : profile.color.opacity(0.14), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 

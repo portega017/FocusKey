@@ -28,6 +28,7 @@ FocusKey is available for **iOS** (this branch) and **Android** (see [`android` 
 - **Limit warnings**: a notification when 5 minutes of a daily limit are left.
 - **Onboarding** on first launch, and a Settings screen.
 - Available in **Spanish and English**.
+- **Look & feel**: Liquid Glass cards, a color per profile (cards, widgets, shield screen), a countdown ring with haptics, a weekly schedule overview, a 5-week calendar heatmap, and dark/tinted app icons.
 - The NFC tag is the master key for the manual lock and running schedules.
 
 ## How it works

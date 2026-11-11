@@ -15,6 +15,9 @@ nonisolated struct FocusStats {
     }
 
     let week: [Day]
+    /// Five full weeks (Monday to Sunday) ending with the current one, for the calendar.
+    /// Days after today are included with 0 minutes so the grid stays aligned.
+    let calendarDays: [Day]
     let today: Int
     let streak: Int
     let recent: [BlockRecord]
@@ -37,6 +40,15 @@ nonisolated struct FocusStats {
             calendar.date(byAdding: .day, value: -offset, to: todayStart).map { Day(date: $0, minutes: minutes(on: $0)) }
         }
         today = minutes(on: todayStart)
+
+        var mondayCalendar = calendar
+        mondayCalendar.firstWeekday = 2
+        let thisWeek = mondayCalendar.dateInterval(of: .weekOfYear, for: now)?.start ?? todayStart
+        let firstDay = calendar.date(byAdding: .day, value: -28, to: thisWeek) ?? thisWeek
+        calendarDays = (0..<35).compactMap { offset in
+            guard let day = calendar.date(byAdding: .day, value: offset, to: firstDay) else { return nil }
+            return Day(date: day, minutes: day > now ? 0 : minutes(on: day))
+        }
 
         // Consecutive days with at least one minute blocked; today counts only once it has some.
         var streak = 0

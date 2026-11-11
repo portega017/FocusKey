@@ -25,6 +25,7 @@ nonisolated struct FocusStatus {
     var manualProfile: FocusProfile?
     var isManualLocked: Bool
     var sessionEnd: Date?
+    var sessionStart: Date?
     var schedules: [RunningSchedule]
     var limits: [ReachedLimit]
 
@@ -52,9 +53,22 @@ nonisolated struct FocusStatus {
             manualProfile: isManual ? FocusStore.profile(FocusStore.manualProfileID, in: profiles) : nil,
             isManualLocked: isManual,
             sessionEnd: isManual ? sessionEnd : nil,
+            sessionStart: isManual && sessionEnd != nil ? FocusStore.sessionStart : nil,
             schedules: schedules,
             limits: limits
         )
+    }
+
+    /// Profile behind the current block (manual first, then schedules, then limits).
+    var blockingProfile: FocusProfile? {
+        if isManualLocked { return manualProfile }
+        return schedules.first?.profile ?? limits.first?.profile
+    }
+
+    /// Fraction of the timed session already elapsed (0…1), or nil without a session.
+    func sessionProgress(at date: Date) -> Double? {
+        guard let start = sessionStart, let end = sessionEnd, end > start else { return nil }
+        return min(1, max(0, date.timeIntervalSince(start) / end.timeIntervalSince(start)))
     }
 
     var headline: String {
@@ -88,6 +102,13 @@ nonisolated struct FocusStatus {
     }
 
     // MARK: Shield reasons
+
+    /// Profile whose block covers this item (manual, then schedules, then limits).
+    func profile(matching contains: (FocusProfile) -> Bool) -> FocusProfile? {
+        if isManualLocked, let profile = manualProfile, contains(profile) { return profile }
+        if let running = schedules.first(where: { $0.profile.map(contains) ?? false }) { return running.profile }
+        return limits.first(where: { $0.profile.map(contains) ?? false })?.profile
+    }
 
     /// Explanation for the shield screen, picking the source that blocks this item.
     func reason(matching contains: (FocusProfile) -> Bool) -> String {

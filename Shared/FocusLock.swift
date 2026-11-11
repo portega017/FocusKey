@@ -83,6 +83,7 @@ nonisolated enum FocusLock {
         FocusStore.isManualLocked = true
         FocusStore.manualProfileID = profile.id
         FocusStore.sessionEnd = sessionEnd
+        FocusStore.sessionStart = sessionEnd == nil ? nil : now
         FocusStore.openRecord(
             kind: sessionEnd == nil ? .manual : .session,
             title: profile.displayName,
@@ -101,6 +102,7 @@ nonisolated enum FocusLock {
         FocusStore.isManualLocked = false
         FocusStore.manualProfileID = nil
         FocusStore.sessionEnd = nil
+        FocusStore.sessionStart = nil
         FocusStore.closeRecords(sourceID: manualSourceID, at: date)
         reloadWidgets()
     }

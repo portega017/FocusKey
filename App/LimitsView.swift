@@ -78,7 +78,7 @@ private struct LimitRow: View {
     var body: some View {
         VStack(spacing: 10) {
         HStack(spacing: 14) {
-            ProfileIcon(symbol: profile?.symbol ?? "hourglass")
+            ProfileIcon(symbol: profile?.symbol ?? "hourglass", color: profile?.color ?? .indigo)
 
             Button(action: onEdit) {
                 VStack(alignment: .leading, spacing: 3) {
@@ -195,7 +195,7 @@ struct ExtendLimitButton: View {
             Label("Ampliar con la llave", systemImage: "plus.circle")
                 .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.glass)
         .tint(.orange)
         .confirmationDialog("¿Cuánto tiempo más?", isPresented: $choosing, titleVisibility: .visible) {
             ForEach(Self.options, id: \.self) { minutes in

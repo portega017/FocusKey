@@ -17,13 +17,32 @@ nonisolated struct FocusProfile: Codable, Identifiable, Equatable {
     let id: UUID
     var name: String
     var symbol: String
+    /// Name from `FocusPalette`, used for icons, cards, widgets and the shield screen.
+    var colorName: String
     var selection: FamilyActivitySelection
 
-    init(id: UUID = UUID(), name: String, symbol: String = "lock.shield", selection: FamilyActivitySelection = .init()) {
+    init(id: UUID = UUID(), name: String, symbol: String = "lock.shield", colorName: String = "indigo",
+         selection: FamilyActivitySelection = .init()) {
         self.id = id
         self.name = name
         self.symbol = symbol
+        self.colorName = colorName
         self.selection = selection
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, symbol, colorName, selection
+    }
+
+    // Profiles saved before colors existed have no `colorName`: decoding must not fail,
+    // or FocusStore would treat them as missing and recreate a default profile.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
+        symbol = try container.decodeIfPresent(String.self, forKey: .symbol) ?? "lock.shield"
+        colorName = try container.decodeIfPresent(String.self, forKey: .colorName) ?? "indigo"
+        selection = try container.decode(FamilyActivitySelection.self, forKey: .selection)
     }
 
     var displayName: String { name.isEmpty ? String(localized: "Perfil sin nombre") : name }
@@ -174,6 +193,29 @@ nonisolated struct FocusSchedule: Codable, Identifiable, Equatable {
     }
 
     var crossesMidnight: Bool { Self.minutes(startTime) > Self.minutes(endTime) }
+
+    /// A piece of the schedule drawn on one day of the week (minutes from midnight).
+    struct DaySegment: Equatable {
+        var weekday: FocusWeekday
+        var startMinute: Int
+        var endMinute: Int
+    }
+
+    /// Pieces for a weekly overview. Overnight intervals are split: the evening on the day
+    /// they start and the morning on the next day.
+    func weekSegments(calendar: Calendar = .current) -> [DaySegment] {
+        guard isEnabled else { return [] }
+        let start = Self.minutes(startTime, calendar: calendar)
+        let end = Self.minutes(endTime, calendar: calendar)
+        guard start != end else { return [] }
+        return repeats.flatMap { day -> [DaySegment] in
+            if start < end { return [DaySegment(weekday: day, startMinute: start, endMinute: end)] }
+            let next = FocusWeekday.allCases.first { $0.calendarWeekday == day.calendarWeekday % 7 + 1 } ?? day
+            var pieces = [DaySegment(weekday: day, startMinute: start, endMinute: 24 * 60)]
+            if end > 0 { pieces.append(DaySegment(weekday: next, startMinute: 0, endMinute: end)) }
+            return pieces
+        }
+    }
 
     /// True while the interval is running (ignores NFC skips).
     func isActive(at date: Date = .now, calendar: Calendar = .current) -> Bool {
