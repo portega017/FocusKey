@@ -31,15 +31,15 @@ nonisolated enum FocusLock {
         var errorDescription: String? {
             switch self {
             case .notAuthorized:
-                return "Autoriza Screen Time en FocusKey antes de bloquear."
+                return String(localized: "Autoriza Screen Time en FocusKey antes de bloquear.")
             case .emptyProfile(let name):
-                return "El perfil «\(name)» no tiene apps, categorías ni webs seleccionadas."
+                return String(localized: "El perfil «\(name)» no tiene apps, categorías ni webs seleccionadas.")
             case .alreadyLocked:
-                return "El bloqueo ya está activo."
+                return String(localized: "El bloqueo ya está activo.")
             case .sessionTooShort:
-                return "Una sesión debe durar al menos \(FocusLock.minimumSessionMinutes) minutos."
+                return String(localized: "Una sesión debe durar al menos \(FocusLock.minimumSessionMinutes) minutos.")
             case .monitoring(let error):
-                return "No se pudo programar el final de la sesión: \(error.localizedDescription)"
+                return String(localized: "No se pudo programar el final de la sesión: \(error.localizedDescription)")
             }
         }
     }
@@ -83,6 +83,7 @@ nonisolated enum FocusLock {
         FocusStore.isManualLocked = true
         FocusStore.manualProfileID = profile.id
         FocusStore.sessionEnd = sessionEnd
+        FocusStore.sessionStart = sessionEnd == nil ? nil : now
         FocusStore.openRecord(
             kind: sessionEnd == nil ? .manual : .session,
             title: profile.displayName,
@@ -101,6 +102,7 @@ nonisolated enum FocusLock {
         FocusStore.isManualLocked = false
         FocusStore.manualProfileID = nil
         FocusStore.sessionEnd = nil
+        FocusStore.sessionStart = nil
         FocusStore.closeRecords(sourceID: manualSourceID, at: date)
         reloadWidgets()
     }
@@ -251,6 +253,17 @@ nonisolated enum FocusLock {
         store.shield.applicationCategories = selection.categoryTokens.isEmpty ? nil : .specific(selection.categoryTokens)
         store.shield.webDomains = selection.webDomainTokens.isEmpty ? nil : selection.webDomainTokens
         store.shield.webDomainCategories = selection.categoryTokens.isEmpty ? nil : .specific(selection.categoryTokens)
+        // Uninstalling FocusKey would lift every block. iOS only offers this for all apps at once.
+        store.application.denyAppRemoval = FocusStore.preventAppRemoval ? true : nil
+    }
+
+    /// Re-applies every active shield after the "prevent app removal" setting changes.
+    static func refreshAppRemovalProtection() {
+        if FocusStore.isManualLocked, let profile = FocusStore.profile(FocusStore.manualProfileID) {
+            apply(profile.selection, to: ManagedSettingsStore(named: manualStoreName))
+        }
+        refreshScheduleShield()
+        refreshLimitShield()
     }
 
     /// Combined selection, or nil when there is nothing to block.

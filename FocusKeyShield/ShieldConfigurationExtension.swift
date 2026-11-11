@@ -1,4 +1,5 @@
 import UIKit
+import SwiftUI
 import ManagedSettings
 import ManagedSettingsUI
 
@@ -30,17 +31,19 @@ final class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     }
 
     private func configuration(title name: String?, contains: (FocusProfile) -> Bool) -> ShieldConfiguration {
-        let reason = FocusStatus.current().reason(matching: contains)
-        let title = name.map { "\($0) está bloqueada" } ?? "Bloqueado por FocusKey"
+        let status = FocusStatus.current()
+        let reason = status.reason(matching: contains)
+        let color = UIColor(status.profile(matching: contains)?.color ?? .indigo)
+        let title = name.map { String(localized: "\($0) está bloqueada") } ?? String(localized: "Bloqueado por FocusKey")
 
         return ShieldConfiguration(
             backgroundBlurStyle: .systemUltraThinMaterial,
-            backgroundColor: UIColor.systemIndigo.withAlphaComponent(0.25),
+            backgroundColor: color.withAlphaComponent(0.25),
             icon: UIImage(named: "shieldLogo"),
             title: ShieldConfiguration.Label(text: title, color: .label),
-            subtitle: ShieldConfiguration.Label(text: reason, color: .secondaryLabel),
-            primaryButtonLabel: ShieldConfiguration.Label(text: "Volver a concentrarme", color: .white),
-            primaryButtonBackgroundColor: .systemIndigo
+            subtitle: ShieldConfiguration.Label(text: reason + "\n\n" + FocusQuotes.current(), color: .secondaryLabel),
+            primaryButtonLabel: ShieldConfiguration.Label(text: String(localized: "Volver a concentrarme"), color: .white),
+            primaryButtonBackgroundColor: color
         )
     }
 }

@@ -1,0 +1,75 @@
+{
+  "sourceLanguage": "es",
+  "strings": {
+    "Bloquear apps con ${applicationName}": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "Block apps with ${applicationName}",
+              "Turn on ${applicationName}",
+              "Block ${profile} with ${applicationName}"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Bloquear apps con ${applicationName}",
+              "Activar ${applicationName}",
+              "Bloquear ${profile} con ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Desbloquear ${applicationName} con la llave": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "Unlock ${applicationName} with the key"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Desbloquear ${applicationName} con la llave"
+            ]
+          }
+        }
+      }
+    },
+    "¿Está ${applicationName} bloqueando?": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "Is ${applicationName} blocking?",
+              "${applicationName} status"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "¿Está ${applicationName} bloqueando?",
+              "Estado de ${applicationName}"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

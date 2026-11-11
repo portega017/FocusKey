@@ -25,6 +25,8 @@ private struct RootTabView: View {
     @EnvironmentObject private var nfc: NFCScanner
     @Environment(\.scenePhase) private var scenePhase
     @State private var tab = 0
+    @AppStorage(OnboardingView.doneKey) private var onboardingDone = false
+    @State private var showingOnboarding = false
 
     var body: some View {
         TabView(selection: $tab) {
@@ -43,6 +45,17 @@ private struct RootTabView: View {
         }
         .onAppear {
             nfc.onValidTag = { model.handleNFC() }
+            // Existing users who already picked apps don't need the walkthrough.
+            if !onboardingDone {
+                if model.activeProfile?.isEmpty == false {
+                    onboardingDone = true
+                } else {
+                    showingOnboarding = true
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $showingOnboarding) {
+            OnboardingView()
         }
         .onChange(of: scenePhase, initial: true) { _, newPhase in
             guard newPhase == .active else { return }

@@ -20,12 +20,22 @@ struct FocusEntry: TimelineEntry {
     let headline: String
     let detail: String?
     let sessionEnd: Date?
+    let sessionStart: Date?
     let profileName: String
     let profileSymbol: String
+    let colorName: String
+
+    var color: Color { FocusPalette.color(colorName) }
+
+    /// Running session interval, for progress rings that update on their own.
+    var sessionInterval: ClosedRange<Date>? {
+        guard let start = sessionStart, let end = sessionEnd, end > start else { return nil }
+        return start...end
+    }
 
     static func make(at date: Date) -> FocusEntry {
         let status = FocusStatus.current(at: date)
-        let profile = status.manualProfile ?? FocusStore.profile(FocusStore.activeProfileID)
+        let profile = status.blockingProfile ?? FocusStore.profile(FocusStore.activeProfileID)
         return FocusEntry(
             date: date,
             isBlocked: status.isBlocked,
@@ -33,15 +43,17 @@ struct FocusEntry: TimelineEntry {
             headline: status.headline,
             detail: status.detail,
             sessionEnd: status.sessionEnd,
-            profileName: profile?.displayName ?? "Sin perfil",
-            profileSymbol: profile?.symbol ?? "lock.shield"
+            sessionStart: status.sessionStart,
+            profileName: profile?.displayName ?? String(localized: "Sin perfil"),
+            profileSymbol: profile?.symbol ?? "lock.shield",
+            colorName: profile?.colorName ?? "indigo"
         )
     }
 }
 
 struct FocusProvider: TimelineProvider {
     func placeholder(in context: Context) -> FocusEntry {
-        FocusEntry(date: .now, isBlocked: false, canUnlockWithKey: false, headline: "Desbloqueado", detail: nil, sessionEnd: nil, profileName: "General", profileSymbol: "lock.shield")
+        FocusEntry(date: .now, isBlocked: false, canUnlockWithKey: false, headline: String(localized: "Desbloqueado"), detail: nil, sessionEnd: nil, sessionStart: nil, profileName: String(localized: "General"), profileSymbol: "lock.shield", colorName: "indigo")
     }
 
     func getSnapshot(in context: Context, completion: @escaping (FocusEntry) -> Void) {
@@ -74,7 +86,13 @@ struct FocusStatusWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "FocusKeyStatus", provider: FocusProvider()) { entry in
             FocusStatusView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .containerBackground(for: .widget) {
+                    LinearGradient(
+                        colors: [entry.color.opacity(entry.isBlocked ? 0.35 : 0.18), entry.color.opacity(0.05)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                }
         }
         .configurationDisplayName("Estado de FocusKey")
         .description("Mira si tus apps están bloqueadas y bloquéalas con un toque.")
@@ -86,7 +104,7 @@ struct FocusStatusView: View {
     @Environment(\.widgetFamily) private var family
     let entry: FocusEntry
 
-    private var tint: Color { entry.isBlocked ? .red : .green }
+    private var tint: Color { entry.isBlocked ? entry.color : .green }
     private var lockSymbol: String { entry.isBlocked ? "lock.fill" : "lock.open.fill" }
 
     var body: some View {
@@ -94,9 +112,18 @@ struct FocusStatusView: View {
         case .accessoryInline:
             Label(entry.headline, systemImage: lockSymbol)
         case .accessoryCircular:
-            ZStack {
-                AccessoryWidgetBackground()
-                Image(systemName: lockSymbol).font(.title2)
+            if let interval = entry.sessionInterval {
+                ProgressView(timerInterval: interval, countsDown: true) {
+                    Image(systemName: lockSymbol)
+                } currentValueLabel: {
+                    Image(systemName: lockSymbol)
+                }
+                .progressViewStyle(.circular)
+            } else {
+                ZStack {
+                    AccessoryWidgetBackground()
+                    Image(systemName: lockSymbol).font(.title2)
+                }
             }
         case .accessoryRectangular:
             VStack(alignment: .leading) {
@@ -117,9 +144,21 @@ struct FocusStatusView: View {
     private var home: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Image(systemName: lockSymbol)
-                    .font(.title2)
-                    .foregroundStyle(tint)
+                if let interval = entry.sessionInterval {
+                    ProgressView(timerInterval: interval, countsDown: true) {
+                        EmptyView()
+                    } currentValueLabel: {
+                        Image(systemName: lockSymbol).font(.caption.bold())
+                    }
+                    .progressViewStyle(.circular)
+                    .tint(tint)
+                    .frame(width: 34, height: 34)
+                } else {
+                    Image(systemName: lockSymbol)
+                        .font(.title2)
+                        .foregroundStyle(tint)
+                        .contentTransition(.symbolEffect(.replace))
+                }
                 Spacer()
                 Image(systemName: entry.profileSymbol)
                     .foregroundStyle(.secondary)
@@ -147,7 +186,7 @@ struct FocusStatusView: View {
                     Label("Usar llave", systemImage: "wave.3.right")
                         .frame(maxWidth: .infinity)
                 }
-                .tint(.indigo)
+                .tint(entry.color)
             } else if family == .systemMedium {
                 HStack {
                     Button(intent: LockFocusIntent()) {
@@ -157,12 +196,12 @@ struct FocusStatusView: View {
                         Label("1 hora", systemImage: "timer").frame(maxWidth: .infinity)
                     }
                 }
-                .tint(.indigo)
+                .tint(entry.color)
             } else {
                 Button(intent: LockFocusIntent()) {
                     Label("Bloquear", systemImage: "lock.fill").frame(maxWidth: .infinity)
                 }
-                .tint(.indigo)
+                .tint(entry.color)
             }
         }
         .font(.subheadline)

@@ -19,7 +19,7 @@ struct ProfilesView: View {
                         editing = profile
                     } label: {
                         HStack(spacing: 14) {
-                            ProfileIcon(symbol: profile.symbol)
+                            ProfileIcon(symbol: profile.symbol, color: profile.color)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(profile.displayName).foregroundStyle(.primary)
                                 Text(profile.summary).font(.caption).foregroundStyle(.secondary)
@@ -55,7 +55,7 @@ struct ProfilesView: View {
             }
         }
         .sheet(isPresented: $creating) {
-            ProfileEditor(profile: nil, lockReason: nil) { created in
+            ProfileEditor(profile: nil, lockReason: nil, newColor: FocusPalette.nextName(after: model.profiles)) { created in
                 model.addProfile(created)
             }
         }
@@ -64,13 +64,14 @@ struct ProfilesView: View {
 
 struct ProfileIcon: View {
     let symbol: String
+    var color: Color = .indigo
 
     var body: some View {
         Image(systemName: symbol)
             .font(.body)
             .foregroundStyle(.white)
             .frame(width: 34, height: 34)
-            .background(Color.indigo, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            .background(color.gradient, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
     }
 }
 
@@ -84,11 +85,11 @@ private struct ProfileEditor: View {
     @State private var draft: FocusProfile
     @State private var showingPicker = false
 
-    init(profile: FocusProfile?, lockReason: String?, onSave: @escaping (FocusProfile) -> Void) {
+    init(profile: FocusProfile?, lockReason: String?, newColor: String = "indigo", onSave: @escaping (FocusProfile) -> Void) {
         isNew = profile == nil
         self.lockReason = lockReason
         self.onSave = onSave
-        _draft = State(initialValue: profile ?? FocusProfile(name: ""))
+        _draft = State(initialValue: profile ?? FocusProfile(name: "", colorName: newColor))
     }
 
     var body: some View {
@@ -96,6 +97,31 @@ private struct ProfileEditor: View {
             Form {
                 Section("Nombre") {
                     TextField("Trabajo, Estudio, Noche…", text: $draft.name)
+                }
+
+                Section("Color") {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
+                        ForEach(FocusPalette.names, id: \.self) { name in
+                            Button {
+                                draft.colorName = name
+                            } label: {
+                                Circle()
+                                    .fill(FocusPalette.color(name).gradient)
+                                    .frame(width: 38, height: 38)
+                                    .overlay {
+                                        if draft.colorName == name {
+                                            Image(systemName: "checkmark")
+                                                .font(.headline)
+                                                .foregroundStyle(.white)
+                                        }
+                                    }
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(FocusPalette.accessibilityName(name))
+                            .accessibilityAddTraits(draft.colorName == name ? .isSelected : [])
+                        }
+                    }
+                    .padding(.vertical, 4)
                 }
 
                 Section("Icono") {
@@ -108,7 +134,7 @@ private struct ProfileEditor: View {
                                     .frame(width: 40, height: 40)
                                     .foregroundStyle(draft.symbol == symbol ? .white : .primary)
                                     .background(
-                                        draft.symbol == symbol ? Color.indigo : Color(uiColor: .tertiarySystemFill),
+                                        draft.symbol == symbol ? draft.color : Color(uiColor: .tertiarySystemFill),
                                         in: Circle()
                                     )
                             }
@@ -143,7 +169,7 @@ private struct ProfileEditor: View {
                     Text(lockReason ?? draft.summary)
                 }
             }
-            .navigationTitle(isNew ? "Nuevo perfil" : "Editar perfil")
+            .navigationTitle(isNew ? String(localized: "Nuevo perfil") : String(localized: "Editar perfil"))
             .navigationBarTitleDisplayMode(.inline)
             .familyActivityPicker(isPresented: $showingPicker, selection: $draft.selection)
             .toolbar {

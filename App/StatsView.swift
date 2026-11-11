@@ -21,11 +21,13 @@ struct StatsView: View {
                 VStack(spacing: 16) {
                     HStack(spacing: 12) {
                         StatTile(title: "Hoy", value: FocusStats.format(minutes: stats.today), symbol: "lock.fill")
-                        StatTile(title: "Racha", value: "\(stats.streak) \(stats.streak == 1 ? "día" : "días")", symbol: "flame.fill")
+                        StatTile(title: "Racha", value: String(localized: "\(stats.streak) días"), symbol: "flame.fill")
                     }
                     StatTile(title: "Últimos 7 días", value: FocusStats.format(minutes: stats.week.map(\.minutes).reduce(0, +)), symbol: "calendar")
 
                     chart(stats.week)
+
+                    MonthHeatmap(days: stats.calendarDays)
 
                     recent(stats.recent)
                 }
@@ -79,8 +81,8 @@ struct StatsView: View {
             .chartXSelection(value: $selectedDay)
             .frame(height: 200)
         }
-        .padding()
-        .background(.background, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .padding(20)
+        .glassEffect(.regular, in: .rect(cornerRadius: 28))
     }
 
     private func recent(_ records: [BlockRecord]) -> some View {
@@ -106,20 +108,20 @@ struct StatsView: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Text(record.end == nil ? "En curso" : FocusStats.format(minutes: Int((record.end ?? .now).timeIntervalSince(record.start) / 60)))
+                    Text(record.end == nil ? String(localized: "En curso") : FocusStats.format(minutes: Int((record.end ?? .now).timeIntervalSince(record.start) / 60)))
                         .font(.subheadline.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
             }
         }
-        .padding()
+        .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: 28))
     }
 }
 
 private struct StatTile: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let symbol: String
 
@@ -135,70 +137,96 @@ private struct StatTile: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .glassEffect(.regular, in: .rect(cornerRadius: 20))
         .accessibilityElement(children: .combine)
     }
 }
 
-// MARK: - Computation
+// MARK: - Calendar heatmap
 
-struct FocusStats {
-    struct Day: Identifiable {
-        var date: Date
-        var minutes: Int
-        var id: Date { date }
-    }
+/// Five weeks, one cell per day; darker = more time blocked. Single hue, light to dark.
+private struct MonthHeatmap: View {
+    let days: [FocusStats.Day]
+    @State private var selected: Date?
 
-    let week: [Day]
-    let today: Int
-    let streak: Int
-    let recent: [BlockRecord]
+    /// Upper bounds in minutes for each shade (0 = nothing blocked).
+    private static let levels = [0, 30, 60, 120, 240]
 
-    init(records: [BlockRecord], now: Date = .now, calendar: Calendar = .current) {
-        let intervals = Self.merged(records.map { ($0.start, min($0.end ?? now, now)) })
-        let todayStart = calendar.startOfDay(for: now)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Últimas 5 semanas")
+                .font(.headline)
 
-        func minutes(on dayStart: Date) -> Int {
-            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
-            let seconds = intervals.reduce(0.0) { total, interval in
-                let start = max(interval.0, dayStart)
-                let end = min(interval.1, dayEnd)
-                return total + max(0, end.timeIntervalSince(start))
-            }
-            return Int(seconds / 60)
-        }
-
-        week = (0..<7).reversed().compactMap { offset in
-            calendar.date(byAdding: .day, value: -offset, to: todayStart).map { Day(date: $0, minutes: minutes(on: $0)) }
-        }
-        today = minutes(on: todayStart)
-
-        // Consecutive days with at least one minute blocked; today counts only once it has some.
-        var streak = 0
-        var day = today > 0 ? todayStart : calendar.date(byAdding: .day, value: -1, to: todayStart)!
-        while minutes(on: day) > 0, streak < 365 {
-            streak += 1
-            day = calendar.date(byAdding: .day, value: -1, to: day)!
-        }
-        self.streak = streak
-
-        recent = Array(records.sorted { $0.start > $1.start }.prefix(15))
-    }
-
-    /// Overlapping blocks (e.g. a schedule during a manual lock) count once.
-    private static func merged(_ intervals: [(Date, Date)]) -> [(Date, Date)] {
-        var result: [(Date, Date)] = []
-        for interval in intervals.filter({ $0.1 > $0.0 }).sorted(by: { $0.0 < $1.0 }) {
-            if let last = result.last, interval.0 <= last.1 {
-                result[result.count - 1].1 = max(last.1, interval.1)
+            if let selected, let day = days.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selected) }) {
+                Text("\(day.date.formatted(.dateTime.weekday(.wide).day().month())): \(FocusStats.format(minutes: day.minutes))")
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(.secondary)
             } else {
-                result.append(interval)
+                Text("Toca un día para ver el detalle")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
+
+            let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 7)
+            LazyVGrid(columns: columns, spacing: 6) {
+                // Initials repeat (e.g. two "M"s), so identify them by position.
+                ForEach(Array(Self.weekdayInitials.enumerated()), id: \.offset) { _, initial in
+                    Text(initial)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                }
+                ForEach(days) { day in
+                    cell(day)
+                }
+            }
+
+            HStack(spacing: 4) {
+                Text("Menos").font(.caption2).foregroundStyle(.secondary)
+                ForEach(0..<Self.levels.count, id: \.self) { level in
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(Self.shade(level))
+                        .frame(width: 12, height: 12)
+                }
+                Text("Más").font(.caption2).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .accessibilityHidden(true)
         }
-        return result
+        .padding(20)
+        .glassEffect(.regular, in: .rect(cornerRadius: 28))
     }
 
-    static func format(minutes: Int) -> String {
-        minutes < 60 ? "\(minutes) min" : UsageLimit.formatted(minutes: minutes)
+    private func cell(_ day: FocusStats.Day) -> some View {
+        let isFuture = day.date > .now
+        let isToday = Calendar.current.isDateInToday(day.date)
+        let isSelected = selected.map { Calendar.current.isDate(day.date, inSameDayAs: $0) } ?? false
+        return RoundedRectangle(cornerRadius: 5, style: .continuous)
+            .fill(isFuture ? Color.clear : Self.shade(Self.level(for: day.minutes)))
+            .aspectRatio(1, contentMode: .fit)
+            .overlay {
+                RoundedRectangle(cornerRadius: 5, style: .continuous)
+                    .strokeBorder(isSelected ? Color.primary : (isToday ? Color.indigo : .clear), lineWidth: 2)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { if !isFuture { selected = isSelected ? nil : day.date } }
+            .accessibilityElement()
+            .accessibilityLabel(day.date.formatted(.dateTime.weekday(.wide).day().month()))
+            .accessibilityValue(isFuture ? "" : FocusStats.format(minutes: day.minutes))
+            .accessibilityHidden(isFuture)
+    }
+
+    private static func level(for minutes: Int) -> Int {
+        guard minutes > 0 else { return 0 }
+        return (1..<levels.count).first { minutes <= levels[$0] } ?? levels.count - 1
+    }
+
+    private static func shade(_ level: Int) -> Color {
+        level == 0 ? Color.secondary.opacity(0.12) : Color.indigo.opacity([0, 0.3, 0.5, 0.72, 1][level])
+    }
+
+    private static var weekdayInitials: [String] {
+        let symbols = Calendar.current.veryShortStandaloneWeekdaySymbols
+        return Array(symbols[1...] + symbols[..<1])
     }
 }

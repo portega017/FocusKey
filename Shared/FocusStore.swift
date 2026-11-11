@@ -23,6 +23,8 @@ nonisolated enum FocusStore {
         static let manualProfile = "FocusKey.manualProfile"
         /// End of a timed session; absent for an indefinite manual lock.
         static let sessionEnd = "FocusKey.sessionEnd"
+        /// Start of the timed session, for progress rings.
+        static let sessionStart = "FocusKey.sessionStart"
         /// Written by the monitor extension while a schedule interval is running.
         static let scheduleLockState = "FocusKey.isScheduleLocked"
         static let schedules = "FocusKeySchedules"
@@ -38,6 +40,10 @@ nonisolated enum FocusStore {
         static let records = "FocusKey.blockRecords"
         /// Set by the "unlock with key" intent so the app starts an NFC scan when it opens.
         static let pendingNFCScan = "FocusKey.pendingNFCScan"
+        /// While anything is blocked, iOS won't let apps be deleted (on by default).
+        static let preventAppRemoval = "FocusKey.preventAppRemoval"
+        /// Notify a few minutes before a daily limit is reached (on by default).
+        static let limitWarnings = "FocusKey.limitWarnings"
         /// Last error of an intent run from a widget or Control Center, shown by the app.
         static let lastIntentError = "FocusKey.lastIntentError"
     }
@@ -86,6 +92,11 @@ nonisolated enum FocusStore {
     static var manualProfileID: UUID? {
         get { defaults.string(forKey: Key.manualProfile).flatMap(UUID.init(uuidString:)) }
         set { defaults.set(newValue?.uuidString, forKey: Key.manualProfile) }
+    }
+
+    static var sessionStart: Date? {
+        get { defaults.object(forKey: Key.sessionStart) as? Date }
+        set { defaults.set(newValue, forKey: Key.sessionStart) }
     }
 
     static var sessionEnd: Date? {
@@ -199,6 +210,16 @@ nonisolated enum FocusStore {
         guard defaults.bool(forKey: Key.pendingNFCScan) else { return false }
         defaults.set(false, forKey: Key.pendingNFCScan)
         return true
+    }
+
+    static var preventAppRemoval: Bool {
+        get { defaults.object(forKey: Key.preventAppRemoval) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Key.preventAppRemoval) }
+    }
+
+    static var limitWarnings: Bool {
+        get { defaults.object(forKey: Key.limitWarnings) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Key.limitWarnings) }
     }
 
     static var lastIntentError: String? {

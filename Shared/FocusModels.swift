@@ -17,16 +17,35 @@ nonisolated struct FocusProfile: Codable, Identifiable, Equatable {
     let id: UUID
     var name: String
     var symbol: String
+    /// Name from `FocusPalette`, used for icons, cards, widgets and the shield screen.
+    var colorName: String
     var selection: FamilyActivitySelection
 
-    init(id: UUID = UUID(), name: String, symbol: String = "lock.shield", selection: FamilyActivitySelection = .init()) {
+    init(id: UUID = UUID(), name: String, symbol: String = "lock.shield", colorName: String = "indigo",
+         selection: FamilyActivitySelection = .init()) {
         self.id = id
         self.name = name
         self.symbol = symbol
+        self.colorName = colorName
         self.selection = selection
     }
 
-    var displayName: String { name.isEmpty ? "Perfil sin nombre" : name }
+    private enum CodingKeys: String, CodingKey {
+        case id, name, symbol, colorName, selection
+    }
+
+    // Profiles saved before colors existed have no `colorName`: decoding must not fail,
+    // or FocusStore would treat them as missing and recreate a default profile.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
+        symbol = try container.decodeIfPresent(String.self, forKey: .symbol) ?? "lock.shield"
+        colorName = try container.decodeIfPresent(String.self, forKey: .colorName) ?? "indigo"
+        selection = try container.decode(FamilyActivitySelection.self, forKey: .selection)
+    }
+
+    var displayName: String { name.isEmpty ? String(localized: "Perfil sin nombre") : name }
 
     var isEmpty: Bool {
         selection.applicationTokens.isEmpty
@@ -38,11 +57,11 @@ nonisolated struct FocusProfile: Codable, Identifiable, Equatable {
         let apps = selection.applicationTokens.count
         let categories = selection.categoryTokens.count
         let webs = selection.webDomainTokens.count
-        guard apps + categories + webs > 0 else { return "Nada seleccionado" }
+        guard apps + categories + webs > 0 else { return String(localized: "Nada seleccionado") }
         var parts: [String] = []
-        if apps > 0 { parts.append("\(apps) \(apps == 1 ? "app" : "apps")") }
-        if categories > 0 { parts.append("\(categories) \(categories == 1 ? "categoría" : "categorías")") }
-        if webs > 0 { parts.append("\(webs) \(webs == 1 ? "web" : "webs")") }
+        if apps > 0 { parts.append(String(localized: "\(apps) apps")) }
+        if categories > 0 { parts.append(String(localized: "\(categories) categorías")) }
+        if webs > 0 { parts.append(String(localized: "\(webs) webs")) }
         return parts.joined(separator: " · ")
     }
 
@@ -66,13 +85,13 @@ nonisolated enum FocusWeekday: String, Codable, CaseIterable, Identifiable {
 
     var shortName: String {
         switch self {
-        case .sunday: return "Dom"
-        case .monday: return "Lun"
-        case .tuesday: return "Mar"
-        case .wednesday: return "Mié"
-        case .thursday: return "Jue"
-        case .friday: return "Vie"
-        case .saturday: return "Sáb"
+        case .sunday: return String(localized: "Dom")
+        case .monday: return String(localized: "Lun")
+        case .tuesday: return String(localized: "Mar")
+        case .wednesday: return String(localized: "Mié")
+        case .thursday: return String(localized: "Jue")
+        case .friday: return String(localized: "Vie")
+        case .saturday: return String(localized: "Sáb")
         }
     }
 
@@ -154,7 +173,7 @@ nonisolated struct FocusSchedule: Codable, Identifiable, Equatable {
         try container.encodeIfPresent(profileID, forKey: .profileID)
     }
 
-    var displayName: String { name.isEmpty ? "Horario de concentración" : name }
+    var displayName: String { name.isEmpty ? String(localized: "Horario de concentración") : name }
 
     var activityName: DeviceActivityName { FocusActivity.schedule(id) }
 
@@ -174,6 +193,29 @@ nonisolated struct FocusSchedule: Codable, Identifiable, Equatable {
     }
 
     var crossesMidnight: Bool { Self.minutes(startTime) > Self.minutes(endTime) }
+
+    /// A piece of the schedule drawn on one day of the week (minutes from midnight).
+    struct DaySegment: Equatable {
+        var weekday: FocusWeekday
+        var startMinute: Int
+        var endMinute: Int
+    }
+
+    /// Pieces for a weekly overview. Overnight intervals are split: the evening on the day
+    /// they start and the morning on the next day.
+    func weekSegments(calendar: Calendar = .current) -> [DaySegment] {
+        guard isEnabled else { return [] }
+        let start = Self.minutes(startTime, calendar: calendar)
+        let end = Self.minutes(endTime, calendar: calendar)
+        guard start != end else { return [] }
+        return repeats.flatMap { day -> [DaySegment] in
+            if start < end { return [DaySegment(weekday: day, startMinute: start, endMinute: end)] }
+            let next = FocusWeekday.allCases.first { $0.calendarWeekday == day.calendarWeekday % 7 + 1 } ?? day
+            var pieces = [DaySegment(weekday: day, startMinute: start, endMinute: 24 * 60)]
+            if end > 0 { pieces.append(DaySegment(weekday: next, startMinute: 0, endMinute: end)) }
+            return pieces
+        }
+    }
 
     /// True while the interval is running (ignores NFC skips).
     func isActive(at date: Date = .now, calendar: Calendar = .current) -> Bool {
@@ -227,7 +269,7 @@ nonisolated struct UsageLimit: Codable, Identifiable, Equatable {
         self.isEnabled = isEnabled
     }
 
-    var displayName: String { name.isEmpty ? "Límite diario" : name }
+    var displayName: String { name.isEmpty ? String(localized: "Límite diario") : name }
 
     var activityName: DeviceActivityName { FocusActivity.limit(id) }
 
@@ -253,6 +295,31 @@ nonisolated struct UsageLimit: Codable, Identifiable, Equatable {
         )
     }
 
+    static let warningEventName = DeviceActivityEvent.Name("FocusKey.limitWarning")
+
+    /// Minutes left when the warning is sent: 5 for limits of 15 min or more, 1 for shorter ones.
+    var warningLeadMinutes: Int? {
+        if minutes >= 15 { return 5 }
+        if minutes >= 3 { return 1 }
+        return nil
+    }
+
+    /// The limit event plus, when it makes sense, a warning a few minutes earlier.
+    func events(for selection: FamilyActivitySelection) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
+        var events = [Self.eventName: event(for: selection)]
+        if let lead = warningLeadMinutes {
+            let at = minutes - lead
+            events[Self.warningEventName] = DeviceActivityEvent(
+                applications: selection.applicationTokens,
+                categories: selection.categoryTokens,
+                webDomains: selection.webDomainTokens,
+                threshold: DateComponents(hour: at / 60, minute: at % 60),
+                includesPastActivity: true
+            )
+        }
+        return events
+    }
+
     func event(for selection: FamilyActivitySelection) -> DeviceActivityEvent {
         DeviceActivityEvent(
             applications: selection.applicationTokens,
@@ -269,7 +336,7 @@ nonisolated struct UsageLimit: Codable, Identifiable, Equatable {
         switch (hours, rest) {
         case (0, _): return "\(rest) min"
         case (_, 0): return "\(hours) h"
-        default: return "\(hours) h \(rest) min"
+        default: return String(localized: "\(hours) h \(rest) min")
         }
     }
 }
@@ -282,10 +349,10 @@ nonisolated struct BlockRecord: Codable, Identifiable, Equatable {
 
         var label: String {
             switch self {
-            case .manual: return "Bloqueo manual"
-            case .session: return "Sesión"
-            case .schedule: return "Horario"
-            case .limit: return "Límite diario"
+            case .manual: return String(localized: "Bloqueo manual")
+            case .session: return String(localized: "Sesión")
+            case .schedule: return String(localized: "Horario")
+            case .limit: return String(localized: "Límite diario")
             }
         }
 
