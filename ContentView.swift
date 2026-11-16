@@ -39,6 +39,8 @@ struct ContentView: View {
                             .tint(tint)
                         }
 
+                        PresetGrid(isDisabled: status.isManualLocked || status.pomodoro != nil)
+
                         profileSection(tint: tint)
 
                         Text(model.status)

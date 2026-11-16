@@ -379,6 +379,36 @@ nonisolated struct UsageLimit: Codable, Identifiable, Equatable {
     }
 }
 
+// MARK: - Session preset
+
+/// A one-tap timed session: block a profile for a fixed time ("Redes · 1 h").
+nonisolated struct SessionPreset: Codable, Identifiable, Equatable {
+    let id: UUID
+    var name: String
+    var profileID: UUID
+    var minutes: Int
+
+    init(id: UUID = UUID(), name: String = "", profileID: UUID, minutes: Int = 60) {
+        self.id = id
+        self.name = name
+        self.profileID = profileID
+        self.minutes = minutes
+    }
+
+    static let durationOptions = [15, 30, 45, 60, 90, 120, 180, 240]
+
+    /// The custom name, or the profile's name when there is none.
+    func displayName(profile: FocusProfile?) -> String {
+        if !name.isEmpty { return name }
+        return profile?.displayName ?? String(localized: "Sesión")
+    }
+
+    /// "Estudio · 1 h"
+    func title(profile: FocusProfile?) -> String {
+        "\(displayName(profile: profile)) · \(UsageLimit.formatted(minutes: minutes))"
+    }
+}
+
 // MARK: - Block record (statistics)
 
 nonisolated struct BlockRecord: Codable, Identifiable, Equatable {

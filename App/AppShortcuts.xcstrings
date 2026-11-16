@@ -47,6 +47,29 @@
         }
       }
     },
+    "Empezar ${preset} con ${applicationName}": {
+      "extractionState": "extracted_with_value",
+      "localizations": {
+        "en": {
+          "stringSet": {
+            "state": "translated",
+            "values": [
+              "Start ${preset} with ${applicationName}",
+              "${applicationName} quick session"
+            ]
+          }
+        },
+        "es": {
+          "stringSet": {
+            "state": "new",
+            "values": [
+              "Empezar ${preset} con ${applicationName}",
+              "Sesión rápida de ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
     "¿Está ${applicationName} bloqueando?": {
       "extractionState": "extracted_with_value",
       "localizations": {

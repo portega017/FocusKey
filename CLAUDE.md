@@ -53,6 +53,10 @@ All state lives in App Group `UserDefaults` so the app, extensions, widgets and 
   stores always hold the *union* of every active source. Also NFC unlock, limit extensions,
   `denyAppRemoval`, widget reload.
 - `Shared/FocusStatus.swift` — snapshot of what is blocking now (used by app, widgets, shield, intents).
+- `SessionPreset` (in `FocusModels.swift`, stored under `FocusKey.sessionPresets`): profile + minutes,
+  started with `FocusModel.startPreset` / `StartPresetIntent`; UI in `App/PresetsView.swift`
+  (`PresetGrid` on the main screen). Deleting a profile deletes its presets. After changing presets
+  or profile names call `FocusShortcuts.updateAppShortcutParameters()` (Siri parameter values).
 - `Shared/FocusPomodoro.swift` — `PomodoroPlan` (focus/break/cycles) and its phase at a date.
 - `Shared/FocusLiveActivity.swift` — `FocusActivityAttributes` + `FocusLiveActivity.sync()`
   (app process only; called from `FocusModel.reload()` and `LockFocusIntent`).

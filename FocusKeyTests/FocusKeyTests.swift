@@ -355,3 +355,25 @@ struct YearStatsTests {
         #expect(FocusStats.dayKey(date(8, 23, 59), calendar: calendar) == "2026-11-08")
     }
 }
+
+@Suite("Session presets")
+struct PresetTests {
+    @Test func titleUsesNameOrProfile() {
+        let profile = FocusProfile(name: "Redes")
+        let unnamed = SessionPreset(profileID: profile.id, minutes: 60)
+        #expect(unnamed.title(profile: profile) == "Redes · 1 h")
+        let named = SessionPreset(name: "Sin móvil", profileID: profile.id, minutes: 90)
+        #expect(named.title(profile: profile) == "Sin móvil · 1 h 30 min")
+    }
+
+    @Test func presetsRoundTrip() throws {
+        let presets = [SessionPreset(name: "A", profileID: UUID(), minutes: 45), SessionPreset(profileID: UUID())]
+        let decoded = try JSONDecoder().decode([SessionPreset].self, from: JSONEncoder().encode(presets))
+        #expect(decoded == presets)
+        #expect(decoded[1].minutes == 60, "Default is one hour")
+    }
+
+    @Test func durationOptionsRespectTheSessionMinimum() {
+        #expect(SessionPreset.durationOptions.allSatisfy { $0 >= FocusLock.minimumSessionMinutes })
+    }
+}

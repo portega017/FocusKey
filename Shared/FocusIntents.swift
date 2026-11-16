@@ -93,6 +93,90 @@ struct LockFocusIntent: LiveActivityIntent {
     }
 }
 
+// MARK: - Session presets
+
+nonisolated struct SessionPresetEntity: AppEntity {
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Sesión rápida"
+    static let defaultQuery = SessionPresetQuery()
+
+    let id: UUID
+    let title: String
+    let symbol: String
+
+    init(_ preset: SessionPreset, profiles: [FocusProfile]) {
+        let profile = profiles.first { $0.id == preset.profileID }
+        id = preset.id
+        title = preset.title(profile: profile)
+        symbol = profile?.symbol ?? "timer"
+    }
+
+    var displayRepresentation: DisplayRepresentation {
+        DisplayRepresentation(title: "\(title)", image: .init(systemName: symbol))
+    }
+}
+
+nonisolated struct SessionPresetQuery: EntityQuery {
+    func entities(for identifiers: [UUID]) async throws -> [SessionPresetEntity] {
+        let profiles = FocusStore.profiles()
+        return FocusStore.presets().filter { identifiers.contains($0.id) }.map { SessionPresetEntity($0, profiles: profiles) }
+    }
+
+    func suggestedEntities() async throws -> [SessionPresetEntity] {
+        let profiles = FocusStore.profiles()
+        return FocusStore.presets().map { SessionPresetEntity($0, profiles: profiles) }
+    }
+}
+
+/// Starts a session preset. A `LiveActivityIntent` for the same reason as `LockFocusIntent`:
+/// it must run in the app's process to have Screen Time authorization.
+struct StartPresetIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Empezar sesión rápida"
+    static let description = IntentDescription("Bloquea el perfil de una sesión rápida durante su tiempo. Solo tu llave NFC puede desbloquearlo antes.")
+
+    @Parameter(title: "Sesión")
+    var preset: SessionPresetEntity?
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Empezar \(\.$preset)")
+    }
+
+    init() {}
+
+    init(preset: SessionPresetEntity?) {
+        self.preset = preset
+    }
+
+    func perform() async throws -> some IntentResult & ProvidesDialog {
+        guard let id = preset?.id, let saved = FocusStore.presets().first(where: { $0.id == id }) else {
+            let message = String(localized: "Esa sesión rápida ya no existe. Elige otra.")
+            FocusStore.lastIntentError = message
+            return .result(dialog: "\(message)")
+        }
+        do {
+            let locked = try FocusLock.lockManually(profileID: saved.profileID, minutes: saved.minutes)
+            await FocusLiveActivity.sync()
+            let end = (FocusStore.sessionEnd ?? .now).formatted(date: .omitted, time: .shortened)
+            return .result(dialog: "«\(locked.displayName)» bloqueado hasta las \(end).")
+        } catch FocusLock.LockError.alreadyLocked {
+            return .result(dialog: "El bloqueo ya está activo.")
+        } catch FocusLock.LockError.pomodoroRunning {
+            return .result(dialog: "Hay un pomodoro en curso. Termínalo con tu llave.")
+        } catch {
+            FocusStore.lastIntentError = error.localizedDescription
+            FocusLock.reloadWidgets()
+            throw error
+        }
+    }
+}
+
+/// Which preset a Control Center button starts (chosen when adding the control).
+struct PresetControlConfiguration: ControlConfigurationIntent {
+    static let title: LocalizedStringResource = "Sesión rápida"
+
+    @Parameter(title: "Sesión")
+    var preset: SessionPresetEntity?
+}
+
 // MARK: - Unlock with the tag
 
 /// Opens FocusKey and starts an NFC scan right away.

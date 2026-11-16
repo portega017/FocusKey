@@ -38,6 +38,8 @@ nonisolated enum FocusStore {
         /// Used by an earlier build, when the tag could lift limits. Removed on launch.
         static let legacyLimitSkips = "FocusKey.limitSkips"
         static let records = "FocusKey.blockRecords"
+        /// One-tap timed sessions shown on the main screen, in display order.
+        static let sessionPresets = "FocusKey.sessionPresets"
         /// [yyyy-MM-dd: minutes] for days whose records were pruned (yearly statistics).
         static let dailyArchive = "FocusKey.dailyArchive"
         /// Days before this date are read from `dailyArchive` instead of the records.
@@ -112,6 +114,16 @@ nonisolated enum FocusStore {
     static var sessionEnd: Date? {
         get { defaults.object(forKey: Key.sessionEnd) as? Date }
         set { defaults.set(newValue, forKey: Key.sessionEnd) }
+    }
+
+    // MARK: Session presets
+
+    static func presets() -> [SessionPreset] {
+        load([SessionPreset].self, forKey: Key.sessionPresets) ?? []
+    }
+
+    static func savePresets(_ presets: [SessionPreset]) {
+        save(presets, forKey: Key.sessionPresets)
     }
 
     // MARK: Schedules

@@ -20,6 +20,15 @@ struct FocusShortcuts: AppShortcutsProvider {
             systemImageName: "lock.fill"
         )
         AppShortcut(
+            intent: StartPresetIntent(),
+            phrases: [
+                "Empezar \(\.$preset) con \(.applicationName)",
+                "Sesión rápida de \(.applicationName)"
+            ],
+            shortTitle: "Sesión rápida",
+            systemImageName: "bolt.fill"
+        )
+        AppShortcut(
             intent: UnlockWithKeyIntent(),
             phrases: ["Desbloquear \(.applicationName) con la llave"],
             shortTitle: "Usar llave",

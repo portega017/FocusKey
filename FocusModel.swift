@@ -12,6 +12,8 @@ import FamilyControls
 import ManagedSettings
 import DeviceActivity
 import UserNotifications
+import WidgetKit
+import AppIntents
 
 @MainActor
 final class FocusModel: ObservableObject {
@@ -29,6 +31,7 @@ final class FocusModel: ObservableObject {
     @Published private(set) var manualProfileID: UUID?
     @Published private(set) var sessionEnd: Date?
     @Published private(set) var schedules: [Schedule] = []
+    @Published private(set) var presets: [SessionPreset] = []
     @Published private(set) var limits: [UsageLimit] = []
     @Published private(set) var records: [BlockRecord] = []
     /// Per-day minutes of days whose records were pruned (yearly statistics).
@@ -85,6 +88,7 @@ final class FocusModel: ObservableObject {
         manualProfileID = FocusStore.manualProfileID
         sessionEnd = FocusStore.sessionEnd
         schedules = FocusStore.schedules()
+        presets = FocusStore.presets()
         limits = FocusStore.limits()
         records = FocusStore.records()
         dailyArchive = FocusStore.dailyArchive()
@@ -158,10 +162,10 @@ final class FocusModel: ObservableObject {
 
     // MARK: - Manual lock and sessions
 
-    /// Locks the active profile, indefinitely or for `minutes`.
-    func lock(minutes: Int? = nil) {
+    /// Locks a profile (the active one by default), indefinitely or for `minutes`.
+    func lock(minutes: Int? = nil, profileID: UUID? = nil) {
         do {
-            let profile = try FocusLock.lockManually(profileID: activeProfileID, minutes: minutes)
+            let profile = try FocusLock.lockManually(profileID: profileID ?? activeProfileID, minutes: minutes)
             if let minutes {
                 status = String(localized: "«\(profile.displayName)» bloqueado durante \(UsageLimit.formatted(minutes: minutes)).")
             } else {
@@ -200,6 +204,40 @@ final class FocusModel: ObservableObject {
             ? String(localized: "No hay ningún límite alcanzado.")
             : String(localized: "Tienes \(UsageLimit.formatted(minutes: minutes)) más. Después se volverá a bloquear.")
         reload()
+    }
+
+    // MARK: - Session presets
+
+    func startPreset(_ preset: SessionPreset) {
+        lock(minutes: preset.minutes, profileID: preset.profileID)
+    }
+
+    func addPreset(_ preset: SessionPreset) {
+        presets.append(preset)
+        savePresets()
+    }
+
+    func updatePreset(_ preset: SessionPreset) {
+        guard let index = presets.firstIndex(where: { $0.id == preset.id }) else { return }
+        presets[index] = preset
+        savePresets()
+    }
+
+    func deletePreset(_ id: UUID) {
+        presets.removeAll { $0.id == id }
+        savePresets()
+    }
+
+    func movePresets(from source: IndexSet, to destination: Int) {
+        presets.move(fromOffsets: source, toOffset: destination)
+        savePresets()
+    }
+
+    private func savePresets() {
+        FocusStore.savePresets(presets)
+        // Siri phrases use preset names as parameter values.
+        FocusShortcuts.updateAppShortcutParameters()
+        ControlCenter.shared.reloadAllControls()
     }
 
     // MARK: - Pomodoro
@@ -295,6 +333,8 @@ final class FocusModel: ObservableObject {
         }
         profiles[index] = profile
         FocusStore.saveProfiles(profiles)
+        // Preset titles shown to Siri include the profile name.
+        if existing.name != profile.name { FocusShortcuts.updateAppShortcutParameters() }
 
         if existing.selection != profile.selection {
             // Limits register their apps with iOS: register them again with the new apps.
@@ -323,6 +363,11 @@ final class FocusModel: ObservableObject {
         profiles.removeAll { $0.id == id }
         FocusStore.saveProfiles(profiles)
         if activeProfileID == id { activeProfileID = profiles.first?.id }
+        // A "1 h of Social" preset makes no sense with another profile: remove it.
+        if presets.contains(where: { $0.profileID == id }) {
+            presets.removeAll { $0.profileID == id }
+            savePresets()
+        }
         FocusLock.reloadWidgets()
     }
 

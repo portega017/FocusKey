@@ -8,6 +8,7 @@ struct FocusKeyWidgetBundle: WidgetBundle {
         FocusStatusWidget()
         FocusLockControl()
         FocusUnlockControl()
+        FocusPresetControl()
         FocusLiveActivityWidget()
     }
 }
@@ -220,6 +221,23 @@ struct FocusLockControl: ControlWidget {
         }
         .displayName("Bloquear apps")
         .description("Bloquea el perfil seleccionado en FocusKey.")
+    }
+}
+
+/// Starts a session preset chosen when the control is added.
+struct FocusPresetControl: ControlWidget {
+    var body: some ControlWidgetConfiguration {
+        AppIntentControlConfiguration(kind: "FocusKeyPresetControl", intent: PresetControlConfiguration.self) { configuration in
+            ControlWidgetButton(action: StartPresetIntent(preset: configuration.preset)) {
+                Label(
+                    configuration.preset?.title ?? String(localized: "Sesión rápida"),
+                    systemImage: configuration.preset?.symbol ?? "bolt.fill"
+                )
+            }
+        }
+        .displayName("Sesión rápida")
+        .description("Empieza una de tus sesiones rápidas de FocusKey.")
+        .promptsForUserConfiguration()
     }
 }
 
