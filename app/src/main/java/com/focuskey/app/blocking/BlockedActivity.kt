@@ -28,6 +28,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.focuskey.app.R
+import com.focuskey.app.data.FocusStore
+import com.focuskey.app.logic.FocusEngine
+import com.focuskey.app.ui.formatClock
 import com.focuskey.app.ui.theme.FocusKeyTheme
 
 /** Full-screen shield shown over blocked apps and websites. */
@@ -50,6 +53,7 @@ class BlockedActivity : ComponentActivity() {
     private fun render() {
         val target = intent.getStringExtra(EXTRA_TARGET).orEmpty()
         val isWebsite = intent.getBooleanExtra(EXTRA_IS_WEBSITE, false)
+        val protection = intent.getBooleanExtra(EXTRA_PROTECTION, false)
         val name = if (isWebsite) target else appLabel(target)
 
         setContent {
@@ -67,31 +71,56 @@ class BlockedActivity : ComponentActivity() {
                         )
                         Spacer(Modifier.height(24.dp))
                         Text(
-                            "Bloqueado por FocusKey",
+                            getString(R.string.blocked_title),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
                         )
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            if (isWebsite) "El sitio web $name está bloqueado."
-                            else "$name está bloqueada en este momento.",
+                            when {
+                                protection -> getString(R.string.blocked_protection)
+                                isWebsite -> getString(R.string.blocked_site, name)
+                                else -> getString(R.string.blocked_app, name)
+                            },
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Usa tu llave NFC FocusKey para desbloquear.",
+                            reason(),
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(Modifier.height(32.dp))
                         Button(onClick = ::goHome, modifier = Modifier.fillMaxWidth()) {
-                            Text("Volver al inicio")
+                            Text(getString(R.string.back_to_focus))
                         }
                     }
+                }
+            }
+        }
+    }
+
+    /** Why it's blocked and until when, picking the most specific source. */
+    private fun reason(): String {
+        val store = FocusStore(this)
+        val now = System.currentTimeMillis()
+        val plan = store.activePomodoro(now)
+        return when {
+            plan != null && store.isLocked -> getString(R.string.reason_pomodoro, formatClock(this, store.sessionEnd))
+            store.isLocked && store.sessionEnd > now -> getString(R.string.reason_session, formatClock(this, store.sessionEnd))
+            store.isLocked -> getString(R.string.reason_key)
+            store.isLimitLocked && !store.isScheduleLocked -> getString(R.string.reason_limit)
+            else -> {
+                val schedule = FocusEngine.runningSchedules(store, now).firstOrNull()
+                if (schedule != null) {
+                    val end = FocusEngine.run { schedule.currentIntervalEnd(now.toLocalDateTime()).toEpochMillis() }
+                    getString(R.string.reason_schedule, schedule.name.ifEmpty { getString(R.string.schedule_default_name) }, formatClock(this, end))
+                } else {
+                    getString(R.string.reason_key)
                 }
             }
         }
@@ -101,7 +130,7 @@ class BlockedActivity : ComponentActivity() {
         val info = packageManager.getApplicationInfo(packageName, 0)
         packageManager.getApplicationLabel(info).toString()
     } catch (e: PackageManager.NameNotFoundException) {
-        "Esta aplicación"
+        getString(R.string.this_app)
     }
 
     private fun goHome() {
@@ -116,5 +145,6 @@ class BlockedActivity : ComponentActivity() {
     companion object {
         const val EXTRA_TARGET = "target"
         const val EXTRA_IS_WEBSITE = "isWebsite"
+        const val EXTRA_PROTECTION = "protection"
     }
 }

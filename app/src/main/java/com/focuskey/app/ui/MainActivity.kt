@@ -1,6 +1,12 @@
 package com.focuskey.app.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.content.Intent
 import android.os.Bundle
+import androidx.core.content.ContextCompat
+import com.focuskey.app.notify.FocusNotifications
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -21,6 +27,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         nfcReader = NfcKeyReader(this)
+        viewModel.nfcAvailability = { nfcReader.availability }
+        FocusNotifications.ensureChannels(this)
+        // Countdown and pomodoro alerts need permission from Android 13.
+        if (Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
+        }
 
         // NFC reader mode only works while the activity is in the foreground.
         lifecycleScope.launch {
@@ -37,17 +51,32 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             FocusKeyTheme {
-                FocusKeyRoot(
-                    viewModel = viewModel,
-                    nfcAvailability = { nfcReader.availability }
-                )
+                FocusKeyRoot(viewModel)
             }
+        }
+        handleScanRequest(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleScanRequest(intent)
+    }
+
+    /** Opened from the widget or a Quick Settings tile to use the key. */
+    private fun handleScanRequest(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_SCAN, false) == true) {
+            intent.removeExtra(EXTRA_SCAN)
+            viewModel.startNfcScan()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.refresh()
+        viewModel.onResume()
+    }
+
+    companion object {
+        const val EXTRA_SCAN = "scan"
     }
 
     private fun stopNfc() {

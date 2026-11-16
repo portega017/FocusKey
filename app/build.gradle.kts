@@ -53,6 +53,12 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("androidx.glance:glance-material3:1.1.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // JVM tests of the blocking rules (org.json is only stubbed in android.jar).
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
 }

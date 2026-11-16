@@ -55,6 +55,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.focuskey.app.R
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -91,23 +93,23 @@ fun AppPickerScreen(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
-                title = { Text("Seleccionar") },
+                title = { Text(stringResource(R.string.select)) },
                 navigationIcon = {
                     IconButton(onClick = onCancel) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Cancelar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cancel))
                     }
                 },
                 actions = {
-                    TextButton(onClick = { onDone(Selection(apps, categories, domains)) }) { Text("Listo") }
+                    TextButton(onClick = { onDone(Selection(apps, categories, domains)) }) { Text(stringResource(R.string.done)) }
                 }
             )
         }
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             TabRow(selectedTabIndex = tab) {
-                Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Apps (${apps.size})") })
-                Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Categorías (${categories.size})") })
-                Tab(selected = tab == 2, onClick = { tab = 2 }, text = { Text("Webs (${domains.size})") })
+                Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text(stringResource(R.string.tab_apps, apps.size)) })
+                Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text(stringResource(R.string.tab_categories, categories.size)) })
+                Tab(selected = tab == 2, onClick = { tab = 2 }, text = { Text(stringResource(R.string.tab_sites, domains.size)) })
             }
             when (tab) {
                 0 -> AppsTab(apps) { pkg, selected -> apps = if (selected) apps + pkg else apps - pkg }
@@ -133,7 +135,7 @@ private fun AppsTab(selected: Set<String>, onToggle: (String, Boolean) -> Unit) 
             value = query,
             onValueChange = { query = it },
             modifier = Modifier.fillMaxWidth().padding(16.dp),
-            placeholder = { Text("Buscar aplicaciones") },
+            placeholder = { Text(stringResource(R.string.search_apps)) },
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
             singleLine = true
         )
@@ -144,7 +146,7 @@ private fun AppsTab(selected: Set<String>, onToggle: (String, Boolean) -> Unit) 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator()
                     Spacer(Modifier.size(12.dp))
-                    Text("Cargando aplicaciones...")
+                    Text(stringResource(R.string.loading_apps))
                 }
             }
         } else {
@@ -177,7 +179,7 @@ private fun AppList(
                 headlineContent = { Text(app.name) },
                 supportingContent = {
                     Text(
-                        if (app.category != ApplicationInfo.CATEGORY_UNDEFINED) AppCategory.labelFor(app.category)
+                        if (app.category != ApplicationInfo.CATEGORY_UNDEFINED) AppCategory.labelFor(LocalContext.current, app.category)
                         else app.packageName,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -195,8 +197,7 @@ private fun CategoriesTab(selected: Set<Int>, onToggle: (Int, Boolean) -> Unit) 
     LazyColumn(Modifier.fillMaxSize()) {
         item {
             Text(
-                "Bloquea todas las apps de una categoría, incluidas las que instales más tarde. " +
-                    "La categoría la define cada app; algunas no indican ninguna.",
+                stringResource(R.string.categories_footer),
                 modifier = Modifier.padding(16.dp),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -206,7 +207,7 @@ private fun CategoriesTab(selected: Set<Int>, onToggle: (Int, Boolean) -> Unit) 
             val isSelected = category.id in selected
             ListItem(
                 modifier = Modifier.clickable { onToggle(category.id, !isSelected) },
-                headlineContent = { Text(category.label) },
+                headlineContent = { Text(stringResource(category.label)) },
                 trailingContent = {
                     Checkbox(checked = isSelected, onCheckedChange = { onToggle(category.id, it) })
                 }
@@ -217,13 +218,14 @@ private fun CategoriesTab(selected: Set<Int>, onToggle: (Int, Boolean) -> Unit) 
 
 @Composable
 private fun DomainsTab(domains: Set<String>, onAdd: (String) -> Unit, onRemove: (String) -> Unit) {
+    val context = LocalContext.current
     var input by rememberSaveable { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
 
     fun add() {
         val domain = normalizeDomain(input)
         if (domain == null) {
-            error = "Escribe un dominio válido, por ejemplo youtube.com"
+            error = context.getString(R.string.invalid_domain)
         } else {
             onAdd(domain)
             input = ""
@@ -243,7 +245,7 @@ private fun DomainsTab(domains: Set<String>, onAdd: (String) -> Unit, onRemove: 
                     value = input,
                     onValueChange = { input = it; error = null },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("ejemplo.com") },
+                    placeholder = { Text("example.com") },
                     singleLine = true,
                     isError = error != null,
                     supportingText = if (currentError != null) {
@@ -254,10 +256,10 @@ private fun DomainsTab(domains: Set<String>, onAdd: (String) -> Unit, onRemove: 
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() })
                 )
-                Button(onClick = ::add) { Text("Añadir") }
+                Button(onClick = ::add) { Text(stringResource(R.string.add)) }
             }
             Text(
-                "Se bloquea el dominio y sus subdominios en Chrome, Firefox, Edge, Brave, Samsung Internet, Opera y DuckDuckGo.",
+                stringResource(R.string.sites_footer),
                 modifier = Modifier.padding(horizontal = 16.dp),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -270,7 +272,7 @@ private fun DomainsTab(domains: Set<String>, onAdd: (String) -> Unit, onRemove: 
                 headlineContent = { Text(domain) },
                 trailingContent = {
                     IconButton(onClick = { onRemove(domain) }) {
-                        Icon(Icons.Filled.Delete, contentDescription = "Eliminar $domain")
+                        Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete))
                     }
                 }
             )

@@ -7,21 +7,21 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-/** Same accent colors as the iOS app (system indigo, green, red, orange). */
+/** Same accent colors as the iOS app (system blue accent, green, red, orange). */
 object FocusColors {
-    val Indigo = Color(0xFF5856D6)
-    val IndigoDark = Color(0xFF5E5CE6)
+    val Blue = Color(0xFF007AFF)
+    val BlueDark = Color(0xFF0A84FF)
     val Green = Color(0xFF34C759)
     val Red = Color(0xFFFF3B30)
     val Orange = Color(0xFFFF9500)
 }
 
 private val LightColors = lightColorScheme(
-    primary = FocusColors.Indigo,
+    primary = FocusColors.Blue,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFE4E3FF),
-    onPrimaryContainer = Color(0xFF14105E),
-    secondary = FocusColors.Indigo,
+    primaryContainer = Color(0xFFD6E8FF),
+    onPrimaryContainer = Color(0xFF00214A),
+    secondary = FocusColors.Blue,
     background = Color(0xFFF2F2F7),
     surface = Color.White,
     surfaceVariant = Color(0xFFF2F2F7),
@@ -29,11 +29,11 @@ private val LightColors = lightColorScheme(
 )
 
 private val DarkColors = darkColorScheme(
-    primary = FocusColors.IndigoDark,
+    primary = FocusColors.BlueDark,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFF2E2C80),
-    onPrimaryContainer = Color(0xFFE4E3FF),
-    secondary = FocusColors.IndigoDark,
+    primaryContainer = Color(0xFF003A80),
+    onPrimaryContainer = Color(0xFFD6E8FF),
+    secondary = FocusColors.BlueDark,
     background = Color.Black,
     surface = Color(0xFF1C1C1E),
     surfaceVariant = Color(0xFF2C2C2E),

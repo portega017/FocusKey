@@ -10,7 +10,10 @@ import android.view.accessibility.AccessibilityNodeInfo
 import com.focuskey.app.data.FocusStore
 import com.focuskey.app.data.hostMatches
 import com.focuskey.app.data.normalizeDomain
+import com.focuskey.app.R
 import com.focuskey.app.logic.FocusEngine
+import com.focuskey.app.notify.FocusNotifications
+import com.focuskey.app.notify.FocusUpdates
 
 /**
  * Watches which app (and, in browsers, which website) is on screen and covers it with
@@ -21,6 +24,7 @@ class FocusAccessibilityService : AccessibilityService() {
     private lateinit var store: FocusStore
     private val categoryCache = mutableMapOf<String, Int>()
     private var lastSync = 0L
+    private var lastLimitSync = 0L
     private var lastBlock = 0L
 
     override fun onServiceConnected() {
@@ -32,11 +36,33 @@ class FocusAccessibilityService : AccessibilityService() {
         val packageName = event?.packageName?.toString() ?: return
         if (packageName == this.packageName || packageName in IGNORED_PACKAGES) return
 
-        // Keep the schedule lock in step with the clock (at most every few seconds).
+        // Keep sessions, pomodoro phases and schedules in step with the clock (at most every few seconds),
+        // and daily limits (usage queries are heavier) every half minute.
         val now = SystemClock.elapsedRealtime()
         if (now - lastSync > SYNC_INTERVAL_MS) {
             lastSync = now
-            FocusEngine.syncScheduleLock(store)
+            var changed = FocusEngine.sync(store)
+            if (now - lastLimitSync > LIMIT_SYNC_INTERVAL_MS) {
+                lastLimitSync = now
+                val wasLimitLocked = store.limitShieldIds
+                FocusEngine.syncLimits(this, store).forEach { (limit, left) ->
+                    FocusNotifications.limitWarning(this, limit, left)
+                }
+                changed = changed || wasLimitLocked != store.limitShieldIds
+            }
+            if (changed) FocusUpdates.refreshAll(this)
+        }
+
+        if (!FocusEngine.isBlocked(store)) return
+
+        // Uninstall protection: FocusKey is a device admin, so it can't be uninstalled until that is
+        // turned off. While something is blocked, the screen that turns it off is blocked too.
+        if (store.preventRemoval && packageName == SETTINGS_PACKAGE &&
+            event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
+            event.className?.toString()?.contains("DeviceAdminAdd") == true
+        ) {
+            block(getString(R.string.app_name), isWebsite = false, protection = true)
+            return
         }
 
         val shields = FocusEngine.activeShields(store)
@@ -60,7 +86,7 @@ class FocusAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() = Unit
 
-    private fun block(target: String, isWebsite: Boolean) {
+    private fun block(target: String, isWebsite: Boolean, protection: Boolean = false) {
         val now = SystemClock.elapsedRealtime()
         if (now - lastBlock < BLOCK_DEBOUNCE_MS) return
         lastBlock = now
@@ -72,6 +98,7 @@ class FocusAccessibilityService : AccessibilityService() {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .putExtra(BlockedActivity.EXTRA_TARGET, target)
                 .putExtra(BlockedActivity.EXTRA_IS_WEBSITE, isWebsite)
+                .putExtra(BlockedActivity.EXTRA_PROTECTION, protection)
         )
     }
 
@@ -101,6 +128,8 @@ class FocusAccessibilityService : AccessibilityService() {
     companion object {
         private const val SYNC_INTERVAL_MS = 5_000L
         private const val BLOCK_DEBOUNCE_MS = 1_500L
+        private const val LIMIT_SYNC_INTERVAL_MS = 30_000L
+        private const val SETTINGS_PACKAGE = "com.android.settings"
 
         private val IGNORED_PACKAGES = setOf("com.android.systemui")
 

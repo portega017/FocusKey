@@ -2,13 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Llave física NFC -->
+    <!-- Physical NFC key -->
     <uses-permission android:name="android.permission.NFC" />
+    <!-- Countdown of sessions and pomodoros, and pomodoro phase alerts -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Real usage for daily limits and the usage report (granted in Settings › Usage access) -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
     <uses-feature
         android:name="android.hardware.nfc"
         android:required="false" />
 
-    <!-- Permite listar las aplicaciones instaladas que se pueden abrir -->
+    <!-- Lists the installed apps that can be opened -->
     <queries>
         <intent>
             <action android:name="android.intent.action.MAIN" />
@@ -36,7 +42,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Pantalla que se muestra encima de una app o web bloqueada -->
+        <!-- Screen shown over a blocked app or website -->
         <activity
             android:name=".blocking.BlockedActivity"
             android:excludeFromRecents="true"
@@ -44,7 +50,7 @@
             android:launchMode="singleTask"
             android:taskAffinity="com.focuskey.app.blocked" />
 
-        <!-- Equivalente a Screen Time: detecta la app/web en primer plano y la bloquea -->
+        <!-- Screen Time equivalent: detects the app/site on screen and blocks it -->
         <service
             android:name=".blocking.FocusAccessibilityService"
             android:exported="false"
@@ -57,6 +63,59 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
         </service>
+
+        <!-- Uninstall protection -->
+        <receiver
+            android:name=".admin.FocusAdminReceiver"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Home screen widget -->
+        <receiver
+            android:name=".widget.FocusWidgetReceiver"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/focus_widget_info" />
+        </receiver>
+
+        <!-- Quick Settings tiles (Control Center equivalent) -->
+        <service
+            android:name=".tiles.LockTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_notification"
+            android:label="@string/lock"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".tiles.KeyTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_nfc"
+            android:label="@string/use_key"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- Pomodoro phase changes -->
+        <receiver
+            android:name=".notify.PhaseReceiver"
+            android:exported="false" />
 
     </application>
 </manifest>
