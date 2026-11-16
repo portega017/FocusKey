@@ -448,3 +448,36 @@ struct StrictModeTests {
         #expect(!profile.isWeakened(by: renamed), "Name and color don't change what is blocked")
     }
 }
+
+@Suite("Pomodoro presets")
+struct PomodoroPresetTests {
+    @Test func titleShowsCyclesAndFocus() {
+        let profile = FocusProfile(name: "Estudio")
+        let preset = SessionPreset(profileID: profile.id, pomodoro: .init(focusMinutes: 25, breakMinutes: 5, cycles: 4))
+        #expect(preset.title(profile: profile) == "Estudio · 4×25")
+        #expect(SessionPreset(profileID: profile.id, minutes: 60).durationText == "1 h")
+    }
+
+    @Test func presetsSavedBeforePomodorosStillLoad() throws {
+        // Earlier builds stored id, name, profileID and minutes only.
+        let json = """
+        [{"id":"\(UUID().uuidString)","name":"Redes","profileID":"\(UUID().uuidString)","minutes":60}]
+        """
+        let presets = try JSONDecoder().decode([SessionPreset].self, from: Data(json.utf8))
+        #expect(presets.first?.pomodoro == nil)
+        #expect(presets.first?.minutes == 60)
+    }
+
+    @Test func pomodoroPresetRoundTrips() throws {
+        let preset = SessionPreset(name: "Estudio", profileID: UUID(), pomodoro: .init(focusMinutes: 50, breakMinutes: 10, cycles: 3))
+        let decoded = try JSONDecoder().decode(SessionPreset.self, from: JSONEncoder().encode(preset))
+        #expect(decoded == preset)
+    }
+
+    @Test func defaultPomodoroFitsThePlanLimits() {
+        let pomodoro = SessionPreset.Pomodoro()
+        #expect(PomodoroPlan.focusOptions.contains(pomodoro.focusMinutes))
+        #expect(PomodoroPlan.breakOptions.contains(pomodoro.breakMinutes))
+        #expect(PomodoroPlan.cycleRange.contains(pomodoro.cycles))
+    }
+}

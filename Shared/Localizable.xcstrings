@@ -93,6 +93,22 @@
         }
       }
     },
+    "%@ de concentración en %@. Las apps se bloquean solo durante los bloques de concentración.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ of focus over %2$@. Apps are blocked only during focus blocks."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ de concentración en %2$@. Las apps se bloquean solo durante los bloques de concentración."
+          }
+        }
+      }
+    },
     "%@ de concentración. ¡Bien hecho!": {
       "localizations": {
         "en": {
@@ -709,16 +725,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Welcome to FocusKey"
-          }
-        }
-      }
-    },
-    "Bloquea el perfil de una sesión rápida durante su tiempo. Solo tu llave NFC puede desbloquearlo antes.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Blocks the profile of a quick session for its duration. Only your NFC key can unlock it early."
           }
         }
       }
@@ -1521,6 +1527,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Starts one of your FocusKey quick sessions."
+          }
+        }
+      }
+    },
+    "Empieza una sesión rápida: bloquea su perfil durante su tiempo o en ciclos de pomodoro. Solo tu llave NFC puede terminarla antes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts a quick session: blocks its profile for its duration or in pomodoro cycles. Only your NFC key can end it early."
           }
         }
       }
@@ -2813,12 +2829,38 @@
         }
       }
     },
+    "Pomodoro %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro %@"
+          }
+        }
+      }
+    },
     "Pomodoro completado": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Pomodoro complete"
+          }
+        }
+      }
+    },
+    "Pomodoro de %lld ciclos iniciado. Termina a las %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld-cycle pomodoro started. Ends at %2$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro de %1$lld ciclos iniciado. Termina a las %2$@."
           }
         }
       }
@@ -3351,6 +3393,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "You have %@ more. Then it will block again."
+          }
+        }
+      }
+    },
+    "Tipo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type"
           }
         }
       }

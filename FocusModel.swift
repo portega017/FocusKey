@@ -242,7 +242,7 @@ final class FocusModel: ObservableObject {
         var parts: [String] = []
         if result.pomodoro {
             parts.append(String(localized: "pomodoro terminado"))
-            cancelPomodoroNotifications()
+            PomodoroNotifications.cancel()
         }
         if result.manual { parts.append(String(localized: "bloqueo manual desactivado")) }
         if !result.schedules.isEmpty { parts.append(String(localized: "horario desbloqueado hasta el final del intervalo")) }
@@ -263,7 +263,12 @@ final class FocusModel: ObservableObject {
     // MARK: - Session presets
 
     func startPreset(_ preset: SessionPreset) {
-        lock(minutes: preset.minutes, profileID: preset.profileID)
+        if let pomodoro = preset.pomodoro {
+            startPomodoro(focusMinutes: pomodoro.focusMinutes, breakMinutes: pomodoro.breakMinutes,
+                          cycles: pomodoro.cycles, profileID: preset.profileID)
+        } else {
+            lock(minutes: preset.minutes, profileID: preset.profileID)
+        }
     }
 
     func addPreset(_ preset: SessionPreset) {
@@ -296,67 +301,18 @@ final class FocusModel: ObservableObject {
 
     // MARK: - Pomodoro
 
-    func startPomodoro(focusMinutes: Int, breakMinutes: Int, cycles: Int) {
+    /// Starts a pomodoro on a profile (the active one by default).
+    func startPomodoro(focusMinutes: Int, breakMinutes: Int, cycles: Int, profileID: UUID? = nil) {
         do {
             let plan = try FocusLock.startPomodoro(
-                profileID: activeProfileID, focusMinutes: focusMinutes, breakMinutes: breakMinutes, cycles: cycles
+                profileID: profileID ?? activeProfileID, focusMinutes: focusMinutes, breakMinutes: breakMinutes, cycles: cycles
             )
-            schedulePomodoroNotifications(plan)
+            PomodoroNotifications.schedule(plan)
             status = String(localized: "Pomodoro iniciado: \(plan.cycles) ciclos, termina a las \(plan.end.formatted(date: .omitted, time: .shortened)).")
         } catch {
             status = error.localizedDescription
         }
         reload()
-    }
-
-    /// Local notifications for every phase change, scheduled up front: they work even if the
-    /// app isn't running, and opening one refreshes the Live Activity.
-    private func schedulePomodoroNotifications(_ plan: PomodoroPlan) {
-        cancelPomodoroNotifications()
-        Task {
-            // Requests added before permission is granted are dropped.
-            _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
-            addPomodoroNotifications(plan)
-        }
-    }
-
-    private func addPomodoroNotifications(_ plan: PomodoroPlan) {
-        let center = UNUserNotificationCenter.current()
-        let profileName = profile(plan.profileID)?.displayName ?? ""
-
-        func add(_ id: String, at date: Date, title: String, body: String) {
-            let delay = date.timeIntervalSinceNow
-            guard delay > 0 else { return }
-            let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = body
-            content.sound = .default
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
-            center.add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
-        }
-
-        for cycle in 0..<plan.cycles {
-            let block = plan.block(cycle)
-            if cycle < plan.cycles - 1 {
-                let next = plan.block(cycle + 1)
-                add("pomodoro-rest-\(cycle)", at: block.end,
-                    title: String(localized: "Descanso"),
-                    body: String(localized: "Tus apps están libres \(UsageLimit.formatted(minutes: plan.breakMinutes)). El ciclo \(cycle + 2) de \(plan.cycles) empieza a las \(next.start.formatted(date: .omitted, time: .shortened))."))
-                add("pomodoro-focus-\(cycle + 1)", at: next.start,
-                    title: String(localized: "Vuelve a concentrarte"),
-                    body: String(localized: "Ciclo \(cycle + 2) de \(plan.cycles): «\(profileName)» bloqueado hasta las \(next.end.formatted(date: .omitted, time: .shortened))."))
-            } else {
-                add("pomodoro-done", at: block.end,
-                    title: String(localized: "Pomodoro completado"),
-                    body: String(localized: "\(UsageLimit.formatted(minutes: plan.totalFocusMinutes)) de concentración. ¡Bien hecho!"))
-            }
-        }
-    }
-
-    private func cancelPomodoroNotifications() {
-        let cycles = 0..<PomodoroPlan.cycleRange.upperBound
-        let ids = cycles.map { "pomodoro-rest-\($0)" } + cycles.map { "pomodoro-focus-\($0)" } + ["pomodoro-done"]
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
 
     func isLimitExtended(_ limit: UsageLimit, at date: Date = .now) -> Bool {

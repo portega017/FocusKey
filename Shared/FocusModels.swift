@@ -382,20 +382,38 @@ nonisolated struct UsageLimit: Codable, Identifiable, Equatable {
 // MARK: - Session preset
 
 /// A one-tap timed session: block a profile for a fixed time ("Redes · 1 h").
+/// A one-tap block of a profile: a timed session ("Redes · 1 h") or a pomodoro ("Estudio · 4×25").
 nonisolated struct SessionPreset: Codable, Identifiable, Equatable {
+    /// Focus, break and cycles of a pomodoro preset.
+    struct Pomodoro: Codable, Equatable {
+        var focusMinutes: Int = 25
+        var breakMinutes: Int = 5
+        var cycles: Int = 4
+    }
+
     let id: UUID
     var name: String
     var profileID: UUID
+    /// Length of a timed session. Ignored when `pomodoro` is set.
     var minutes: Int
+    /// Set for pomodoro presets. Absent in presets saved before pomodoros existed.
+    var pomodoro: Pomodoro?
 
-    init(id: UUID = UUID(), name: String = "", profileID: UUID, minutes: Int = 60) {
+    init(id: UUID = UUID(), name: String = "", profileID: UUID, minutes: Int = 60, pomodoro: Pomodoro? = nil) {
         self.id = id
         self.name = name
         self.profileID = profileID
         self.minutes = minutes
+        self.pomodoro = pomodoro
     }
 
     static let durationOptions = [15, 30, 45, 60, 90, 120, 180, 240]
+
+    /// "1 h" for a session, "4×25" for a pomodoro.
+    var durationText: String {
+        if let pomodoro { return "\(pomodoro.cycles)×\(pomodoro.focusMinutes)" }
+        return UsageLimit.formatted(minutes: minutes)
+    }
 
     /// The custom name, or the profile's name when there is none.
     func displayName(profile: FocusProfile?) -> String {
@@ -403,9 +421,9 @@ nonisolated struct SessionPreset: Codable, Identifiable, Equatable {
         return profile?.displayName ?? String(localized: "Sesión")
     }
 
-    /// "Estudio · 1 h"
+    /// "Estudio · 1 h" or "Estudio · 4×25"
     func title(profile: FocusProfile?) -> String {
-        "\(displayName(profile: profile)) · \(UsageLimit.formatted(minutes: minutes))"
+        "\(displayName(profile: profile)) · \(durationText)"
     }
 }
 

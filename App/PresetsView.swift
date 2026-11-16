@@ -82,13 +82,18 @@ private struct PresetTile: View {
                     Image(systemName: profile?.symbol ?? "timer")
                         .font(.headline)
                     Spacer()
-                    Text(UsageLimit.formatted(minutes: preset.minutes))
-                        .font(.caption.weight(.bold))
-                        .fontDesign(.rounded)
-                        .monospacedDigit()
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(.white.opacity(0.22), in: Capsule())
+                    Label {
+                        Text(preset.durationText)
+                    } icon: {
+                        if preset.pomodoro != nil { Image(systemName: "timer") }
+                    }
+                    .labelStyle(.titleAndIcon)
+                    .font(.caption.weight(.bold))
+                    .fontDesign(.rounded)
+                    .monospacedDigit()
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(.white.opacity(0.22), in: Capsule())
                 }
                 Spacer(minLength: 0)
                 Text(preset.displayName(profile: profile))
@@ -124,7 +129,7 @@ struct PresetsView: View {
                             ProfileIcon(symbol: profile?.symbol ?? "timer", color: profile?.color ?? .indigo)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(preset.displayName(profile: profile)).foregroundStyle(.primary)
-                                Text("\(profile?.displayName ?? "") · \(UsageLimit.formatted(minutes: preset.minutes))")
+                                Text("\(profile?.displayName ?? "") · \(preset.pomodoro == nil ? preset.durationText : String(localized: "Pomodoro \(preset.durationText)"))")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -159,6 +164,8 @@ struct PresetsView: View {
 }
 
 struct PresetEditor: View {
+    enum Kind: Hashable { case session, pomodoro }
+
     @EnvironmentObject private var model: FocusModel
     @Environment(\.dismiss) private var dismiss
     let preset: SessionPreset?
@@ -166,14 +173,18 @@ struct PresetEditor: View {
 
     @State private var name: String
     @State private var profileID: UUID?
+    @State private var kind: Kind
     @State private var minutes: Int
+    @State private var pomodoro: SessionPreset.Pomodoro
 
     init(preset: SessionPreset?, onSave: @escaping (SessionPreset) -> Void) {
         self.preset = preset
         self.onSave = onSave
         _name = State(initialValue: preset?.name ?? "")
         _profileID = State(initialValue: preset?.profileID)
+        _kind = State(initialValue: preset?.pomodoro == nil ? .session : .pomodoro)
         _minutes = State(initialValue: preset?.minutes ?? 60)
+        _pomodoro = State(initialValue: preset?.pomodoro ?? .init())
     }
 
     private var profile: FocusProfile? { model.profile(profileID) }
@@ -181,6 +192,16 @@ struct PresetEditor: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Picker("Tipo", selection: $kind) {
+                        Text("Sesión").tag(Kind.session)
+                        Text("Pomodoro").tag(Kind.pomodoro)
+                    }
+                    .pickerStyle(.segmented)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+                }
+
                 Section {
                     Picker("Perfil", selection: $profileID) {
                         ForEach(model.profiles) { profile in
@@ -193,20 +214,9 @@ struct PresetEditor: View {
                     Text(profile?.summary ?? "")
                 }
 
-                Section("Duración") {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(SessionPreset.durationOptions, id: \.self) { option in
-                                Button(UsageLimit.formatted(minutes: option)) { minutes = option }
-                                    .buttonStyle(.bordered)
-                                    .tint(option == minutes ? (profile?.color ?? .indigo) : .secondary)
-                            }
-                        }
-                    }
-                    Stepper(value: $minutes, in: FocusLock.minimumSessionMinutes...720, step: 15) {
-                        Text(UsageLimit.formatted(minutes: minutes))
-                            .font(.title3.monospacedDigit())
-                    }
+                switch kind {
+                case .session: sessionSection
+                case .pomodoro: pomodoroSection
                 }
 
                 Section {
@@ -223,6 +233,7 @@ struct PresetEditor: View {
                         .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
                 }
             }
+            .animation(.smooth, value: kind)
             .navigationTitle(preset == nil ? String(localized: "Nueva sesión rápida") : String(localized: "Editar sesión rápida"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -245,12 +256,50 @@ struct PresetEditor: View {
         }
     }
 
+    private var sessionSection: some View {
+        Section("Duración") {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(SessionPreset.durationOptions, id: \.self) { option in
+                        Button(UsageLimit.formatted(minutes: option)) { minutes = option }
+                            .buttonStyle(.bordered)
+                            .tint(option == minutes ? (profile?.color ?? .accentColor) : .secondary)
+                    }
+                }
+            }
+            Stepper(value: $minutes, in: FocusLock.minimumSessionMinutes...720, step: 15) {
+                Text(UsageLimit.formatted(minutes: minutes))
+                    .font(.title3.monospacedDigit())
+            }
+        }
+    }
+
+    private var pomodoroSection: some View {
+        Section {
+            Picker("Concentración", selection: $pomodoro.focusMinutes) {
+                ForEach(PomodoroPlan.focusOptions, id: \.self) { Text(UsageLimit.formatted(minutes: $0)).tag($0) }
+            }
+            Picker("Descanso", selection: $pomodoro.breakMinutes) {
+                ForEach(PomodoroPlan.breakOptions, id: \.self) { Text(UsageLimit.formatted(minutes: $0)).tag($0) }
+            }
+            Stepper(value: $pomodoro.cycles, in: PomodoroPlan.cycleRange) {
+                Text("\(pomodoro.cycles) ciclos")
+            }
+        } header: {
+            Text("Pomodoro")
+        } footer: {
+            let total = pomodoro.cycles * pomodoro.focusMinutes + (pomodoro.cycles - 1) * pomodoro.breakMinutes
+            Text("\(UsageLimit.formatted(minutes: pomodoro.focusMinutes * pomodoro.cycles)) de concentración en \(UsageLimit.formatted(minutes: total)). Las apps se bloquean solo durante los bloques de concentración.")
+        }
+    }
+
     private var draft: SessionPreset {
         SessionPreset(
             id: preset?.id ?? UUID(),
             name: name.trimmingCharacters(in: .whitespaces),
             profileID: profileID ?? UUID(),
-            minutes: minutes
+            minutes: minutes,
+            pomodoro: kind == .pomodoro ? pomodoro : nil
         )
     }
 }

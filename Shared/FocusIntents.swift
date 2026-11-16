@@ -131,7 +131,7 @@ nonisolated struct SessionPresetQuery: EntityQuery {
 /// it must run in the app's process to have Screen Time authorization.
 struct StartPresetIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Empezar sesión rápida"
-    static let description = IntentDescription("Bloquea el perfil de una sesión rápida durante su tiempo. Solo tu llave NFC puede desbloquearlo antes.")
+    static let description = IntentDescription("Empieza una sesión rápida: bloquea su perfil durante su tiempo o en ciclos de pomodoro. Solo tu llave NFC puede terminarla antes.")
 
     @Parameter(title: "Sesión")
     var preset: SessionPresetEntity?
@@ -153,6 +153,16 @@ struct StartPresetIntent: LiveActivityIntent {
             return .result(dialog: "\(message)")
         }
         do {
+            if let pomodoro = saved.pomodoro {
+                let plan = try FocusLock.startPomodoro(
+                    profileID: saved.profileID, focusMinutes: pomodoro.focusMinutes,
+                    breakMinutes: pomodoro.breakMinutes, cycles: pomodoro.cycles
+                )
+                PomodoroNotifications.schedule(plan)
+                await FocusLiveActivity.sync()
+                let end = plan.end.formatted(date: .omitted, time: .shortened)
+                return .result(dialog: "Pomodoro de \(plan.cycles) ciclos iniciado. Termina a las \(end).")
+            }
             let locked = try FocusLock.lockManually(profileID: saved.profileID, minutes: saved.minutes)
             await FocusLiveActivity.sync()
             let end = (FocusStore.sessionEnd ?? .now).formatted(date: .omitted, time: .shortened)
