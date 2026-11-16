@@ -739,6 +739,16 @@
         }
       }
     },
+    "Añadida": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added"
+          }
+        }
+      }
+    },
     "Añadir horario": {
       "localizations": {
         "en": {
@@ -749,22 +759,22 @@
         }
       }
     },
+    "Añadir llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add key"
+          }
+        }
+      }
+    },
     "Añadir límite": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Add limit"
-          }
-        }
-      }
-    },
-    "Añadir tarjeta": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add card"
           }
         }
       }
@@ -1191,6 +1201,16 @@
         }
       }
     },
+    "Dejará de desbloquear FocusKey.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It will no longer unlock FocusKey."
+          }
+        }
+      }
+    },
     "Desbloqueado": {
       "localizations": {
         "en": {
@@ -1567,6 +1587,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Delete schedule"
+          }
+        }
+      }
+    },
+    "Eliminar llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete key"
           }
         }
       }
@@ -2349,6 +2379,16 @@
         }
       }
     },
+    "Llaves de repuesto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spare keys"
+          }
+        }
+      }
+    },
     "Lo que haces hoy cuenta más que lo que harás mañana.": {
       "localizations": {
         "en": {
@@ -2829,6 +2869,16 @@
         }
       }
     },
+    "Para cambiar la tarjeta en sí, elimina esta llave y añade la nueva.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To change the card itself, delete this key and add the new one."
+          }
+        }
+      }
+    },
     "Para desactivar o borrar horarios y límites, subir un límite, quitar apps de un perfil o quitar la protección contra borrado necesitarás tu llave NFC. Crear, añadir o endurecer sigue siendo libre. Desactivar este modo también pide la llave.": {
       "localizations": {
         "en": {
@@ -3197,6 +3247,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Social media, games…"
+          }
+        }
+      }
+    },
+    "Registra otras etiquetas o tarjetas (aunque no se puedan grabar, como la del metro) para tener llaves de repuesto. Toca una para cambiarle el nombre o eliminarla. No se pueden añadir mientras haya un bloqueo; con el modo estricto, añadir una pide tu llave.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Register other tags or cards (even ones that can’t be written, like a metro card) as spare keys. Tap one to rename or delete it. Keys can’t be added while something is blocked; in strict mode adding one needs your key."
           }
         }
       }
@@ -3581,22 +3641,22 @@
         }
       }
     },
+    "Tarjeta del metro, llave de la oficina…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metro card, office key…"
+          }
+        }
+      }
+    },
     "Tarjeta leída.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Card read."
-          }
-        }
-      }
-    },
-    "Tarjetas como llave": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cards as keys"
           }
         }
       }
@@ -3839,16 +3899,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "A session must last at least %lld minutes."
-          }
-        }
-      }
-    },
-    "Usa una tarjeta que no se puede grabar, como la del metro, como llave de repuesto. No se pueden añadir tarjetas mientras haya un bloqueo; con el modo estricto, añadirla pide tu llave. Quitar una no.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Use a card that can’t be written, like a metro card, as a spare key. Cards can’t be added while something is blocked; in strict mode adding one needs your key. Removing one doesn’t."
           }
         }
       }

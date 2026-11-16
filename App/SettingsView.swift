@@ -15,6 +15,7 @@ struct SettingsView: View {
     @State private var showingOnboarding = false
     @State private var copied = false
     @State private var addingCard = false
+    @State private var editingCard: CardKey?
 
     var body: some View {
         NavigationStack {
@@ -87,20 +88,25 @@ struct SettingsView: View {
 
                 Section {
                     ForEach(model.cardKeys) { card in
-                        LabeledContent {
-                            Text(card.added.formatted(date: .abbreviated, time: .omitted))
+                        Button {
+                            editingCard = card
                         } label: {
-                            Label(card.displayName, systemImage: "creditcard")
+                            LabeledContent {
+                                Text(card.added.formatted(date: .abbreviated, time: .omitted))
+                            } label: {
+                                Label(card.displayName, systemImage: "key.card")
+                                    .foregroundStyle(.primary)
+                            }
                         }
                     }
                     .onDelete { offsets in
                         for index in offsets { model.removeCard(model.cardKeys[index].id) }
                     }
-                    Button("Añadir tarjeta", systemImage: "plus") { addingCard = true }
+                    Button("Añadir llave", systemImage: "plus") { addingCard = true }
                 } header: {
-                    Text("Tarjetas como llave")
+                    Text("Llaves de repuesto")
                 } footer: {
-                    Text("Usa una tarjeta que no se puede grabar, como la del metro, como llave de repuesto. No se pueden añadir tarjetas mientras haya un bloqueo; con el modo estricto, añadirla pide tu llave. Quitar una no.")
+                    Text("Registra otras etiquetas o tarjetas (aunque no se puedan grabar, como la del metro) para tener llaves de repuesto. Toca una para cambiarle el nombre o eliminarla. No se pueden añadir mientras haya un bloqueo; con el modo estricto, añadir una pide tu llave.")
                 }
 
                 Section {
@@ -119,6 +125,7 @@ struct SettingsView: View {
                 notificationsDenied = settings.authorizationStatus == .denied
             }
             .sheet(isPresented: $addingCard) { AddCardSheet() }
+            .sheet(item: $editingCard) { EditCardSheet(card: $0) }
             .fullScreenCover(isPresented: $showingOnboarding) {
                 OnboardingView()
             }

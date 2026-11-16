@@ -7,6 +7,63 @@
 
 import SwiftUI
 
+/// Rename a key, see when it was added, or delete it. Renaming changes nothing about what unlocks,
+/// so it's always allowed; deleting only removes a way to unlock, so it's free too.
+struct EditCardSheet: View {
+    @EnvironmentObject private var model: FocusModel
+    @Environment(\.dismiss) private var dismiss
+    let card: CardKey
+    @State private var name: String
+    @State private var confirmingDelete = false
+
+    init(card: CardKey) {
+        self.card = card
+        _name = State(initialValue: card.name)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Nombre") {
+                    TextField("Tarjeta del metro, llave de la oficina…", text: $name)
+                }
+
+                Section {
+                    LabeledContent("Añadida", value: card.added.formatted(date: .long, time: .shortened))
+                } footer: {
+                    Text("Para cambiar la tarjeta en sí, elimina esta llave y añade la nueva.")
+                }
+
+                Section {
+                    Button("Eliminar llave", role: .destructive) { confirmingDelete = true }
+                }
+            }
+            .navigationTitle(card.displayName)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancelar") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Guardar") {
+                        model.renameCard(card.id, to: name.trimmingCharacters(in: .whitespaces))
+                        dismiss()
+                    }
+                }
+            }
+            .confirmationDialog("¿Eliminar «\(card.displayName)»?", isPresented: $confirmingDelete, titleVisibility: .visible) {
+                Button("Eliminar", role: .destructive) {
+                    model.removeCard(card.id)
+                    dismiss()
+                }
+            } message: {
+                Text("Dejará de desbloquear FocusKey.")
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+}
+
 /// Name, then two reads of the card: the identifier must be the same both times.
 struct AddCardSheet: View {
     @EnvironmentObject private var model: FocusModel
@@ -37,7 +94,7 @@ struct AddCardSheet: View {
                     Text("FocusKey no graba nada en la tarjeta: solo guarda una huella de su identificador. Algunas tarjetas de transporte o bancarias cambian de identificador en cada lectura y no sirven.")
                 }
             }
-            .navigationTitle("Añadir tarjeta")
+            .navigationTitle("Añadir llave")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

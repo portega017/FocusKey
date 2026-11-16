@@ -303,6 +303,17 @@ final class FocusModel: ObservableObject {
         return nil
     }
 
+    /// Renaming changes nothing about what unlocks, so it's always allowed.
+    func renameCard(_ id: UUID, to name: String) {
+        FocusStore.saveCardKeys(FocusStore.cardKeys().map { card in
+            guard card.id == id else { return card }
+            var renamed = card
+            renamed.name = name
+            return renamed
+        })
+        reload()
+    }
+
     /// Removing a card only takes away a way to unlock, so it's always free.
     func removeCard(_ id: UUID) {
         FocusStore.saveCardKeys(FocusStore.cardKeys().filter { $0.id != id })
