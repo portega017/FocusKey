@@ -479,6 +479,36 @@
         }
       }
     },
+    "Acerca la tarjeta al iPhone.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold the card near the iPhone."
+          }
+        }
+      }
+    },
+    "Acerca la tarjeta dos veces para comprobar que siempre da el mismo identificador.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold the card near the iPhone twice to check it always gives the same identifier."
+          }
+        }
+      }
+    },
+    "Acerca solo una etiqueta.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold just one tag."
+          }
+        }
+      }
+    },
     "Acerca tu etiqueta FocusKey al iPhone.": {
       "localizations": {
         "en": {
@@ -725,6 +755,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Add limit"
+          }
+        }
+      }
+    },
+    "Añadir tarjeta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add card"
           }
         }
       }
@@ -1683,6 +1723,26 @@
         }
       }
     },
+    "Esa tarjeta ya es una llave.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That card is already a key."
+          }
+        }
+      }
+    },
+    "Escanear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan"
+          }
+        }
+      }
+    },
     "Ese día el horario no bloqueará nada. Con el modo estricto tendrás que acercar tu llave NFC; quitar la pausa no la necesita.": {
       "localizations": {
         "en": {
@@ -1709,6 +1769,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The schedule has already started that day. Use your key to unlock it."
+          }
+        }
+      }
+    },
+    "Esta tarjeta cambia de identificador en cada lectura y no puede usarse como llave.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This card changes its identifier on every read and can’t be used as a key."
           }
         }
       }
@@ -1879,6 +1949,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "FocusKey"
+          }
+        }
+      }
+    },
+    "FocusKey no graba nada en la tarjeta: solo guarda una huella de su identificador. Algunas tarjetas de transporte o bancarias cambian de identificador en cada lectura y no sirven.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FocusKey doesn’t write anything to the card: it only stores a fingerprint of its identifier. Some transit or bank cards change their identifier on every read and won’t work."
           }
         }
       }
@@ -2209,6 +2289,16 @@
         }
       }
     },
+    "La etiqueta no es una llave FocusKey válida.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This tag isn’t a valid FocusKey key."
+          }
+        }
+      }
+    },
     "La última, %@.": {
       "localizations": {
         "en": {
@@ -2235,6 +2325,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Live Activity"
+          }
+        }
+      }
+    },
+    "Llave FocusKey reconocida.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FocusKey key recognized."
           }
         }
       }
@@ -2565,6 +2665,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "No limit has been reached."
+          }
+        }
+      }
+    },
+    "No puedes añadir una tarjeta mientras haya un bloqueo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can’t add a card while something is blocked."
           }
         }
       }
@@ -3451,6 +3561,46 @@
         }
       }
     },
+    "Tarjeta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Card"
+          }
+        }
+      }
+    },
+    "Tarjeta del metro, del gimnasio…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metro card, gym card…"
+          }
+        }
+      }
+    },
+    "Tarjeta leída.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Card read."
+          }
+        }
+      }
+    },
+    "Tarjetas como llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cards as keys"
+          }
+        }
+      }
+    },
     "Te quedan %@ de «%@» por hoy.": {
       "localizations": {
         "en": {
@@ -3693,6 +3843,16 @@
         }
       }
     },
+    "Usa una tarjeta que no se puede grabar, como la del metro, como llave de repuesto. No se pueden añadir tarjetas mientras haya un bloqueo; con el modo estricto, añadirla pide tu llave. Quitar una no.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use a card that can’t be written, like a metro card, as a spare key. Cards can’t be added while something is blocked; in strict mode adding one needs your key. Removing one doesn’t."
+          }
+        }
+      }
+    },
     "Usar llave": {
       "localizations": {
         "en": {
@@ -3789,6 +3949,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Back to focus"
+          }
+        }
+      }
+    },
+    "Vuelve a acercarla para confirmar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold it again to confirm."
           }
         }
       }
@@ -3973,6 +4143,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "«%1$@» no se activará el %2$@."
+          }
+        }
+      }
+    },
+    "«%@» ya funciona como llave.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” now works as a key."
           }
         }
       }

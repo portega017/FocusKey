@@ -34,7 +34,7 @@ private struct RootTabView: View {
     @EnvironmentObject private var nfc: NFCScanner
     @Environment(\.scenePhase) private var scenePhase
     @State private var tab = RootTabView.initialTab
-    @State private var toast: String?
+    @StateObject private var toasts = ToastCenter()
     @AppStorage(OnboardingView.doneKey) private var onboardingDone = false
     @State private var showingOnboarding = false
 
@@ -62,6 +62,12 @@ private struct RootTabView: View {
                     nfc.start(message: message, then: action)
                 }
             }
+            #if DEBUG
+            // `-FocusKeyToast "text"` shows a test message (for screenshots).
+            if let text = UserDefaults.standard.string(forKey: "FocusKeyToast") {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { model.status = text }
+            }
+            #endif
             // Existing users who already picked apps don't need the walkthrough.
             if !onboardingDone {
                 if model.activeProfile?.isEmpty == false {
@@ -72,21 +78,9 @@ private struct RootTabView: View {
             }
         }
         .tint(.accentColor)
-        .overlay(alignment: .top) {
-            if let toast {
-                Toast(message: toast)
-                    .padding(.top, 8)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    .onTapGesture { withAnimation { self.toast = nil } }
-            }
-        }
+        // Messages show in their own window, above any sheet (Settings, editors…).
         .onChange(of: model.statusID) {
-            withAnimation(.smooth) { toast = model.status }
-        }
-        .task(id: toast) {
-            guard toast != nil else { return }
-            try? await Task.sleep(for: .seconds(3.5))
-            withAnimation(.smooth) { toast = nil }
+            toasts.show(model.status)
         }
         .fullScreenCover(isPresented: $showingOnboarding) {
             OnboardingView()

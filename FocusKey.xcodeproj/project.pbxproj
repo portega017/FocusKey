@@ -692,6 +692,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NFCReaderUsageDescription = "Necesario para leer etiquetas NFC FocusKey y activar/desactivar el bloqueo de aplicaciones.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_FILE = "FocusKey-Info.plist";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -738,6 +739,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NFCReaderUsageDescription = "Necesario para leer etiquetas NFC FocusKey y activar/desactivar el bloqueo de aplicaciones.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_FILE = "FocusKey-Info.plist";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

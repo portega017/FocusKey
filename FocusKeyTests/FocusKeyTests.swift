@@ -499,3 +499,31 @@ struct TighteningTests {
         #expect(plan.skippingBreak(at: date(8, 12)) == nil, "After the end")
     }
 }
+
+@Suite("Card keys")
+struct CardKeyTests {
+    let uid = Data([0x04, 0xA2, 0x3B, 0x11, 0x5C, 0x80, 0x00])
+
+    @Test func onlyAHashOfTheIdentifierIsStored() throws {
+        let card = CardKey(name: "Metro", uid: uid)
+        #expect(card.uidHash == CardKey.hash(uid))
+        #expect(card.uidHash.count == 64, "SHA-256 in hex")
+        #expect(!card.uidHash.contains("04a23b"), "The raw identifier isn't stored")
+        let decoded = try JSONDecoder().decode(CardKey.self, from: JSONEncoder().encode(card))
+        #expect(decoded == card)
+    }
+
+    @Test func differentCardsHaveDifferentHashes() {
+        #expect(CardKey.hash(uid) != CardKey.hash(Data([0x04, 0xA2, 0x3B, 0x11, 0x5C, 0x80, 0x01])))
+    }
+
+    @Test func randomIdentifiersAreRecognised() {
+        #expect(CardKey.isRandomUID(Data([0x08, 0x12, 0x34, 0x56])))
+        #expect(!CardKey.isRandomUID(Data([0x04, 0x12, 0x34, 0x56])))
+        #expect(!CardKey.isRandomUID(uid), "7-byte identifiers are fixed")
+    }
+
+    @Test func unnamedCardHasADefaultName() {
+        #expect(CardKey(name: "", uid: uid).displayName == "Tarjeta")
+    }
+}

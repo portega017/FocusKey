@@ -32,6 +32,7 @@ final class FocusModel: ObservableObject {
     @Published private(set) var sessionEnd: Date?
     @Published private(set) var schedules: [Schedule] = []
     @Published private(set) var presets: [SessionPreset] = []
+    @Published private(set) var cardKeys: [CardKey] = []
     @Published private(set) var limits: [UsageLimit] = []
     @Published private(set) var records: [BlockRecord] = []
     /// Per-day minutes of days whose records were pruned (yearly statistics).
@@ -102,6 +103,7 @@ final class FocusModel: ObservableObject {
         sessionEnd = FocusStore.sessionEnd
         schedules = FocusStore.schedules()
         presets = FocusStore.presets()
+        cardKeys = FocusStore.cardKeys()
         limits = FocusStore.limits()
         records = FocusStore.records()
         dailyArchive = FocusStore.dailyArchive()
@@ -276,6 +278,34 @@ final class FocusModel: ObservableObject {
         guard let plan = FocusLock.skipPomodoroBreak() else { return }
         PomodoroNotifications.schedule(plan)
         status = String(localized: "Descanso saltado: a concentrarse.")
+        reload()
+    }
+
+    // MARK: - Card keys
+
+    /// Why a card can't be added right now, or nil if it can.
+    var cardAddBlockedReason: String? {
+        isBlocked() ? String(localized: "No puedes añadir una tarjeta mientras haya un bloqueo.") : nil
+    }
+
+    /// Registers a card (by its identifier) as an extra key. It adds a way to unlock, so it isn't
+    /// allowed while something is blocked and needs the key in strict mode.
+    /// Returns why it couldn't be added, or nil (added, or waiting for the key in strict mode).
+    @discardableResult
+    func addCard(name: String, uid: Data) -> String? {
+        if let reason = cardAddBlockedReason { return reason }
+        guard !FocusStore.isCardKey(uid) else { return String(localized: "Esa tarjeta ya es una llave.") }
+        if needsKey(true, retry: { self.addCard(name: name, uid: uid) }) { return nil }
+        let card = CardKey(name: name, uid: uid)
+        FocusStore.saveCardKeys(FocusStore.cardKeys() + [card])
+        status = String(localized: "«\(card.displayName)» ya funciona como llave.")
+        reload()
+        return nil
+    }
+
+    /// Removing a card only takes away a way to unlock, so it's always free.
+    func removeCard(_ id: UUID) {
+        FocusStore.saveCardKeys(FocusStore.cardKeys().filter { $0.id != id })
         reload()
     }
 

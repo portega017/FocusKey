@@ -56,6 +56,8 @@ nonisolated enum FocusStore {
         static let limitWarnings = "FocusKey.limitWarnings"
         /// Last error of an intent run from a widget or Control Center, shown by the app.
         static let lastIntentError = "FocusKey.lastIntentError"
+        /// Cards registered as keys by their identifier (see FocusKeys.swift).
+        static let cardKeys = "FocusKey.cardKeys"
         /// Running pomodoro plan (JSON). Absent when there is none.
         static let pomodoro = "FocusKey.pomodoro"
         /// Screen Time authorization seen on the last check, to notice when it is revoked.

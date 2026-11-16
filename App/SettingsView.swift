@@ -14,6 +14,7 @@ struct SettingsView: View {
     @State private var notificationsDenied = false
     @State private var showingOnboarding = false
     @State private var copied = false
+    @State private var addingCard = false
 
     var body: some View {
         NavigationStack {
@@ -85,6 +86,24 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    ForEach(model.cardKeys) { card in
+                        LabeledContent {
+                            Text(card.added.formatted(date: .abbreviated, time: .omitted))
+                        } label: {
+                            Label(card.displayName, systemImage: "creditcard")
+                        }
+                    }
+                    .onDelete { offsets in
+                        for index in offsets { model.removeCard(model.cardKeys[index].id) }
+                    }
+                    Button("Añadir tarjeta", systemImage: "plus") { addingCard = true }
+                } header: {
+                    Text("Tarjetas como llave")
+                } footer: {
+                    Text("Usa una tarjeta que no se puede grabar, como la del metro, como llave de repuesto. No se pueden añadir tarjetas mientras haya un bloqueo; con el modo estricto, añadirla pide tu llave. Quitar una no.")
+                }
+
+                Section {
                     Button("Ver la introducción") { showingOnboarding = true }
                 }
             }
@@ -99,6 +118,7 @@ struct SettingsView: View {
                 let settings = await UNUserNotificationCenter.current().notificationSettings()
                 notificationsDenied = settings.authorizationStatus == .denied
             }
+            .sheet(isPresented: $addingCard) { AddCardSheet() }
             .fullScreenCover(isPresented: $showingOnboarding) {
                 OnboardingView()
             }

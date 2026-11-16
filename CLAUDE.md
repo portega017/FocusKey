@@ -98,15 +98,23 @@ All state lives in App Group `UserDefaults` so the app, extensions, widgets and 
   with `ProfileIcon`, title, rounded-digit subtitle, state line, chevron and toggle.
 - Accent is the `AccentColor` asset (iOS system blue, set as global accent); profile colors are used wherever
   a profile is involved. Numbers use `.fontDesign(.rounded)` + `monospacedDigit()`.
-- User feedback goes through `FocusModel.status`, shown as a toast over any tab (`statusID` changes on
-  every assignment). Don't set it for routine successes that happen on launch.
-- Debug-only launch arguments for screenshots: `-FocusKeyTab 0…3`, `-FocusKeyStats week|year|usage`.
+- User feedback goes through `FocusModel.status`, shown by `App/ToastCenter.swift` in its own
+  touch-transparent window above everything, sheets included (`statusID` changes on every
+  assignment). Don't set it for routine successes that happen on launch.
+- Debug-only launch arguments for screenshots: `-FocusKeyTab 0…3`, `-FocusKeyStats week|year|usage`,
+  `-FocusKeySettings YES` (opens Settings), `-FocusKeyToast "text"` (shows a message).
   On the device: `xcrun devicectl device process launch --terminate-existing <bundle id> -- -FocusKeyTab 1`
   then `xcrun devicectl device capture screenshot --destination <png>`.
 
 ## Behaviour rules (intentional — don't "fix")
 
 - **No unlock intent/shortcut/button** exists on purpose; only the NFC tag unlocks.
+- Valid keys (`NFCScanner`, an `NFCTagReaderSession` polling ISO 14443/15693): a written tag with the
+  `FOCUSKEY:TOGGLE` text record, or a card registered by identifier (`Shared/FocusKeys.swift`,
+  SHA-256 of the UID in `FocusStore.cardKeys`). Adding a card is an extra unlock path: refused while
+  anything is blocked and needs the key in strict mode; removing one is free. Random-UID cards
+  (4 bytes starting 0x08, or two reads that differ) are rejected. ISO 7816 AIDs live in
+  `FocusKey-Info.plist` (merged with the generated Info.plist).
 - NFC tag (`FocusModel.handleNFC`): if manual lock or a running schedule → lifts them (schedules are
   "skipped" until their interval ends via `scheduleSkips`); otherwise it **locks** the active profile.
   The tag **never lifts a reached daily limit**; it can only grant 5/15/30 extra minutes

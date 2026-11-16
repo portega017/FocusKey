@@ -12,7 +12,14 @@ struct ContentView: View {
     @EnvironmentObject private var nfc: NFCScanner
     @State private var showingCustomSession = false
     @State private var showingPomodoro = false
-    @State private var showingSettings = false
+    /// Debug builds accept `-FocusKeySettings YES` to open Settings on launch (for screenshots).
+    @State private var showingSettings: Bool = {
+        #if DEBUG
+        return UserDefaults.standard.bool(forKey: "FocusKeySettings")
+        #else
+        return false
+        #endif
+    }()
 
     private static let sessionOptions = [15, 30, 60, 120, 240]
 
