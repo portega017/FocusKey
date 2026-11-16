@@ -10,7 +10,7 @@ FocusKey is available for **iOS** (this branch) and **Android** (see [`android` 
 | --- | --- | --- |
 | `main` | iOS | Stable iOS app (Swift / SwiftUI) |
 | `dev` | iOS | iOS development; merged into `main` via pull request |
-| [`android`](https://github.com/portega017/FocusKey/tree/android) | Android | Android app (Kotlin / Jetpack Compose), with the same features as iOS |
+| [`android`](https://github.com/portega017/FocusKey/tree/android) | Android | Android app (Kotlin / Jetpack Compose) with the same features as iOS, except Focus filters and Siri. Daily limits also show today's usage |
 
 ## Features
 
