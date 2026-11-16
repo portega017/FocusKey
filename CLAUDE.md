@@ -22,7 +22,8 @@ User-facing docs: `README.md`. This file covers architecture and the non-obvious
 | FocusKey (app) | root `*.swift` + `App/` + `Shared/` | 26.6 |
 | FocusKeyMonitor (DeviceActivityMonitor) | `FocusKeyMonitor/` + `Shared/` | 27.0 |
 | FocusKeyShield (ShieldConfiguration) | `FocusKeyShield/` + `Shared/` | 26.6 |
-| FocusKeyWidget (widgets + Control Center) | `FocusKeyWidget/` + `Shared/` | 26.6 |
+| FocusKeyWidget (widgets, Control Center, Live Activity) | `FocusKeyWidget/` + `Shared/` | 26.6 |
+| FocusKeyReport (DeviceActivityReport, **ExtensionKit**) | `FocusKeyReport/` only (no `Shared/`) | 26.6 |
 | FocusKeyTests (Swift Testing, hosted in app) | `FocusKeyTests/` | 26.6 |
 
 - `App/`, `Shared/` and the extension folders are **file-system synchronized groups**: new files
@@ -30,6 +31,11 @@ User-facing docs: `README.md`. This file covers architecture and the non-obvious
   `ScheduleView`, `NFCScanner`, `FocusKeyApp`) are classic references — adding a new root file
   requires editing `project.pbxproj`, so prefer putting new files in `App/` or `Shared/`.
 - Anything in `Shared/` must compile in every extension (no app-only APIs; types are `nonisolated`).
+- FocusKeyReport is embedded via the "Embed ExtensionKit Extensions" phase (`Extensions/`, not
+  `PlugIns/`) and has its own `Localizable.xcstrings` (separate bundle). Its context name
+  `FocusKeyUsage` is declared in both the extension and `App/StatsView.swift` — keep them equal.
+- Adding a target means editing `project.pbxproj` by hand: use unused `AA000…` IDs, `plutil -lint`
+  it and check `xcodebuild -list`.
 - App target uses `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, Swift 5 mode.
 
 ## Architecture
@@ -47,7 +53,14 @@ All state lives in App Group `UserDefaults` so the app, extensions, widgets and 
   stores always hold the *union* of every active source. Also NFC unlock, limit extensions,
   `denyAppRemoval`, widget reload.
 - `Shared/FocusStatus.swift` — snapshot of what is blocking now (used by app, widgets, shield, intents).
-- `Shared/FocusStats.swift` — per-day minutes (overlaps merged), streak, 5-week Monday-first calendar.
+- `Shared/FocusPomodoro.swift` — `PomodoroPlan` (focus/break/cycles) and its phase at a date.
+- `Shared/FocusLiveActivity.swift` — `FocusActivityAttributes` + `FocusLiveActivity.sync()`
+  (app process only; called from `FocusModel.reload()` and `LockFocusIntent`).
+- `Shared/FocusStats.swift` — `DayCounter` (per-day minutes, overlaps merged; archive for old days),
+  `FocusStats` (week, streak, 5-week Monday-first calendar), `FocusYearStats` (year summary).
+- Records are pruned after 60 days, but `FocusStore.saveRecords` first folds whole days before the
+  cutoff into `dailyArchive` (`yyyy-MM-dd` → minutes) and moves `archivedUntil`; days before it are
+  read from the archive only. Never prune records without going through `saveRecords`.
 - `Shared/FocusTheme.swift` — `FocusPalette` (profile colors by name), `FocusQuotes` for the shield.
 - `Shared/FocusIntents.swift` — `LockFocusIntent` (a `LiveActivityIntent` so it runs in the app
   process — the widget process has no Screen Time auth), `UnlockWithKeyIntent` (sets a flag, app
@@ -55,9 +68,13 @@ All state lives in App Group `UserDefaults` so the app, extensions, widgets and 
 - `FocusModel.swift` — `@MainActor ObservableObject` app state; mirrors the store, registers
   DeviceActivity monitoring for schedules/limits, sets `status` messages.
 - `FocusKeyMonitor/FocusKeyMonitor.swift` — `intervalDidStart/End` and `eventDidReachThreshold`:
-  applies/clears schedule & limit shields, ends timed sessions, sends limit-warning notifications.
+  applies/clears schedule & limit shields, ends timed sessions, drives pomodoro blocks
+  (`FocusLock.syncPomodoro(starting:/ending:)`), sends limit-warning notifications.
 - `FocusKeyShield/` — shield screen: title, reason from `FocusStatus.reason`, profile color, quote.
-- `FocusKeyWidget/` — status widget (Home/Lock Screen) + Control Center lock and "use key" buttons.
+- `FocusKeyWidget/` — status widget (Home/Lock Screen), Control Center lock and "use key" buttons,
+  Live Activity UI (`FocusLiveActivityWidget.swift`).
+- `FocusKeyReport/` — real Screen Time usage of a profile's apps (last 7 days); the app passes the
+  profile's tokens in a `DeviceActivityFilter`. The extension can't send data back to the app.
 - App UI: `FocusKeyApp.swift` (tabs: Bloqueo, Horarios, Límites, Estadísticas; onboarding;
   refresh on `scenePhase == .active`), `ContentView` (status, countdown ring, lock/sessions),
   `ScheduleView` (+ week overview), `App/LimitsView`, `App/ProfilesView`, `App/StatsView`,
@@ -73,6 +90,20 @@ All state lives in App Group `UserDefaults` so the app, extensions, widgets and 
   (`extendReachedLimits` → `FocusKeyExtra_` activity with `includesPastActivity: false`).
 - Focus filter: Focus on → lock; Focus off → does **not** unlock (`lockOnActivate` defaults to false
   because iOS calls `perform()` with defaults when the Focus turns off).
+- Pomodoro: each focus block is a `FocusKeyPomodoro_<cycle>` DeviceActivity interval (≥15 min)
+  and uses the **manual store** with `sessionStart/End` = the block; breaks are the gaps (nothing
+  locked). While a plan is active `lockManually` throws `.pomodoroRunning`, so any manual lock
+  then belongs to the pomodoro. The tag ends the whole plan (also during breaks). Phase-change
+  notifications are scheduled up front by the app. `syncPomodoro` is the single source of truth
+  (monitor callbacks + app reload fallback).
+- Live Activities can only be updated by the app process: a pomodoro phase change appears when
+  the app next runs; until then the activity goes stale at the phase end.
+- Paused schedule days (`FocusSchedule.pausedDays`, start of the day the interval *starts*):
+  pausing needs the tag and only future intervals; resuming needs no tag. Pauses are saved
+  without re-registering monitoring; `isActive`/`runs(on:)` honour them.
+- Screen Time revocation: detected on app activation (`FocusModel.checkAuthorization`, 1 s delay
+  to avoid false positives), logged in `FocusStore.revocations`; on re-authorization every shield
+  is re-applied (`FocusLock.reapplyAllShields`) and monitoring re-registered.
 - Timed sessions: min 15 min (DeviceActivity minimum interval), max 720 in the intent.
   `expireSessionIfNeeded` is the fallback if the monitor missed the end.
 - Limits are monitored 00:00–23:59 (interval can't end at 00:00). Warning event 5 min before

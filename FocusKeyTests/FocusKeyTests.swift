@@ -98,6 +98,92 @@ struct ScheduleTests {
     }
 }
 
+@Suite("Paused schedule days")
+struct PausedScheduleTests {
+    let workdays: Set<FocusWeekday> = [.monday, .tuesday, .wednesday, .thursday, .friday]
+
+    @Test func pausedDayDoesNotBlock() {
+        // Thursday the 5th is paused, Friday the 6th isn't.
+        let schedule = FocusSchedule(startTime: time(9), endTime: time(17), repeats: workdays,
+                                     pausedDays: [calendar.startOfDay(for: date(5, 0))])
+        #expect(!schedule.isActive(at: date(5, 12), calendar: calendar))
+        #expect(schedule.isActive(at: date(6, 12), calendar: calendar))
+        #expect(!schedule.runs(on: date(5, 0), calendar: calendar))
+    }
+
+    @Test func pausingTheStartDayCoversTheOvernightMorning() {
+        let night = FocusSchedule(startTime: time(23), endTime: time(7), repeats: [.friday, .saturday],
+                                  pausedDays: [calendar.startOfDay(for: date(6, 0))])
+        #expect(!night.isActive(at: date(6, 23, 30), calendar: calendar), "Friday night is paused")
+        #expect(!night.isActive(at: date(7, 6), calendar: calendar), "Saturday morning belongs to Friday's paused interval")
+        #expect(night.isActive(at: date(7, 23, 30), calendar: calendar), "Saturday night still runs")
+    }
+
+    @Test func upcomingDaysSkipIntervalsAlreadyStarted() {
+        let schedule = FocusSchedule(startTime: time(9), endTime: time(17), repeats: workdays)
+        // Thursday 5th at 10:00: today's interval has started, so the next one is Friday.
+        let days = schedule.upcomingDays(after: date(5, 10), limit: 3, calendar: calendar)
+        #expect(days == [date(6, 0), date(9, 0), date(10, 0)], "Friday, then Monday and Tuesday")
+        // Before 9:00 today is still pausable.
+        #expect(schedule.upcomingDays(after: date(5, 8), limit: 1, calendar: calendar) == [date(5, 0)])
+    }
+
+    @Test func oldPausesArePruned() {
+        let schedule = FocusSchedule(startTime: time(9), endTime: time(17), repeats: workdays,
+                                     pausedDays: [date(2, 0), date(5, 0), date(9, 0)])
+        #expect(schedule.prunedPauses(at: date(6, 12), calendar: calendar) == [date(5, 0), date(9, 0)])
+    }
+
+    @Test func pausesSurviveEncodingAndOldDataHasNone() throws {
+        let schedule = FocusSchedule(startTime: time(9), endTime: time(17), repeats: workdays, pausedDays: [date(9, 0)])
+        let decoded = try JSONDecoder().decode(FocusSchedule.self, from: JSONEncoder().encode(schedule))
+        #expect(decoded.pausedDays == [date(9, 0)])
+
+        let plain = FocusSchedule(startTime: time(9), endTime: time(17), repeats: workdays)
+        let json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(plain)) as? [String: Any])
+        #expect(json["pausedDays"] == nil, "Nothing new is written when there are no pauses")
+        #expect(try JSONDecoder().decode(FocusSchedule.self, from: JSONEncoder().encode(plain)).pausedDays.isEmpty)
+    }
+}
+
+@Suite("Pomodoro")
+struct PomodoroTests {
+    /// 3 cycles of 25 + 5 starting at 10:00: focus 10:00–10:25, 10:30–10:55, 11:00–11:25.
+    let plan = PomodoroPlan(profileID: UUID(), start: date(8, 10), focusMinutes: 25, breakMinutes: 5, cycles: 3)
+
+    @Test func blocksAreSpacedByFocusPlusBreak() {
+        #expect(plan.block(0) == DateInterval(start: date(8, 10), end: date(8, 10, 25)))
+        #expect(plan.block(2) == DateInterval(start: date(8, 11), end: date(8, 11, 25)))
+        #expect(plan.end == date(8, 11, 25), "No break after the last block")
+        #expect(plan.totalFocusMinutes == 75)
+    }
+
+    @Test func phasesFollowTheClock() {
+        #expect(plan.phase(at: date(8, 10)) == .focus(cycle: 0, start: date(8, 10), end: date(8, 10, 25)))
+        #expect(plan.phase(at: date(8, 10, 24)) == .focus(cycle: 0, start: date(8, 10), end: date(8, 10, 25)))
+        #expect(plan.phase(at: date(8, 10, 25)) == .rest(cycle: 0, start: date(8, 10, 25), end: date(8, 10, 30)))
+        #expect(plan.phase(at: date(8, 10, 30)) == .focus(cycle: 1, start: date(8, 10, 30), end: date(8, 10, 55)))
+        #expect(plan.phase(at: date(8, 11, 24)) == .focus(cycle: 2, start: date(8, 11), end: date(8, 11, 25)))
+        #expect(plan.phase(at: date(8, 11, 25)) == .finished)
+        #expect(plan.isFinished(at: date(8, 12)))
+    }
+
+    @Test func statusDuringABreakIsNotBlockedButTheKeyEndsIt() {
+        let status = FocusStatus(date: date(8, 10, 27), manualProfile: nil, isManualLocked: false,
+                                 sessionEnd: nil, sessionStart: nil, schedules: [], limits: [], pomodoro: plan)
+        #expect(!status.isBlocked)
+        #expect(status.canUnlockWithKey, "The tag ends the whole pomodoro, breaks included")
+        #expect(status.nextChange == date(8, 10, 30))
+        #expect(status.pomodoroCycleText == "Ciclo 2 de 3")
+    }
+
+    @Test func activityNamesRoundTrip() {
+        #expect(FocusActivity.pomodoroCycle(from: FocusActivity.pomodoro(4)) == 4)
+        #expect(FocusActivity.pomodoroCycle(from: FocusActivity.session) == nil)
+        #expect(FocusActivity.scheduleID(from: FocusActivity.pomodoro(1)) == nil)
+    }
+}
+
 @Suite("Usage limits")
 struct LimitTests {
     @Test(arguments: [(2, nil), (3, 1), (14, 1), (15, 5), (90, 5)] as [(Int, Int?)])
@@ -207,5 +293,65 @@ struct ProfileTests {
         #expect(status.sessionProgress(at: date(8, 10)) == 0)
         #expect(status.sessionProgress(at: date(8, 10, 30)) == 0.5)
         #expect(status.sessionProgress(at: date(8, 12)) == 1)
+    }
+}
+
+@Suite("Yearly focus")
+struct YearStatsTests {
+    private func record(_ start: Date, _ end: Date) -> BlockRecord {
+        BlockRecord(kind: .manual, title: "", sourceID: UUID().uuidString, start: start, end: end)
+    }
+
+    @Test func archivedDaysComeFromTheArchiveAndNewerOnesFromRecords() {
+        // Days before the 3rd are archived; a stray record on the 1st must not be counted twice.
+        let counter = FocusStats.DayCounter(
+            records: [record(date(1, 10), date(1, 11)), record(date(4, 10), date(4, 12))],
+            archive: ["2026-11-01": 30, "2026-11-02": 45],
+            archivedUntil: date(3, 0),
+            now: date(8, 12),
+            calendar: calendar
+        )
+        #expect(counter.minutes(on: date(1, 0)) == 30)
+        #expect(counter.minutes(on: date(2, 0)) == 45)
+        #expect(counter.minutes(on: date(4, 0)) == 120)
+        #expect(counter.minutes(on: date(5, 0)) == 0)
+    }
+
+    @Test func yearSummaryAddsMonthsAndDays() {
+        let counter = FocusStats.DayCounter(
+            records: [record(date(4, 10), date(4, 12)), record(date(6, 9), date(6, 9, 30))],
+            archive: ["2026-01-15": 60, "2026-03-02": 90],
+            archivedUntil: date(1, 0),
+            now: date(8, 12),
+            calendar: calendar
+        )
+        let stats = FocusYearStats(year: 2026, counter: counter, now: date(8, 12))
+        #expect(stats.days.count == 365)
+        #expect(stats.total == 60 + 90 + 120 + 30)
+        #expect(stats.activeDays == 4)
+        #expect(stats.months.count == 12)
+        #expect(stats.months[0].minutes == 60)
+        #expect(stats.months[2].minutes == 90)
+        #expect(stats.months[10].minutes == 150, "November")
+        #expect(stats.bestDay?.minutes == 120)
+        // November 8th is day 312 of the year.
+        #expect(stats.dailyAverage == 300 / 312)
+    }
+
+    @Test func emptyYearHasNoBestDay() {
+        let counter = FocusStats.DayCounter(records: [], now: date(8, 12), calendar: calendar)
+        let stats = FocusYearStats(year: 2026, counter: counter, now: date(8, 12))
+        #expect(stats.total == 0)
+        #expect(stats.bestDay == nil)
+    }
+
+    @Test func yearsIncludeArchivedOnesAndTheCurrentOne() {
+        let counter = FocusStats.DayCounter(records: [], archive: ["2025-06-01": 10], archivedUntil: date(1, 0),
+                                            now: date(8, 12), calendar: calendar)
+        #expect(counter.years(now: date(8, 12)) == [2025, 2026])
+    }
+
+    @Test func dayKeyIsZeroPadded() {
+        #expect(FocusStats.dayKey(date(8, 23, 59), calendar: calendar) == "2026-11-08")
     }
 }

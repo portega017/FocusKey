@@ -2,8 +2,10 @@ import SwiftUI
 
 struct ScheduleView: View {
     @EnvironmentObject private var model: FocusModel
+    @EnvironmentObject private var nfc: NFCScanner
     @State private var showingAddSchedule = false
     @State private var editingSchedule: FocusModel.Schedule?
+    @State private var pausingSchedule: FocusModel.Schedule?
 
     var body: some View {
         NavigationStack {
@@ -34,7 +36,9 @@ struct ScheduleView: View {
                                     onUpdate: model.updateSchedule,
                                     onEdit: { editingSchedule = schedule },
                                     onDuplicate: { model.duplicateSchedule(schedule.id) },
-                                    onDelete: { model.deleteSchedule(schedule.id) }
+                                    onDelete: { model.deleteSchedule(schedule.id) },
+                                    onPause: { pausingSchedule = schedule },
+                                    onResume: { day in model.resumeSchedule(schedule.id, on: day) }
                                 )
                             }
                         }
@@ -66,6 +70,74 @@ struct ScheduleView: View {
                 editingSchedule = nil
             }
         }
+        .sheet(item: $pausingSchedule) { schedule in
+            PauseDaySheet(schedule: schedule) { day in
+                // Let the sheet go away before the NFC reader appears.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    nfc.start { model.pauseSchedule(schedule.id, on: day) }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Pause a day
+
+/// Picks one upcoming day to skip. Pausing needs the NFC tag, like any other way of not blocking.
+private struct PauseDaySheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let schedule: FocusModel.Schedule
+    let onPause: (Date) -> Void
+    @State private var selected: Date?
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(schedule.upcomingDays(), id: \.self) { day in
+                        let paused = schedule.isPaused(on: day)
+                        Button {
+                            selected = day
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(day.formatted(.dateTime.weekday(.wide).day().month()))
+                                        .foregroundStyle(paused ? .secondary : .primary)
+                                    Text(String(localized: "Desde las \(schedule.intervalStart(on: day).formatted(date: .omitted, time: .shortened))"))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                if paused {
+                                    Text("Ya pausado").font(.caption).foregroundStyle(.secondary)
+                                } else if selected == day {
+                                    Image(systemName: "checkmark").foregroundStyle(.tint)
+                                }
+                            }
+                        }
+                        .disabled(paused)
+                    }
+                } footer: {
+                    Text("Ese día el horario no bloqueará nada. Para pausarlo tendrás que acercar tu llave NFC; quitar la pausa no la necesita.")
+                }
+            }
+            .navigationTitle("Pausar un día")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancelar") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Pausar con llave") {
+                        guard let selected else { return }
+                        dismiss()
+                        onPause(selected)
+                    }
+                    .disabled(selected == nil)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 }
 
@@ -81,6 +153,8 @@ private struct ScheduleCard: View {
     let onEdit: () -> Void
     let onDuplicate: () -> Void
     let onDelete: () -> Void
+    let onPause: () -> Void
+    let onResume: (Date) -> Void
 
     @State private var showingStartNowAlert = false
 
@@ -159,6 +233,10 @@ private struct ScheduleCard: View {
                 .padding(12)
                 .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
+            if schedule.isEnabled {
+                pauses
+            }
+
             HStack {
                 Button("Editar", action: onEdit)
                     .buttonStyle(.bordered)
@@ -178,6 +256,34 @@ private struct ScheduleCard: View {
             var updated = schedule
             updated.isEnabled = true
             onUpdate(updated)
+        }
+    }
+
+    /// Upcoming paused days, each removable, plus the button to pause another one.
+    private var pauses: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Pauses whose interval hasn't ended yet.
+            let paused = schedule.prunedPauses().filter { schedule.intervalEnd(after: schedule.intervalStart(on: $0)) > .now }
+            if !paused.isEmpty {
+                Text("Días pausados")
+                    .font(.headline)
+                ForEach(paused, id: \.self) { day in
+                    HStack {
+                        Label(day.formatted(.dateTime.weekday(.wide).day().month()), systemImage: "pause.circle")
+                            .font(.subheadline)
+                        Spacer()
+                        Button("Quitar pausa") { onResume(day) }
+                            .font(.subheadline)
+                            .buttonStyle(.borderless)
+                    }
+                }
+            }
+            Button(action: onPause) {
+                Label("Pausar un día", systemImage: "pause.circle")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .font(.subheadline.weight(.medium))
         }
     }
 
@@ -414,7 +520,8 @@ struct ScheduleForm: View {
             endTime: endTime,
             repeats: repeats,
             isEnabled: isEnabled,
-            profileID: profileID
+            profileID: profileID,
+            pausedDays: schedule?.pausedDays ?? []
         )
     }
 

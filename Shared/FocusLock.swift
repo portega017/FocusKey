@@ -26,6 +26,7 @@ nonisolated enum FocusLock {
         case emptyProfile(String)
         case alreadyLocked
         case sessionTooShort
+        case pomodoroRunning
         case monitoring(Error)
 
         var errorDescription: String? {
@@ -38,6 +39,8 @@ nonisolated enum FocusLock {
                 return String(localized: "El bloqueo ya está activo.")
             case .sessionTooShort:
                 return String(localized: "Una sesión debe durar al menos \(FocusLock.minimumSessionMinutes) minutos.")
+            case .pomodoroRunning:
+                return String(localized: "Hay un pomodoro en curso. Termínalo con tu llave.")
             case .monitoring(let error):
                 return String(localized: "No se pudo programar el final de la sesión: \(error.localizedDescription)")
             }
@@ -56,6 +59,8 @@ nonisolated enum FocusLock {
     static func lockManually(profileID: UUID?, minutes: Int? = nil, now: Date = .now) throws(LockError) -> FocusProfile {
         guard isAuthorized else { throw .notAuthorized }
         guard !FocusStore.isManualLocked else { throw .alreadyLocked }
+        // During a pomodoro break nothing is locked, but the next block would clash with this lock.
+        guard FocusStore.activePomodoro(at: now) == nil else { throw .pomodoroRunning }
         guard let profile = FocusStore.profile(profileID) else { throw .emptyProfile("") }
         guard !profile.isEmpty else { throw .emptyProfile(profile.displayName) }
 
@@ -107,22 +112,122 @@ nonisolated enum FocusLock {
         reloadWidgets()
     }
 
-    /// Fallback in case the monitor didn't get to end a finished session.
+    /// Fallback in case the monitor didn't get to end a finished session or pomodoro block.
     static func expireSessionIfNeeded(now: Date = .now) {
+        if FocusStore.pomodoro != nil {
+            syncPomodoro(now: now)
+            return
+        }
         guard FocusStore.isManualLocked, let end = FocusStore.sessionEnd, end <= now else { return }
         clearManualLock(at: end)
+    }
+
+    // MARK: Pomodoro
+
+    /// Starts a pomodoro: registers every focus block with iOS and locks the first one now.
+    @discardableResult
+    static func startPomodoro(
+        profileID: UUID?, focusMinutes: Int, breakMinutes: Int, cycles: Int, now: Date = .now
+    ) throws(LockError) -> PomodoroPlan {
+        guard isAuthorized else { throw .notAuthorized }
+        guard !FocusStore.isManualLocked else { throw .alreadyLocked }
+        guard FocusStore.activePomodoro(at: now) == nil else { throw .pomodoroRunning }
+        guard let profile = FocusStore.profile(profileID) else { throw .emptyProfile("") }
+        guard !profile.isEmpty else { throw .emptyProfile(profile.displayName) }
+        guard focusMinutes >= minimumSessionMinutes else { throw .sessionTooShort }
+
+        // Leftovers of a finished plan.
+        endPomodoro(at: now)
+
+        let plan = PomodoroPlan(
+            profileID: profile.id,
+            start: now,
+            focusMinutes: focusMinutes,
+            breakMinutes: max(1, breakMinutes),
+            cycles: min(max(cycles, PomodoroPlan.cycleRange.lowerBound), PomodoroPlan.cycleRange.upperBound)
+        )
+        let center = DeviceActivityCenter()
+        let calendar = Calendar.current
+        let parts: Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
+        let names = (0..<plan.cycles).map(FocusActivity.pomodoro)
+        do {
+            for cycle in 0..<plan.cycles {
+                let block = plan.block(cycle)
+                try center.startMonitoring(
+                    FocusActivity.pomodoro(cycle),
+                    during: DeviceActivitySchedule(
+                        intervalStart: calendar.dateComponents(parts, from: block.start),
+                        intervalEnd: calendar.dateComponents(parts, from: block.end),
+                        repeats: false
+                    )
+                )
+            }
+        } catch {
+            center.stopMonitoring(names)
+            throw .monitoring(error)
+        }
+
+        FocusStore.pomodoro = plan
+        syncPomodoro(now: now)
+        return plan
+    }
+
+    /// Makes the manual store match the pomodoro phase: locked during focus blocks, free during
+    /// breaks, and the plan cleared when it's over. `starting` / `ending` (a cycle) cover the
+    /// monitor being called a few seconds before the interval's start or end time.
+    @discardableResult
+    static func syncPomodoro(starting: Int? = nil, ending: Int? = nil, now: Date = .now) -> PomodoroPlan.Phase? {
+        guard let plan = FocusStore.pomodoro else { return nil }
+        var date = now
+        if let starting, starting < plan.cycles { date = max(date, plan.block(starting).start) }
+        if let ending, ending < plan.cycles { date = max(date, plan.block(ending).end) }
+
+        let phase = plan.phase(at: date)
+        switch phase {
+        case let .focus(_, start, end):
+            // While a pomodoro exists no other manual lock can start, so the manual store is ours.
+            let applied = FocusStore.isManualLocked && FocusStore.sessionEnd == end
+            if !applied, let profile = FocusStore.profile(plan.profileID) {
+                // The monitor missed the end of the previous block: don't count the break as blocked.
+                if FocusStore.isManualLocked, let previousEnd = FocusStore.sessionEnd {
+                    FocusStore.closeRecords(sourceID: manualSourceID, at: min(previousEnd, now))
+                }
+                apply(profile.selection, to: ManagedSettingsStore(named: manualStoreName))
+                FocusStore.isManualLocked = true
+                FocusStore.manualProfileID = profile.id
+                FocusStore.sessionStart = start
+                FocusStore.sessionEnd = end
+                FocusStore.openRecord(kind: .pomodoro, title: profile.displayName, sourceID: manualSourceID, at: now)
+            }
+        case .rest:
+            if FocusStore.isManualLocked { clearManualLock(at: now) }
+        case .finished:
+            endPomodoro(at: now)
+        }
+        reloadWidgets()
+        return phase
+    }
+
+    /// Stops the pomodoro (finished, or cut short with the NFC tag).
+    static func endPomodoro(at now: Date = .now) {
+        guard let plan = FocusStore.pomodoro else { return }
+        DeviceActivityCenter().stopMonitoring((0..<plan.cycles).map(FocusActivity.pomodoro))
+        FocusStore.pomodoro = nil
+        if FocusStore.isManualLocked { clearManualLock(at: now) }
+        reloadWidgets()
     }
 
     // MARK: NFC master key
 
     struct KeyUnlockResult {
         var manual = false
+        var pomodoro = false
         var schedules: [FocusSchedule] = []
 
-        var isEmpty: Bool { !manual && schedules.isEmpty }
+        var isEmpty: Bool { !manual && !pomodoro && schedules.isEmpty }
     }
 
-    /// Lifts the manual lock and running schedules (until their interval ends).
+    /// Lifts the manual lock, a pomodoro and running schedules (until their interval ends).
     /// Reached daily limits are not affected: they last until midnight.
     @discardableResult
     static func unlockWithKey(now: Date = .now) -> KeyUnlockResult {
@@ -138,6 +243,11 @@ nonisolated enum FocusLock {
             FocusStore.setScheduleSkips(skips)
             refreshScheduleShield(now: now)
             result.schedules = running
+        }
+
+        if FocusStore.pomodoro != nil {
+            endPomodoro(at: now)
+            result.pomodoro = true
         }
 
         if FocusStore.isManualLocked {
@@ -162,7 +272,7 @@ nonisolated enum FocusLock {
                 return false
             }
             if schedule.id == starting {
-                return schedule.repeats.contains(.of(now))
+                return schedule.runs(on: now)
             }
             return schedule.isActive(at: now)
         }
@@ -257,8 +367,9 @@ nonisolated enum FocusLock {
         store.application.denyAppRemoval = FocusStore.preventAppRemoval ? true : nil
     }
 
-    /// Re-applies every active shield after the "prevent app removal" setting changes.
-    static func refreshAppRemovalProtection() {
+    /// Re-applies every active shield: after the "prevent app removal" setting changes, or once
+    /// Screen Time is authorized again after being revoked.
+    static func reapplyAllShields() {
         if FocusStore.isManualLocked, let profile = FocusStore.profile(FocusStore.manualProfileID) {
             apply(profile.selection, to: ManagedSettingsStore(named: manualStoreName))
         }

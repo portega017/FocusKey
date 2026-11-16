@@ -34,6 +34,8 @@ struct FocusKeyFocusFilter: SetFocusFilterIntent {
             try FocusLock.lockManually(profileID: profile?.id ?? FocusStore.activeProfileID)
         } catch FocusLock.LockError.alreadyLocked {
             // Already blocked: nothing to do.
+        } catch FocusLock.LockError.pomodoroRunning {
+            // A pomodoro is already keeping you focused.
         } catch {
             FocusStore.lastIntentError = error.localizedDescription
         }

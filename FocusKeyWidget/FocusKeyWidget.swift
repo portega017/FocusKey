@@ -8,6 +8,7 @@ struct FocusKeyWidgetBundle: WidgetBundle {
         FocusStatusWidget()
         FocusLockControl()
         FocusUnlockControl()
+        FocusLiveActivityWidget()
     }
 }
 

@@ -17,13 +17,17 @@ FocusKey is available for **iOS** (this branch) and **Android** (see [`android` 
 - **Profiles**: named groups of apps, categories and websites (Work, Study, Night…), used by the manual lock, schedules and limits.
 - **Manual lock** of the selected profile, unlocked only with the NFC tag.
 - **Timed sessions**: lock for 15 min – 12 h; it unlocks on its own when the time is up (or earlier with the tag).
-- **Weekly schedules**, each with its own profile, for automatic blocking.
+- **Pomodoro**: focus blocks (25–60 min) with breaks (5–20 min) in between, for 2–6 cycles. Apps are blocked only during focus blocks; a notification marks every change. The NFC tag ends it early.
+- **Live Activity** on the Lock Screen and Dynamic Island with the countdown of a session or pomodoro phase.
+- **Weekly schedules**, each with its own profile, for automatic blocking. A single upcoming day can be **paused** — with the NFC tag.
 - **Daily usage limits**: once a profile has been used for N minutes today, it stays blocked until midnight. The NFC tag can't lift a reached limit, but it can grant 5, 15 or 30 extra minutes of use.
 - **Custom shield screen** explaining why an app is blocked and until when.
 - **Widgets** for the Home and Lock Screen, and **Control Center** buttons to lock or open the NFC reader.
 - **Focus filters**: turning on an iOS Focus (Work, Sleep…) blocks a profile. Turning it off doesn't unlock — only the NFC tag does.
 - **Siri and Shortcuts**: lock a profile (optionally for a duration), check the status, or open the NFC reader. There is deliberately no unlock shortcut.
-- **Statistics**: time blocked per day, streak and recent blocks.
+- **Statistics**: time blocked per day, streak and recent blocks, plus a **yearly view** (total, daily average, best day, months and one cell per day of the year). Records are kept 60 days; older days are kept as daily totals so the year keeps adding up.
+- **Actual usage**: Screen Time usage of each profile's apps over the last 7 days (a DeviceActivityReport extension; the data never leaves the device).
+- **Revoked permission detection**: if the Screen Time permission is turned off in Settings, FocusKey warns you, logs it in the statistics and restores every block once it's granted again.
 - **Uninstall protection**: while anything is blocked, iOS won't let apps be deleted (can be turned off in Settings).
 - **Limit warnings**: a notification when 5 minutes of a daily limit are left.
 - **Onboarding** on first launch, and a Settings screen.
@@ -79,7 +83,8 @@ FocusModel.swift         App state
 NFCScanner.swift         NFC key reading
 FocusKeyMonitor/         Device Activity monitor (schedules, sessions, limits)
 FocusKeyShield/          Custom shield screen
-FocusKeyWidget/          Widgets and Control Center controls
+FocusKeyWidget/          Widgets, Control Center controls and the Live Activity
+FocusKeyReport/          Screen Time usage report (DeviceActivityReport extension)
 FocusKeyTests/           Unit tests for the shared logic
 Config/                  Build settings (signing stays local)
 ```
@@ -105,6 +110,9 @@ Spanish is the development language; English lives in `Shared/Localizable.xcstri
 - Timed sessions must last at least 15 minutes (minimum `DeviceActivity` interval).
 - Daily limits are monitored from 00:00 to 23:59, so the last minute of the day is not blocked.
 - Opening attempts can't be counted: iOS doesn't let shield extensions write any data.
+- Pomodoro focus blocks must last at least 15 minutes (each is a `DeviceActivity` interval); breaks can be shorter because they are the gaps between intervals.
+- The monitor extension can't update Live Activities, so a pomodoro phase change shows up there the next time the app runs (the notifications fire on time).
+- The usage report extension can only display data: iOS doesn't let it share anything with the app.
 - Uninstall protection is global: iOS only lets an app block deleting *all* apps, not just itself.
 
 ## Contributing

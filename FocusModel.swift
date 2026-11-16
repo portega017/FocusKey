@@ -31,12 +31,19 @@ final class FocusModel: ObservableObject {
     @Published private(set) var schedules: [Schedule] = []
     @Published private(set) var limits: [UsageLimit] = []
     @Published private(set) var records: [BlockRecord] = []
+    /// Per-day minutes of days whose records were pruned (yearly statistics).
+    @Published private(set) var dailyArchive: [String: Int] = [:]
+    @Published private(set) var archivedUntil: Date?
+    @Published private(set) var pomodoro: PomodoroPlan?
+    /// Moments the Screen Time permission was found revoked (last 60 days).
+    @Published private(set) var revocations: [Date] = []
+    @Published private(set) var isAuthorized = FocusLock.isAuthorized
     @Published var status = String(localized: "Autoriza Screen Time para empezar.")
     @Published var preventAppRemoval = FocusStore.preventAppRemoval {
         didSet {
             guard preventAppRemoval != oldValue else { return }
             FocusStore.preventAppRemoval = preventAppRemoval
-            FocusLock.refreshAppRemovalProtection()
+            FocusLock.reapplyAllShields()
         }
     }
     @Published var limitWarnings = FocusStore.limitWarnings {
@@ -80,6 +87,12 @@ final class FocusModel: ObservableObject {
         schedules = FocusStore.schedules()
         limits = FocusStore.limits()
         records = FocusStore.records()
+        dailyArchive = FocusStore.dailyArchive()
+        archivedUntil = FocusStore.archivedUntil
+        pomodoro = FocusStore.activePomodoro()
+        revocations = FocusStore.revocations()
+        isAuthorized = FocusLock.isAuthorized
+        Task { await FocusLiveActivity.sync() }
     }
 
     /// Called when the app becomes active.
@@ -91,6 +104,11 @@ final class FocusModel: ObservableObject {
         }
         startMonitoringForEnabledSchedules()
         startMonitoringForEnabledLimits()
+        // The status can lag right after launch: check again a moment later before logging a revocation.
+        Task {
+            try? await Task.sleep(for: .seconds(1))
+            checkAuthorization()
+        }
     }
 
     // MARK: - Authorization
@@ -111,7 +129,32 @@ final class FocusModel: ObservableObject {
         @unknown default:
             status = String(localized: "Estado de autorización desconocido.")
         }
+        checkAuthorization()
     }
+
+    /// Notices when the Screen Time permission was revoked (Settings › Screen Time), which lifts
+    /// every block, and restores all blocks once it is granted again.
+    func checkAuthorization() {
+        if FocusLock.isAuthorized {
+            if !FocusStore.wasAuthorized {
+                FocusStore.wasAuthorized = true
+                if !FocusStore.revocations().isEmpty {
+                    FocusLock.reapplyAllShields()
+                    startMonitoringForEnabledSchedules()
+                    startMonitoringForEnabledLimits()
+                }
+            }
+        } else if FocusStore.wasAuthorized {
+            FocusStore.wasAuthorized = false
+            FocusStore.logRevocation()
+            status = String(localized: "Se ha retirado el permiso de Screen Time: ningún bloqueo funciona hasta que lo vuelvas a autorizar.")
+        }
+        isAuthorized = FocusLock.isAuthorized
+        revocations = FocusStore.revocations()
+    }
+
+    /// Revoked and not granted again yet.
+    var isAuthorizationRevoked: Bool { !isAuthorized && !revocations.isEmpty }
 
     // MARK: - Manual lock and sessions
 
@@ -139,6 +182,10 @@ final class FocusModel: ObservableObject {
         }
         let result = FocusLock.unlockWithKey()
         var parts: [String] = []
+        if result.pomodoro {
+            parts.append(String(localized: "pomodoro terminado"))
+            cancelPomodoroNotifications()
+        }
         if result.manual { parts.append(String(localized: "bloqueo manual desactivado")) }
         if !result.schedules.isEmpty { parts.append(String(localized: "horario desbloqueado hasta el final del intervalo")) }
         if !FocusStatus.current().limits.isEmpty { parts.append(String(localized: "los límites alcanzados siguen activos hasta medianoche")) }
@@ -153,6 +200,71 @@ final class FocusModel: ObservableObject {
             ? String(localized: "No hay ningún límite alcanzado.")
             : String(localized: "Tienes \(UsageLimit.formatted(minutes: minutes)) más. Después se volverá a bloquear.")
         reload()
+    }
+
+    // MARK: - Pomodoro
+
+    func startPomodoro(focusMinutes: Int, breakMinutes: Int, cycles: Int) {
+        do {
+            let plan = try FocusLock.startPomodoro(
+                profileID: activeProfileID, focusMinutes: focusMinutes, breakMinutes: breakMinutes, cycles: cycles
+            )
+            schedulePomodoroNotifications(plan)
+            status = String(localized: "Pomodoro iniciado: \(plan.cycles) ciclos, termina a las \(plan.end.formatted(date: .omitted, time: .shortened)).")
+        } catch {
+            status = error.localizedDescription
+        }
+        reload()
+    }
+
+    /// Local notifications for every phase change, scheduled up front: they work even if the
+    /// app isn't running, and opening one refreshes the Live Activity.
+    private func schedulePomodoroNotifications(_ plan: PomodoroPlan) {
+        cancelPomodoroNotifications()
+        Task {
+            // Requests added before permission is granted are dropped.
+            _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
+            addPomodoroNotifications(plan)
+        }
+    }
+
+    private func addPomodoroNotifications(_ plan: PomodoroPlan) {
+        let center = UNUserNotificationCenter.current()
+        let profileName = profile(plan.profileID)?.displayName ?? ""
+
+        func add(_ id: String, at date: Date, title: String, body: String) {
+            let delay = date.timeIntervalSinceNow
+            guard delay > 0 else { return }
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body = body
+            content.sound = .default
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
+            center.add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
+        }
+
+        for cycle in 0..<plan.cycles {
+            let block = plan.block(cycle)
+            if cycle < plan.cycles - 1 {
+                let next = plan.block(cycle + 1)
+                add("pomodoro-rest-\(cycle)", at: block.end,
+                    title: String(localized: "Descanso"),
+                    body: String(localized: "Tus apps están libres \(UsageLimit.formatted(minutes: plan.breakMinutes)). El ciclo \(cycle + 2) de \(plan.cycles) empieza a las \(next.start.formatted(date: .omitted, time: .shortened))."))
+                add("pomodoro-focus-\(cycle + 1)", at: next.start,
+                    title: String(localized: "Vuelve a concentrarte"),
+                    body: String(localized: "Ciclo \(cycle + 2) de \(plan.cycles): «\(profileName)» bloqueado hasta las \(next.end.formatted(date: .omitted, time: .shortened))."))
+            } else {
+                add("pomodoro-done", at: block.end,
+                    title: String(localized: "Pomodoro completado"),
+                    body: String(localized: "\(UsageLimit.formatted(minutes: plan.totalFocusMinutes)) de concentración. ¡Bien hecho!"))
+            }
+        }
+    }
+
+    private func cancelPomodoroNotifications() {
+        let cycles = 0..<PomodoroPlan.cycleRange.upperBound
+        let ids = cycles.map { "pomodoro-rest-\($0)" } + cycles.map { "pomodoro-focus-\($0)" } + ["pomodoro-done"]
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
 
     func isLimitExtended(_ limit: UsageLimit, at date: Date = .now) -> Bool {
@@ -223,6 +335,9 @@ final class FocusModel: ObservableObject {
         if status.schedules.contains(where: { $0.profile?.id == id }) {
             return String(localized: "Un horario en curso usa este perfil. Podrás cambiar sus apps cuando termine.")
         }
+        if status.pomodoro?.profileID == id {
+            return String(localized: "Un pomodoro en curso usa este perfil. Podrás cambiar sus apps cuando termine.")
+        }
         if status.limits.contains(where: { $0.profile?.id == id }) {
             return String(localized: "Un límite alcanzado hoy usa este perfil. Podrás cambiar sus apps mañana.")
         }
@@ -291,6 +406,40 @@ final class FocusModel: ObservableObject {
             isEnabled: schedule.isEnabled,
             profileID: schedule.profileID
         ))
+    }
+
+    /// Skips the interval that starts on `day`. Only called after a valid NFC tag.
+    /// iOS still calls the monitor that day; it sees the pause and doesn't block.
+    func pauseSchedule(_ id: UUID, on day: Date) {
+        guard let index = schedules.firstIndex(where: { $0.id == id }) else { return }
+        var schedule = schedules[index]
+        guard schedule.intervalStart(on: day) > .now else {
+            status = String(localized: "Ese día el horario ya ha empezado. Usa tu llave para desbloquearlo.")
+            return
+        }
+        guard !schedule.isPaused(on: day) else { return }
+        schedule.pausedDays = (schedule.prunedPauses() + [Calendar.current.startOfDay(for: day)]).sorted()
+        schedules[index] = schedule
+        // Saved without re-registering with iOS: a pause doesn't change the interval.
+        FocusStore.saveSchedules(schedules)
+        status = String(localized: "«\(schedule.displayName)» no se activará el \(day.formatted(.dateTime.weekday(.wide).day().month())).")
+        FocusLock.reloadWidgets()
+    }
+
+    /// Cancels a pause. No key needed: it only makes things stricter.
+    func resumeSchedule(_ id: UUID, on day: Date) {
+        guard let index = schedules.firstIndex(where: { $0.id == id }) else { return }
+        var schedule = schedules[index]
+        schedule.pausedDays = schedule.prunedPauses().filter { !Calendar.current.isDate($0, inSameDayAs: day) }
+        schedules[index] = schedule
+        FocusStore.saveSchedules(schedules)
+        // If that interval is running right now, block straight away.
+        let running = FocusLock.refreshScheduleShield()
+        if running.contains(where: { $0.id == id }) {
+            FocusStore.openRecord(kind: .schedule, title: schedule.displayName, sourceID: id.uuidString)
+        }
+        FocusLock.reloadWidgets()
+        reload()
     }
 
     private func startMonitoring(_ schedule: Schedule) {

@@ -41,6 +41,22 @@
         }
       }
     },
+    "%@ a las %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ at %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ a las %2$@"
+          }
+        }
+      }
+    },
     "%@ al día · %@": {
       "localizations": {
         "en": {
@@ -53,6 +69,16 @@
           "stringUnit": {
             "state": "new",
             "value": "%1$@ al día · %2$@"
+          }
+        }
+      }
+    },
+    "%@ de concentración. ¡Bien hecho!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ of focus. Well done!"
           }
         }
       }
@@ -231,6 +257,16 @@
         }
       }
     },
+    "%lld ciclos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld cycles"
+          }
+        }
+      }
+    },
     "%lld días": {
       "localizations": {
         "en": {
@@ -283,6 +319,16 @@
           "stringUnit": {
             "state": "new",
             "value": "%1$lld h %2$lld min"
+          }
+        }
+      }
+    },
+    "%lld veces en los últimos 60 días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld times in the last 60 days"
           }
         }
       }
@@ -507,6 +553,16 @@
         }
       }
     },
+    "Autoriza Screen Time para ver tu uso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authorize Screen Time to see your usage."
+          }
+        }
+      }
+    },
     "Autorización concedida.": {
       "localizations": {
         "en": {
@@ -573,6 +629,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Add limit"
+          }
+        }
+      }
+    },
+    "Año": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Year"
           }
         }
       }
@@ -807,12 +873,74 @@
         }
       }
     },
+    "Ciclo %lld de %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cycle %1$lld of %2$lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ciclo %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Ciclo %lld de %lld: «%@» bloqueado hasta las %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cycle %1$lld of %2$lld: “%3$@” blocked until %4$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ciclo %1$lld de %2$lld: «%3$@» bloqueado hasta las %4$@."
+          }
+        }
+      }
+    },
     "Color": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Color"
+          }
+        }
+      }
+    },
+    "Concentración": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus"
+          }
+        }
+      }
+    },
+    "Concentración en el año": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus this year"
+          }
+        }
+      }
+    },
+    "Concentración total": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total focus"
           }
         }
       }
@@ -907,6 +1035,36 @@
         }
       }
     },
+    "Descanso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Break"
+          }
+        }
+      }
+    },
+    "Desde las %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From %@"
+          }
+        }
+      }
+    },
+    "Después: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next: %@"
+          }
+        }
+      }
+    },
     "Diez minutos de foco valen más que una hora de distracciones.": {
       "localizations": {
         "en": {
@@ -957,6 +1115,16 @@
         }
       }
     },
+    "Durante cada bloque se bloquea «%@». En los descansos tus apps quedan libres. Tu llave NFC termina el pomodoro antes de tiempo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each block locks “%@”. During breaks your apps are free. Your NFC key ends the pomodoro early."
+          }
+        }
+      }
+    },
     "Durante…": {
       "localizations": {
         "en": {
@@ -987,12 +1155,32 @@
         }
       }
     },
+    "Días con foco": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days with focus"
+          }
+        }
+      }
+    },
     "Días de la semana": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Days of the week"
+          }
+        }
+      }
+    },
+    "Días pausados": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused days"
           }
         }
       }
@@ -1239,6 +1427,26 @@
         }
       }
     },
+    "Ese día el horario no bloqueará nada. Para pausarlo tendrás que acercar tu llave NFC; quitar la pausa no la necesita.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The schedule won’t block anything that day. Pausing needs your NFC key; removing the pause doesn’t."
+          }
+        }
+      }
+    },
+    "Ese día el horario ya ha empezado. Usa tu llave para desbloquearlo.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The schedule has already started that day. Use your key to unlock it."
+          }
+        }
+      }
+    },
     "Estado": {
       "localizations": {
         "en": {
@@ -1329,12 +1537,42 @@
         }
       }
     },
+    "Este perfil no tiene apps seleccionadas.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This profile has no apps selected."
+          }
+        }
+      }
+    },
     "Estudio": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Study"
+          }
+        }
+      }
+    },
+    "Fase terminada · abre FocusKey": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phase over · open FocusKey"
+          }
+        }
+      }
+    },
+    "Fecha": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date"
           }
         }
       }
@@ -1425,6 +1663,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Save"
+          }
+        }
+      }
+    },
+    "Hay un pomodoro en curso. Termínalo con tu llave.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A pomodoro is running. End it with your key."
           }
         }
       }
@@ -1645,6 +1893,16 @@
         }
       }
     },
+    "La última, %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last time: %@."
+          }
+        }
+      }
+    },
     "Listo": {
       "localizations": {
         "en": {
@@ -1765,6 +2023,26 @@
         }
       }
     },
+    "Media al día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily average"
+          }
+        }
+      }
+    },
+    "Mejor día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Best day"
+          }
+        }
+      }
+    },
     "Menos": {
       "localizations": {
         "en": {
@@ -1781,6 +2059,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Less screen, more life."
+          }
+        }
+      }
+    },
+    "Mes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Month"
           }
         }
       }
@@ -2005,6 +2293,26 @@
         }
       }
     },
+    "Pausar con llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause with key"
+          }
+        }
+      }
+    },
+    "Pausar un día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause a day"
+          }
+        }
+      }
+    },
     "Pequeños bloques, grandes resultados.": {
       "localizations": {
         "en": {
@@ -2085,6 +2393,16 @@
         }
       }
     },
+    "Permiso de Screen Time retirado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen Time permission revoked"
+          }
+        }
+      }
+    },
     "Permitir acceso": {
       "localizations": {
         "en": {
@@ -2101,6 +2419,82 @@
           "stringUnit": {
             "state": "translated",
             "value": "Templates"
+          }
+        }
+      }
+    },
+    "Pomodoro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro"
+          }
+        }
+      }
+    },
+    "Pomodoro completado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro complete"
+          }
+        }
+      }
+    },
+    "Pomodoro iniciado: %lld ciclos, termina a las %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro started: %1$lld cycles, ends at %2$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro iniciado: %1$lld ciclos, termina a las %2$@."
+          }
+        }
+      }
+    },
+    "Pomodoro: concentración": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro: focus"
+          }
+        }
+      }
+    },
+    "Pomodoro: concentración hasta las %@. Luego tienes un descanso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro: focus until %@. Then you get a break."
+          }
+        }
+      }
+    },
+    "Pomodoro: descanso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro: break"
+          }
+        }
+      }
+    },
+    "Pomodoro…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro…"
           }
         }
       }
@@ -2131,6 +2525,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "You can save it now and turn it on later."
+          }
+        }
+      }
+    },
+    "Quitar pausa": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove pause"
           }
         }
       }
@@ -2245,6 +2649,16 @@
         }
       }
     },
+    "Screen Time está desactivado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen Time is turned off"
+          }
+        }
+      }
+    },
     "Se desbloquea solo al terminar, o antes con tu llave NFC. Mínimo %lld minutos.": {
       "localizations": {
         "en": {
@@ -2255,12 +2669,32 @@
         }
       }
     },
+    "Se ha retirado el permiso de Screen Time: ningún bloqueo funciona hasta que lo vuelvas a autorizar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Screen Time permission was revoked: no block works until you authorize it again."
+          }
+        }
+      }
+    },
     "Se repite %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Repeats %@"
+          }
+        }
+      }
+    },
+    "Se retiró el permiso de FocusKey en Ajustes, así que ahora no se bloquea nada. Autorízalo de nuevo y se restaurarán tus bloqueos.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FocusKey’s permission was removed in Settings, so nothing is blocked right now. Authorize it again and your blocks will be restored."
           }
         }
       }
@@ -2281,6 +2715,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Session"
+          }
+        }
+      }
+    },
+    "Sesión de concentración": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus session"
           }
         }
       }
@@ -2411,6 +2855,26 @@
         }
       }
     },
+    "Termina a las": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ends at"
+          }
+        }
+      }
+    },
+    "Terminar con llave": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End with key"
+          }
+        }
+      }
+    },
     "Texto de la etiqueta": {
       "localizations": {
         "en": {
@@ -2441,6 +2905,16 @@
         }
       }
     },
+    "Tiempo que has usado las apps de este perfil según Screen Time, no el tiempo bloqueado. Estos datos no salen de tu iPhone.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time you spent in this profile’s apps according to Screen Time, not time blocked. This data never leaves your iPhone."
+          }
+        }
+      }
+    },
     "Tienes %@ más. Después se volverá a bloquear.": {
       "localizations": {
         "en": {
@@ -2467,6 +2941,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tap a bar to see the details"
+          }
+        }
+      }
+    },
+    "Total del año: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Year total: %@"
           }
         }
       }
@@ -2511,6 +2995,22 @@
         }
       }
     },
+    "Tus apps están libres %@. El ciclo %lld de %lld empieza a las %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your apps are free for %1$@. Cycle %2$lld of %3$lld starts at %4$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tus apps están libres %1$@. El ciclo %2$lld de %3$lld empieza a las %4$@."
+          }
+        }
+      }
+    },
     "Un horario en curso usa este perfil. Podrás cambiar sus apps cuando termine.": {
       "localizations": {
         "en": {
@@ -2531,6 +3031,16 @@
         }
       }
     },
+    "Un pomodoro en curso usa este perfil. Podrás cambiar sus apps cuando termine.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A running pomodoro uses this profile. You can change its apps when it ends."
+          }
+        }
+      }
+    },
     "Una sesión debe durar al menos %lld minutos.": {
       "localizations": {
         "en": {
@@ -2547,6 +3057,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Use key"
+          }
+        }
+      }
+    },
+    "Uso real": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actual usage"
           }
         }
       }
@@ -2621,12 +3141,32 @@
         }
       }
     },
+    "Vuelve a concentrarte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to focus"
+          }
+        }
+      }
+    },
     "X": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "W"
+          }
+        }
+      }
+    },
+    "Ya pausado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already paused"
           }
         }
       }
@@ -2657,6 +3197,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "reached limits stay on until midnight"
+          }
+        }
+      }
+    },
+    "pomodoro terminado": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pomodoro ended"
           }
         }
       }
@@ -2749,6 +3299,22 @@
         }
       }
     },
+    "«%@» no se activará el %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%1$@” won’t turn on on %2$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%1$@» no se activará el %2$@."
+          }
+        }
+      }
+    },
     "¿Cuánto tiempo más?": {
       "localizations": {
         "en": {
@@ -2775,6 +3341,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Indigo"
+          }
+        }
+      }
+    },
+    "Última vez: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last time: %@"
           }
         }
       }

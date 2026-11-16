@@ -75,12 +75,15 @@ struct LockFocusIntent: LiveActivityIntent {
                 profileID: profile?.id ?? FocusStore.activeProfileID,
                 minutes: minutes
             )
+            await FocusLiveActivity.sync()
             if let end = FocusStore.sessionEnd {
                 return .result(dialog: "«\(locked.displayName)» bloqueado hasta las \(end.formatted(date: .omitted, time: .shortened)).")
             }
             return .result(dialog: "«\(locked.displayName)» bloqueado. Usa tu llave para desbloquear.")
         } catch FocusLock.LockError.alreadyLocked {
             return .result(dialog: "El bloqueo ya está activo.")
+        } catch FocusLock.LockError.pomodoroRunning {
+            return .result(dialog: "Hay un pomodoro en curso. Termínalo con tu llave.")
         } catch {
             // Widget and Control Center buttons can't show errors: keep it for the app to show.
             FocusStore.lastIntentError = error.localizedDescription

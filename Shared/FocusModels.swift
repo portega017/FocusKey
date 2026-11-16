@@ -126,6 +126,9 @@ nonisolated struct FocusSchedule: Codable, Identifiable, Equatable {
     var isEnabled: Bool
     /// Profile to block. `nil` (schedules from older versions) means the first profile.
     var profileID: UUID?
+    /// Days whose interval is skipped (start of the day the interval starts on).
+    /// Pausing needs the NFC tag; the pause doesn't change what is registered with iOS.
+    var pausedDays: [Date]
 
     init(
         id: UUID = UUID(),
@@ -134,7 +137,8 @@ nonisolated struct FocusSchedule: Codable, Identifiable, Equatable {
         endTime: Date,
         repeats: Set<FocusWeekday>,
         isEnabled: Bool = true,
-        profileID: UUID? = nil
+        profileID: UUID? = nil,
+        pausedDays: [Date] = []
     ) {
         self.id = id
         self.name = name
@@ -143,10 +147,11 @@ nonisolated struct FocusSchedule: Codable, Identifiable, Equatable {
         self.repeats = repeats
         self.isEnabled = isEnabled
         self.profileID = profileID
+        self.pausedDays = pausedDays
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, startTime, endTime, time, repeats, isEnabled, profileID
+        case id, name, startTime, endTime, time, repeats, isEnabled, profileID, pausedDays
     }
 
     init(from decoder: Decoder) throws {
@@ -160,6 +165,7 @@ nonisolated struct FocusSchedule: Codable, Identifiable, Equatable {
         repeats = try container.decode(Set<FocusWeekday>.self, forKey: .repeats)
         isEnabled = try container.decode(Bool.self, forKey: .isEnabled)
         profileID = try container.decodeIfPresent(UUID.self, forKey: .profileID)
+        pausedDays = try container.decodeIfPresent([Date].self, forKey: .pausedDays) ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -171,6 +177,7 @@ nonisolated struct FocusSchedule: Codable, Identifiable, Equatable {
         try container.encode(repeats, forKey: .repeats)
         try container.encode(isEnabled, forKey: .isEnabled)
         try container.encodeIfPresent(profileID, forKey: .profileID)
+        if !pausedDays.isEmpty { try container.encode(pausedDays, forKey: .pausedDays) }
     }
 
     var displayName: String { name.isEmpty ? String(localized: "Horario de concentración") : name }
@@ -217,7 +224,7 @@ nonisolated struct FocusSchedule: Codable, Identifiable, Equatable {
         }
     }
 
-    /// True while the interval is running (ignores NFC skips).
+    /// True while the interval is running (ignores NFC skips, honours paused days).
     func isActive(at date: Date = .now, calendar: Calendar = .current) -> Bool {
         guard isEnabled else { return false }
         let now = Self.minutes(date, calendar: calendar)
@@ -225,15 +232,46 @@ nonisolated struct FocusSchedule: Codable, Identifiable, Equatable {
         let end = Self.minutes(endTime, calendar: calendar)
 
         if start < end {
-            return repeats.contains(.of(date, calendar: calendar)) && now >= start && now < end
+            return runs(on: date, calendar: calendar) && now >= start && now < end
         }
         if now >= start {
-            return repeats.contains(.of(date, calendar: calendar))
+            return runs(on: date, calendar: calendar)
         }
         guard now < end, let yesterday = calendar.date(byAdding: .day, value: -1, to: date) else {
             return false
         }
-        return repeats.contains(.of(yesterday, calendar: calendar))
+        return runs(on: yesterday, calendar: calendar)
+    }
+
+    /// Whether an interval starts on this day: a repeat day that hasn't been paused.
+    func runs(on day: Date, calendar: Calendar = .current) -> Bool {
+        repeats.contains(.of(day, calendar: calendar)) && !isPaused(on: day, calendar: calendar)
+    }
+
+    func isPaused(on day: Date, calendar: Calendar = .current) -> Bool {
+        pausedDays.contains { calendar.isDate($0, inSameDayAs: day) }
+    }
+
+    /// Start of the interval that begins on `day`.
+    func intervalStart(on day: Date, calendar: Calendar = .current) -> Date {
+        let parts = calendar.dateComponents([.hour, .minute], from: startTime)
+        return calendar.date(bySettingHour: parts.hour ?? 0, minute: parts.minute ?? 0, second: 0, of: day) ?? day
+    }
+
+    /// Next days (up to `limit`) whose interval hasn't started yet and could be paused.
+    func upcomingDays(after date: Date = .now, limit: Int = 14, calendar: Calendar = .current) -> [Date] {
+        let today = calendar.startOfDay(for: date)
+        return (0..<60).lazy
+            .compactMap { calendar.date(byAdding: .day, value: $0, to: today) }
+            .filter { repeats.contains(.of($0, calendar: calendar)) && intervalStart(on: $0, calendar: calendar) > date }
+            .prefix(limit)
+            .map { $0 }
+    }
+
+    /// Pauses whose interval has already ended are dropped.
+    func prunedPauses(at date: Date = .now, calendar: Calendar = .current) -> [Date] {
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: date)) ?? date
+        return pausedDays.filter { $0 >= yesterday }.sorted()
     }
 
     /// Next occurrence of the end time after `date` (end of the running interval).
@@ -345,7 +383,7 @@ nonisolated struct UsageLimit: Codable, Identifiable, Equatable {
 
 nonisolated struct BlockRecord: Codable, Identifiable, Equatable {
     enum Kind: String, Codable {
-        case manual, session, schedule, limit
+        case manual, session, schedule, limit, pomodoro
 
         var label: String {
             switch self {
@@ -353,6 +391,7 @@ nonisolated struct BlockRecord: Codable, Identifiable, Equatable {
             case .session: return String(localized: "Sesión")
             case .schedule: return String(localized: "Horario")
             case .limit: return String(localized: "Límite diario")
+            case .pomodoro: return String(localized: "Pomodoro")
             }
         }
 
@@ -362,6 +401,7 @@ nonisolated struct BlockRecord: Codable, Identifiable, Equatable {
             case .session: return "timer"
             case .schedule: return "calendar.badge.clock"
             case .limit: return "hourglass"
+            case .pomodoro: return "timer.circle"
             }
         }
     }
@@ -392,6 +432,15 @@ nonisolated enum FocusActivity {
     /// Extra time granted with the tag after a limit was reached.
     static let extraPrefix = "FocusKeyExtra_"
     static let session = DeviceActivityName("FocusKeySession")
+    /// One activity per focus block of a pomodoro: `FocusKeyPomodoro_<cycle>`.
+    static let pomodoroPrefix = "FocusKeyPomodoro_"
+
+    static func pomodoro(_ cycle: Int) -> DeviceActivityName { .init(pomodoroPrefix + String(cycle)) }
+
+    static func pomodoroCycle(from activity: DeviceActivityName) -> Int? {
+        guard activity.rawValue.hasPrefix(pomodoroPrefix) else { return nil }
+        return Int(activity.rawValue.dropFirst(pomodoroPrefix.count))
+    }
 
     static func schedule(_ id: UUID) -> DeviceActivityName { .init(schedulePrefix + id.uuidString) }
     static func limit(_ id: UUID) -> DeviceActivityName { .init(limitPrefix + id.uuidString) }

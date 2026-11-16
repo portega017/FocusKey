@@ -38,6 +38,10 @@ nonisolated enum FocusStore {
         /// Used by an earlier build, when the tag could lift limits. Removed on launch.
         static let legacyLimitSkips = "FocusKey.limitSkips"
         static let records = "FocusKey.blockRecords"
+        /// [yyyy-MM-dd: minutes] for days whose records were pruned (yearly statistics).
+        static let dailyArchive = "FocusKey.dailyArchive"
+        /// Days before this date are read from `dailyArchive` instead of the records.
+        static let archivedUntil = "FocusKey.archivedUntil"
         /// Set by the "unlock with key" intent so the app starts an NFC scan when it opens.
         static let pendingNFCScan = "FocusKey.pendingNFCScan"
         /// While anything is blocked, iOS won't let apps be deleted (on by default).
@@ -46,6 +50,12 @@ nonisolated enum FocusStore {
         static let limitWarnings = "FocusKey.limitWarnings"
         /// Last error of an intent run from a widget or Control Center, shown by the app.
         static let lastIntentError = "FocusKey.lastIntentError"
+        /// Running pomodoro plan (JSON). Absent when there is none.
+        static let pomodoro = "FocusKey.pomodoro"
+        /// Screen Time authorization seen on the last check, to notice when it is revoked.
+        static let wasAuthorized = "FocusKey.wasAuthorized"
+        /// Moments the Screen Time permission was found revoked.
+        static let revocations = "FocusKey.revocations"
     }
 
     // MARK: Profiles
@@ -195,11 +205,78 @@ nonisolated enum FocusStore {
         if changed { saveRecords(all) }
     }
 
-    private static func saveRecords(_ records: [BlockRecord]) {
-        let cutoff = Date.now.addingTimeInterval(-maxRecordAge)
-        save(records.filter { ($0.end ?? .now) > cutoff }, forKey: Key.records)
+    /// Saves the records, first folding the days about to be pruned into the daily archive.
+    private static func saveRecords(_ records: [BlockRecord], now: Date = .now) {
+        let calendar = Calendar.current
+        let boundary = calendar.startOfDay(for: now.addingTimeInterval(-maxRecordAge))
+        if records.contains(where: { ($0.end ?? now) < boundary }) {
+            archiveDays(of: records, until: boundary, now: now, calendar: calendar)
+        }
+        save(records.filter { ($0.end ?? now) >= boundary }, forKey: Key.records)
     }
 
+    /// Stores per-day minutes for every whole day not archived yet before `boundary`.
+    /// Uses all the records, so blocks that overlap the boundary are counted correctly.
+    private static func archiveDays(of records: [BlockRecord], until boundary: Date, now: Date, calendar: Calendar) {
+        let firstRecordDay = records.map(\.start).min().map(calendar.startOfDay(for:))
+        guard var day = archivedUntil ?? firstRecordDay, day < boundary else { return }
+        let counter = FocusStats.DayCounter(records: records, now: now, calendar: calendar)
+        var archive = dailyArchive()
+        while day < boundary {
+            let minutes = counter.minutes(on: day)
+            if minutes > 0 { archive[FocusStats.dayKey(day, calendar: calendar)] = minutes }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
+            day = next
+        }
+        defaults.set(archive, forKey: Key.dailyArchive)
+        archivedUntil = boundary
+    }
+
+    static func dailyArchive() -> [String: Int] {
+        defaults.dictionary(forKey: Key.dailyArchive) as? [String: Int] ?? [:]
+    }
+
+    static var archivedUntil: Date? {
+        get { defaults.object(forKey: Key.archivedUntil) as? Date }
+        set { defaults.set(newValue, forKey: Key.archivedUntil) }
+    }
+
+    /// Everything needed to count minutes on any day, including archived ones.
+    static func dayCounter(records: [BlockRecord]? = nil, now: Date = .now) -> FocusStats.DayCounter {
+        FocusStats.DayCounter(records: records ?? self.records(), archive: dailyArchive(), archivedUntil: archivedUntil, now: now)
+    }
+
+
+    // MARK: Pomodoro
+
+    static var pomodoro: PomodoroPlan? {
+        get { load(PomodoroPlan.self, forKey: Key.pomodoro) }
+        set {
+            if let newValue { save(newValue, forKey: Key.pomodoro) } else { defaults.removeObject(forKey: Key.pomodoro) }
+        }
+    }
+
+    /// The pomodoro plan if it hasn't finished yet.
+    static func activePomodoro(at date: Date = .now) -> PomodoroPlan? {
+        guard let plan = pomodoro, !plan.isFinished(at: date) else { return nil }
+        return plan
+    }
+
+    // MARK: Authorization
+
+    static var wasAuthorized: Bool {
+        get { defaults.bool(forKey: Key.wasAuthorized) }
+        set { defaults.set(newValue, forKey: Key.wasAuthorized) }
+    }
+
+    static func revocations() -> [Date] {
+        defaults.array(forKey: Key.revocations) as? [Date] ?? []
+    }
+
+    static func logRevocation(at date: Date = .now) {
+        let cutoff = date.addingTimeInterval(-maxRecordAge)
+        defaults.set((revocations() + [date]).filter { $0 > cutoff }, forKey: Key.revocations)
+    }
 
     // MARK: Intents
 

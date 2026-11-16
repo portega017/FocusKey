@@ -11,6 +11,7 @@ struct ContentView: View {
     @EnvironmentObject private var model: FocusModel
     @EnvironmentObject private var nfc: NFCScanner
     @State private var showingCustomSession = false
+    @State private var showingPomodoro = false
     @State private var showingSettings = false
 
     private static let sessionOptions = [15, 30, 60, 120, 240]
@@ -24,9 +25,13 @@ struct ContentView: View {
 
                 ScrollView {
                     VStack(spacing: 20) {
+                        if model.isAuthorizationRevoked {
+                            revokedBanner
+                        }
+
                         statusCard(status, tint: tint)
 
-                        if !FocusLock.isAuthorized {
+                        if !model.isAuthorized {
                             Button("Autorizar Screen Time") {
                                 Task { await model.authorize() }
                             }
@@ -66,6 +71,11 @@ struct ContentView: View {
             .sheet(isPresented: $showingCustomSession) {
                 CustomSessionSheet { minutes in model.lock(minutes: minutes) }
             }
+            .sheet(isPresented: $showingPomodoro) {
+                PomodoroSheet(profile: model.activeProfile) { focus, rest, cycles in
+                    model.startPomodoro(focusMinutes: focus, breakMinutes: rest, cycles: cycles)
+                }
+            }
         }
     }
 
@@ -82,6 +92,27 @@ struct ContentView: View {
             )
         }
         .ignoresSafeArea()
+    }
+
+    // MARK: Revoked permission
+
+    private var revokedBanner: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Screen Time está desactivado", systemImage: "exclamationmark.shield.fill")
+                .font(.headline)
+                .foregroundStyle(.orange)
+            Text("Se retiró el permiso de FocusKey en Ajustes, así que ahora no se bloquea nada. Autorízalo de nuevo y se restaurarán tus bloqueos.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            if let last = model.revocations.last {
+                Text("Última vez: \(last.formatted(date: .abbreviated, time: .shortened))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassEffect(.regular.tint(.orange.opacity(0.15)), in: .rect(cornerRadius: 28))
     }
 
     // MARK: Status
@@ -111,15 +142,18 @@ struct ContentView: View {
                 Button {
                     nfc.start()
                 } label: {
-                    Label("Desbloquear con llave", systemImage: "wave.3.right")
-                        .frame(maxWidth: .infinity)
+                    Label(
+                        status.pomodoro != nil ? String(localized: "Terminar con llave") : String(localized: "Desbloquear con llave"),
+                        systemImage: "wave.3.right"
+                    )
+                    .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.glassProminent)
                 .controlSize(.large)
                 .tint(tint)
             }
 
-            if !status.isManualLocked {
+            if !status.isManualLocked && status.pomodoro == nil {
                 lockButtons(tint: tint)
             }
         }
@@ -146,6 +180,7 @@ struct ContentView: View {
                     }
                     Divider()
                     Button("Otra duración…") { showingCustomSession = true }
+                    Button("Pomodoro…", systemImage: "timer.circle") { showingPomodoro = true }
                 } label: {
                     Label("Durante…", systemImage: "timer")
                         .frame(maxWidth: .infinity)
@@ -173,8 +208,8 @@ struct ContentView: View {
                 }
                 .padding(.vertical, 2)
             }
-            .disabled(model.isLocked)
-            .opacity(model.isLocked ? 0.5 : 1)
+            .disabled(model.isLocked || model.pomodoro != nil)
+            .opacity(model.isLocked || model.pomodoro != nil ? 0.5 : 1)
 
             if let profile = model.activeProfile {
                 Text(profile.summary)
@@ -198,34 +233,43 @@ struct ContentView: View {
 
 // MARK: - Lock ring
 
-/// Lock symbol inside a ring: full while blocked, draining during a timed session.
+/// Lock symbol inside a ring: full while blocked, draining during a timed session or a
+/// pomodoro break.
 private struct LockRing: View {
     let status: FocusStatus
     let tint: Color
 
+    /// A pomodoro break shown in the ring when nothing else is blocked.
+    private var rest: (start: Date, end: Date)? {
+        guard !status.isBlocked, case let .rest(_, start, end)? = status.pomodoroPhase else { return nil }
+        return (start, end)
+    }
+
     var body: some View {
-        // Ticks every second only while a session runs.
-        TimelineView(.periodic(from: .now, by: status.sessionEnd == nil ? 3600 : 1)) { context in
-            let progress = status.sessionProgress(at: context.date)
+        // Ticks every second only while a session or a break runs.
+        TimelineView(.periodic(from: .now, by: status.sessionEnd == nil && rest == nil ? 3600 : 1)) { context in
+            let restProgress = rest.map { min(1, max(0, context.date.timeIntervalSince($0.start) / $0.end.timeIntervalSince($0.start))) }
+            let progress = status.sessionProgress(at: context.date) ?? restProgress
             let remaining = progress.map { 1 - $0 } ?? (status.isBlocked ? 1 : 0)
+            let ringTint: Color = rest == nil ? tint : .green
 
             ZStack {
                 Circle()
-                    .stroke(tint.opacity(0.15), lineWidth: 12)
+                    .stroke(ringTint.opacity(0.15), lineWidth: 12)
                 Circle()
                     .trim(from: 0, to: remaining)
-                    .stroke(tint.gradient, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                    .stroke(ringTint.gradient, style: StrokeStyle(lineWidth: 12, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.smooth(duration: 0.8), value: remaining)
 
                 VStack(spacing: 6) {
-                    Image(systemName: status.isBlocked ? "lock.fill" : "lock.open.fill")
+                    Image(systemName: rest != nil ? "cup.and.saucer.fill" : (status.isBlocked ? "lock.fill" : "lock.open.fill"))
                         .font(.system(size: 50, weight: .semibold))
                         .foregroundStyle(status.isBlocked ? tint : .green)
                         .contentTransition(.symbolEffect(.replace))
                         .symbolEffect(.bounce, value: status.isBlocked)
 
-                    if let end = status.sessionEnd {
+                    if let end = status.sessionEnd ?? rest?.end {
                         Text(end, style: .timer)
                             .font(.title3.monospacedDigit().bold())
                             .foregroundStyle(.secondary)
@@ -296,5 +340,59 @@ private struct CustomSessionSheet: View {
             }
         }
         .presentationDetents([.medium])
+    }
+}
+
+// MARK: - Pomodoro
+
+private struct PomodoroSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var focusMinutes = 25
+    @State private var breakMinutes = 5
+    @State private var cycles = 4
+    let profile: FocusProfile?
+    let onStart: (Int, Int, Int) -> Void
+
+    private var plan: PomodoroPlan {
+        PomodoroPlan(profileID: profile?.id ?? UUID(), start: .now, focusMinutes: focusMinutes, breakMinutes: breakMinutes, cycles: cycles)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Picker("Concentración", selection: $focusMinutes) {
+                        ForEach(PomodoroPlan.focusOptions, id: \.self) { Text(UsageLimit.formatted(minutes: $0)).tag($0) }
+                    }
+                    Picker("Descanso", selection: $breakMinutes) {
+                        ForEach(PomodoroPlan.breakOptions, id: \.self) { Text(UsageLimit.formatted(minutes: $0)).tag($0) }
+                    }
+                    Stepper(value: $cycles, in: PomodoroPlan.cycleRange) {
+                        Text("\(cycles) ciclos")
+                    }
+                } footer: {
+                    Text("Durante cada bloque se bloquea «\(profile?.displayName ?? "")». En los descansos tus apps quedan libres. Tu llave NFC termina el pomodoro antes de tiempo.")
+                }
+
+                Section {
+                    LabeledContent("Concentración total", value: UsageLimit.formatted(minutes: plan.totalFocusMinutes))
+                    LabeledContent("Termina a las", value: plan.end.formatted(date: .omitted, time: .shortened))
+                }
+            }
+            .navigationTitle("Pomodoro")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancelar") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Empezar") {
+                        onStart(focusMinutes, breakMinutes, cycles)
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 }

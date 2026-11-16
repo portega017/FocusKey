@@ -2,7 +2,7 @@ import Foundation
 import DeviceActivity
 import UserNotifications
 
-/// Receives DeviceActivity callbacks for schedules, timed sessions and daily usage limits.
+/// Receives DeviceActivity callbacks for schedules, timed sessions, pomodoro blocks and daily usage limits.
 /// Shared logic lives in `Shared/` (FocusLock, FocusStore).
 final class FocusKeyMonitor: DeviceActivityMonitor {
 
@@ -28,6 +28,8 @@ final class FocusKeyMonitor: DeviceActivityMonitor {
                 FocusStore.setLimitExtensions(extensions)
             }
             FocusLock.refreshLimitShield(now: now)
+        } else if let cycle = FocusActivity.pomodoroCycle(from: activity) {
+            FocusLock.syncPomodoro(starting: cycle, now: now)
         }
         // Sessions: the shield was already applied when the session started.
         FocusLock.reloadWidgets()
@@ -50,6 +52,8 @@ final class FocusKeyMonitor: DeviceActivityMonitor {
             FocusStore.setLimitExtensions(extensions)
             FocusLock.refreshLimitShield(now: now)
             FocusStore.closeRecords(sourceID: id.uuidString, at: now)
+        } else if let cycle = FocusActivity.pomodoroCycle(from: activity) {
+            FocusLock.syncPomodoro(ending: cycle, now: now)
         } else if activity == FocusActivity.session {
             // Only end the session this interval belongs to (not a newer one started since).
             if FocusStore.isManualLocked, let end = FocusStore.sessionEnd, end <= now.addingTimeInterval(60) {

@@ -28,11 +28,25 @@ nonisolated struct FocusStatus {
     var sessionStart: Date?
     var schedules: [RunningSchedule]
     var limits: [ReachedLimit]
+    /// Running pomodoro (also during its breaks, when nothing is locked by it).
+    var pomodoro: PomodoroPlan? = nil
 
     var isBlocked: Bool { isManualLocked || !schedules.isEmpty || !limits.isEmpty }
 
-    /// The NFC tag lifts the manual lock and schedules, not daily limits.
-    var canUnlockWithKey: Bool { isManualLocked || !schedules.isEmpty }
+    /// The NFC tag lifts the manual lock, a pomodoro and schedules, not daily limits.
+    var canUnlockWithKey: Bool { isManualLocked || pomodoro != nil || !schedules.isEmpty }
+
+    var pomodoroPhase: PomodoroPlan.Phase? { pomodoro?.phase(at: date) }
+
+    /// "Ciclo 2 de 4" for the current or next focus block.
+    var pomodoroCycleText: String? {
+        guard let plan = pomodoro, let phase = pomodoroPhase else { return nil }
+        switch phase {
+        case .focus(let cycle, _, _): return String(localized: "Ciclo \(cycle + 1) de \(plan.cycles)")
+        case .rest(let cycle, _, _): return String(localized: "Ciclo \(cycle + 2) de \(plan.cycles)")
+        case .finished: return nil
+        }
+    }
 
     static func current(at date: Date = .now) -> FocusStatus {
         let profiles = FocusStore.profiles()
@@ -55,7 +69,8 @@ nonisolated struct FocusStatus {
             sessionEnd: isManual ? sessionEnd : nil,
             sessionStart: isManual && sessionEnd != nil ? FocusStore.sessionStart : nil,
             schedules: schedules,
-            limits: limits
+            limits: limits,
+            pomodoro: FocusStore.activePomodoro(at: date)
         )
     }
 
@@ -72,6 +87,10 @@ nonisolated struct FocusStatus {
     }
 
     var headline: String {
+        if let phase = pomodoroPhase {
+            if case .focus = phase { return String(localized: "Pomodoro: concentración") }
+            if case .rest = phase, !isBlocked { return String(localized: "Pomodoro: descanso") }
+        }
         if isManualLocked { return sessionEnd == nil ? String(localized: "Bloqueado") : String(localized: "Sesión en curso") }
         if !schedules.isEmpty { return String(localized: "Bloqueado por horario") }
         if !limits.isEmpty { return String(localized: "Límite alcanzado") }
@@ -80,6 +99,9 @@ nonisolated struct FocusStatus {
 
     /// One line describing why things are blocked.
     var detail: String? {
+        if case let .rest(_, _, end)? = pomodoroPhase, !isBlocked, let cycle = pomodoroCycleText {
+            return String(localized: "\(cycle) a las \(end.formatted(date: .omitted, time: .shortened))")
+        }
         if isManualLocked {
             let name = manualProfile?.displayName ?? String(localized: "Perfil")
             if let end = sessionEnd {
@@ -98,7 +120,12 @@ nonisolated struct FocusStatus {
 
     /// Next moment the status changes on its own (session end or schedule end).
     var nextChange: Date? {
-        ([sessionEnd].compactMap { $0 } + schedules.map(\.end)).min()
+        var dates = [sessionEnd].compactMap { $0 } + schedules.map(\.end)
+        switch pomodoroPhase {
+        case let .focus(_, _, end)?, let .rest(_, _, end)?: dates.append(end)
+        default: break
+        }
+        return dates.min()
     }
 
     // MARK: Shield reasons
@@ -113,6 +140,9 @@ nonisolated struct FocusStatus {
     /// Explanation for the shield screen, picking the source that blocks this item.
     func reason(matching contains: (FocusProfile) -> Bool) -> String {
         if isManualLocked, let profile = manualProfile, contains(profile) {
+            if pomodoro != nil, let end = sessionEnd {
+                return String(localized: "Pomodoro: concentración hasta las \(end.formatted(date: .omitted, time: .shortened)). Luego tienes un descanso.")
+            }
             if let end = sessionEnd {
                 return String(localized: "Sesión de concentración hasta las \(end.formatted(date: .omitted, time: .shortened)).")
             }
