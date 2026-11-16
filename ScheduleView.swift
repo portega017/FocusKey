@@ -3,59 +3,42 @@ import SwiftUI
 struct ScheduleView: View {
     @EnvironmentObject private var model: FocusModel
     @State private var showingAddSchedule = false
-    @State private var editingSchedule: FocusModel.Schedule?
-    @State private var pausingSchedule: FocusModel.Schedule?
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 16) {
-                    if model.schedules.isEmpty {
-                        ContentUnavailableView(
-                            "Sin horarios",
-                            systemImage: "calendar.badge.clock",
-                            description: Text("Crea un horario para bloquear tus selecciones automáticamente.")
-                        )
-                        .padding(.vertical, 72)
-                    }
-
-                    // Re-evaluated every 30 s so cards lock/unlock when an interval starts or ends.
-                    TimelineView(.periodic(from: .now, by: 30)) { context in
-                        LazyVStack(spacing: 16) {
-                            if !model.schedules.isEmpty {
-                                WeekOverview(schedules: model.schedules, profile: model.profile, now: context.date)
+                // Re-evaluated every 30 s so rows follow intervals starting and ending.
+                TimelineView(.periodic(from: .now, by: 30)) { context in
+                    VStack(spacing: Design.cardSpacing) {
+                        if model.schedules.isEmpty {
+                            ContentUnavailableView {
+                                Label("Sin horarios", systemImage: "calendar.badge.clock")
+                            } description: {
+                                Text("Crea un horario para bloquear un perfil automáticamente cada semana.")
+                            } actions: {
+                                Button("Añadir horario") { showingAddSchedule = true }
+                                    .buttonStyle(.glassProminent)
                             }
-
-                            ForEach(model.schedules) { schedule in
-                                ScheduleCard(
-                                    schedule: schedule,
-                                    profile: model.profile(schedule.profileID),
-                                    isRunning: model.isScheduleActive(schedule, at: context.date),
-                                    wouldStartNow: { model.isScheduleActive($0) },
-                                    onUpdate: model.updateSchedule,
-                                    onEdit: { editingSchedule = schedule },
-                                    onDuplicate: { model.duplicateSchedule(schedule.id) },
-                                    onDelete: { model.deleteSchedule(schedule.id) },
-                                    onPause: { pausingSchedule = schedule },
-                                    onResume: { day in model.resumeSchedule(schedule.id, on: day) }
-                                )
-                            }
+                            .card()
+                        } else {
+                            WeekOverview(schedules: model.schedules, profile: model.profile, now: context.date)
+                            scheduleList(now: context.date)
                         }
                     }
-
-                    Button {
-                        showingAddSchedule = true
-                    } label: {
-                        Label("Añadir horario", systemImage: "plus")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.glass)
-                    .controlSize(.large)
+                    .padding(.horizontal)
+                    .padding(.bottom)
                 }
-                .padding()
             }
-            .background(Color(uiColor: .systemGroupedBackground))
+            .screenBackground()
             .navigationTitle("Horarios")
+            .navigationDestination(for: UUID.self) { id in
+                ScheduleDetailView(scheduleID: id)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Añadir horario", systemImage: "plus") { showingAddSchedule = true }
+                }
+            }
         }
         .sheet(isPresented: $showingAddSchedule) {
             ScheduleForm(schedule: nil) { schedule in
@@ -63,17 +46,243 @@ struct ScheduleView: View {
                 showingAddSchedule = false
             }
         }
-        .sheet(item: $editingSchedule) { schedule in
-            ScheduleForm(schedule: schedule) { updatedSchedule in
-                if let updatedSchedule { model.updateSchedule(updatedSchedule) }
-                editingSchedule = nil
+    }
+
+    private func scheduleList(now: Date) -> some View {
+        VStack(spacing: 0) {
+            ForEach(Array(model.schedules.enumerated()), id: \.element.id) { index, schedule in
+                if index > 0 {
+                    Divider().padding(.leading, 54)
+                }
+                ScheduleRow(
+                    schedule: schedule,
+                    profile: model.profile(schedule.profileID),
+                    isRunning: model.isScheduleActive(schedule, at: now),
+                    now: now,
+                    wouldStartNow: { model.isScheduleActive($0) },
+                    onUpdate: model.updateSchedule
+                )
             }
         }
-        .sheet(item: $pausingSchedule) { schedule in
+        .card(padding: 14)
+    }
+}
+
+// MARK: - Row
+
+/// One schedule: profile icon, name, times and days, state, and the on/off switch.
+private struct ScheduleRow: View {
+    let schedule: FocusModel.Schedule
+    let profile: FocusProfile?
+    let isRunning: Bool
+    let now: Date
+    let wouldStartNow: (FocusModel.Schedule) -> Bool
+    let onUpdate: (FocusModel.Schedule) -> Void
+    @State private var showingStartNowAlert = false
+
+    var body: some View {
+        HStack(spacing: 12) {
+            NavigationLink(value: schedule.id) {
+                HStack(spacing: 12) {
+                    ProfileIcon(symbol: profile?.symbol ?? "calendar", color: profile?.color ?? .accentColor, size: 42)
+                        .opacity(schedule.isEnabled ? 1 : 0.45)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(schedule.displayName)
+                            .font(.headline)
+                            .foregroundStyle(schedule.isEnabled ? .primary : .secondary)
+                            .lineLimit(1)
+                        Text(schedule.timeRange)
+                            .font(.subheadline.weight(.medium))
+                            .fontDesign(.rounded)
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
+                        stateLine
+                    }
+
+                    Spacer(minLength: 4)
+
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Toggle(
+                schedule.isEnabled ? String(localized: "Activo") : String(localized: "Inactivo"),
+                isOn: Binding(get: { schedule.isEnabled }, set: setEnabled)
+            )
+            .labelsHidden()
+            .disabled(isRunning)
+            .accessibilityLabel(schedule.displayName)
+        }
+        .padding(.vertical, 8)
+        .startsNowAlert(isPresented: $showingStartNowAlert, endTime: schedule.endTime) {
+            var updated = schedule
+            updated.isEnabled = true
+            onUpdate(updated)
+        }
+    }
+
+    @ViewBuilder
+    private var stateLine: some View {
+        if isRunning {
+            Label(String(localized: "En curso hasta las \(schedule.endTime.formatted(date: .omitted, time: .shortened))"), systemImage: "lock.fill")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.orange)
+        } else if schedule.isEnabled, let next = schedule.prunedPauses().first(where: { schedule.intervalEnd(after: schedule.intervalStart(on: $0)) > now }) {
+            Label(String(localized: "Pausado el \(next.formatted(.dateTime.weekday(.abbreviated).day()))"), systemImage: "pause.circle")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+        } else {
+            Text(schedule.daysSummary)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func setEnabled(_ enabled: Bool) {
+        var updated = schedule
+        updated.isEnabled = enabled
+        // Turning on a schedule whose time range includes "now" blocks immediately: ask first.
+        if enabled && wouldStartNow(updated) {
+            showingStartNowAlert = true
+        } else {
+            onUpdate(updated)
+        }
+    }
+}
+
+// MARK: - Detail
+
+/// Everything about one schedule, with its actions. Native list, like other secondary screens.
+private struct ScheduleDetailView: View {
+    @EnvironmentObject private var model: FocusModel
+    @Environment(\.dismiss) private var dismiss
+    let scheduleID: UUID
+
+    @State private var editing = false
+    @State private var pausing = false
+    @State private var confirmingDelete = false
+    @State private var showingStartNowAlert = false
+
+    private var schedule: FocusModel.Schedule? { model.schedules.first { $0.id == scheduleID } }
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 30)) { context in
+            if let schedule {
+                content(schedule, now: context.date)
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: model.schedules) {
+            if schedule == nil { dismiss() }
+        }
+    }
+
+    private func content(_ schedule: FocusModel.Schedule, now: Date) -> some View {
+        let profile = model.profile(schedule.profileID)
+        let isRunning = model.isScheduleActive(schedule, at: now)
+        let pauses = schedule.prunedPauses().filter { schedule.intervalEnd(after: schedule.intervalStart(on: $0)) > now }
+
+        return List {
+            Section {
+                HStack(spacing: 14) {
+                    ProfileIcon(symbol: profile?.symbol ?? "calendar", color: profile?.color ?? .accentColor, size: 52)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(schedule.displayName)
+                            .font(.title3.bold())
+                        Text(profile?.displayName ?? String(localized: "Sin perfil"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if isRunning {
+                        StatusBadge(text: String(localized: "En curso"), color: .orange)
+                    } else {
+                        StatusBadge(
+                            text: schedule.isEnabled ? String(localized: "Activo") : String(localized: "Inactivo"),
+                            color: schedule.isEnabled ? .green : .secondary
+                        )
+                    }
+                }
+                .padding(.vertical, 4)
+
+                Toggle("Horario activado", isOn: Binding(get: { schedule.isEnabled }, set: { setEnabled($0, schedule) }))
+                    .disabled(isRunning)
+            } footer: {
+                if isRunning {
+                    Text("Está en curso: no se puede modificar, desactivar ni eliminar hasta las \(schedule.endTime.formatted(date: .omitted, time: .shortened)). Tu llave lo desbloquea hasta entonces.")
+                }
+            }
+
+            Section("Horario") {
+                LabeledContent("Inicio", value: schedule.startTime.formatted(date: .omitted, time: .shortened))
+                LabeledContent("Fin") {
+                    Text(schedule.endTime.formatted(date: .omitted, time: .shortened)
+                         + (schedule.crossesMidnight ? String(localized: " (día siguiente)") : ""))
+                }
+                LabeledContent("Días", value: schedule.daysSummary)
+            }
+
+            if schedule.isEnabled {
+                Section {
+                    ForEach(pauses, id: \.self) { day in
+                        HStack {
+                            Label(day.formatted(.dateTime.weekday(.wide).day().month()), systemImage: "pause.circle")
+                            Spacer()
+                            Button("Quitar pausa") { model.resumeSchedule(schedule.id, on: day) }
+                                .buttonStyle(.borderless)
+                        }
+                    }
+                    Button("Pausar un día", systemImage: "pause.circle") { pausing = true }
+                } header: {
+                    Text("Pausas")
+                } footer: {
+                    Text("Un día pausado no se bloquea. El resto de la semana sigue igual.")
+                }
+            }
+
+            Section {
+                Button("Editar", systemImage: "pencil") { editing = true }
+                    .disabled(isRunning)
+                Button("Duplicar", systemImage: "plus.square.on.square") { model.duplicateSchedule(schedule.id) }
+                Button("Eliminar horario", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+                    .disabled(isRunning)
+            }
+        }
+        .navigationTitle(schedule.displayName)
+        .sheet(isPresented: $editing) {
+            ScheduleForm(schedule: schedule) { updated in
+                if let updated { model.updateSchedule(updated) }
+                editing = false
+            }
+        }
+        .sheet(isPresented: $pausing) {
             // In strict mode the model asks for the tag before pausing.
             PauseDaySheet(schedule: schedule, needsKey: model.strictMode) { day in
                 model.pauseSchedule(schedule.id, on: day)
             }
+        }
+        .confirmationDialog("¿Eliminar «\(schedule.displayName)»?", isPresented: $confirmingDelete, titleVisibility: .visible) {
+            Button("Eliminar", role: .destructive) { model.deleteSchedule(schedule.id) }
+        }
+        .startsNowAlert(isPresented: $showingStartNowAlert, endTime: schedule.endTime) {
+            var updated = schedule
+            updated.isEnabled = true
+            model.updateSchedule(updated)
+        }
+    }
+
+    private func setEnabled(_ enabled: Bool, _ schedule: FocusModel.Schedule) {
+        var updated = schedule
+        updated.isEnabled = enabled
+        if enabled && model.isScheduleActive(updated) {
+            showingStartNowAlert = true
+        } else {
+            model.updateSchedule(updated)
         }
     }
 }
@@ -138,213 +347,6 @@ private struct PauseDaySheet: View {
             }
         }
         .presentationDetents([.medium, .large])
-    }
-}
-
-private struct ScheduleCard: View {
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
-    let schedule: FocusModel.Schedule
-    let profile: FocusProfile?
-    /// While running, the schedule can't be modified, disabled or deleted.
-    let isRunning: Bool
-    let wouldStartNow: (FocusModel.Schedule) -> Bool
-    let onUpdate: (FocusModel.Schedule) -> Void
-    let onEdit: () -> Void
-    let onDuplicate: () -> Void
-    let onDelete: () -> Void
-    let onPause: () -> Void
-    let onResume: (Date) -> Void
-
-    @State private var showingStartNowAlert = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack(alignment: .top, spacing: 14) {
-                Image(systemName: "calendar.badge.clock")
-                    .font(.title)
-                    .foregroundStyle(.white)
-                    .frame(width: 56, height: 56)
-                    .background((profile?.color ?? .indigo).gradient, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(schedule.displayName)
-                        .font(.title3.bold())
-                    Label(profile?.displayName ?? String(localized: "Sin perfil"), systemImage: profile?.symbol ?? "lock.shield")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 8) {
-                    Text(badgeText)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(badgeColor)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 5)
-                        .background(badgeColor.opacity(0.14), in: Capsule())
-
-                    Toggle(
-                        schedule.isEnabled ? String(localized: "Activo") : String(localized: "Inactivo"),
-                        isOn: Binding(get: { schedule.isEnabled }, set: { setEnabled($0) })
-                    )
-                    .labelsHidden()
-                    .tint(.green)
-                    .accessibilityLabel(schedule.isEnabled ? String(localized: "Horario activo") : String(localized: "Horario inactivo"))
-                    .disabled(isRunning)
-                }
-            }
-
-            if isRunning {
-                Label(
-                    "En curso — no se puede modificar hasta las \(schedule.endTime.formatted(date: .omitted, time: .shortened))",
-                    systemImage: "lock.fill"
-                )
-                .font(.footnote.weight(.medium))
-                .foregroundStyle(.orange)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(12)
-                .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            }
-
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Días de la semana")
-                    .font(.headline)
-                HStack(spacing: 6) {
-                    ForEach(FocusModel.Weekday.mondayFirst) { weekday in
-                        Text(weekday.initial)
-                        .font(.headline)
-                        .foregroundStyle(schedule.repeats.contains(weekday) ? .white : .primary)
-                        .frame(maxWidth: .infinity, minHeight: 40)
-                        .background(schedule.repeats.contains(weekday) ? (profile?.color ?? .indigo) : .clear, in: Circle())
-                        .accessibilityLabel(weekday.shortName)
-                        .accessibilityAddTraits(schedule.repeats.contains(weekday) ? .isSelected : [])
-                    }
-                }
-            }
-
-            timeControls
-
-            Text(summary)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(12)
-                .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-
-            if schedule.isEnabled {
-                pauses
-            }
-
-            HStack {
-                Button("Editar", action: onEdit)
-                    .buttonStyle(.bordered)
-                    .disabled(isRunning)
-                Button("Duplicar", action: onDuplicate)
-                    .buttonStyle(.bordered)
-                Spacer()
-                Button("Eliminar", role: .destructive, action: onDelete)
-                    .buttonStyle(.bordered)
-                    .disabled(isRunning)
-            }
-            .font(.subheadline.weight(.medium))
-        }
-        .padding(20)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
-        .startsNowAlert(isPresented: $showingStartNowAlert, endTime: schedule.endTime) {
-            var updated = schedule
-            updated.isEnabled = true
-            onUpdate(updated)
-        }
-    }
-
-    /// Upcoming paused days, each removable, plus the button to pause another one.
-    private var pauses: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Pauses whose interval hasn't ended yet.
-            let paused = schedule.prunedPauses().filter { schedule.intervalEnd(after: schedule.intervalStart(on: $0)) > .now }
-            if !paused.isEmpty {
-                Text("Días pausados")
-                    .font(.headline)
-                ForEach(paused, id: \.self) { day in
-                    HStack {
-                        Label(day.formatted(.dateTime.weekday(.wide).day().month()), systemImage: "pause.circle")
-                            .font(.subheadline)
-                        Spacer()
-                        Button("Quitar pausa") { onResume(day) }
-                            .font(.subheadline)
-                            .buttonStyle(.borderless)
-                    }
-                }
-            }
-            Button(action: onPause) {
-                Label("Pausar un día", systemImage: "pause.circle")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .font(.subheadline.weight(.medium))
-        }
-    }
-
-    @ViewBuilder
-    private var timeControls: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            VStack(alignment: .leading, spacing: 12) {
-                timeLabel(title: String(localized: "Hora de inicio"), time: schedule.startTime)
-                timeLabel(title: String(localized: "Hora de fin"), time: schedule.endTime)
-            }
-        } else {
-            HStack(spacing: 12) {
-                timeLabel(title: String(localized: "Hora de inicio"), time: schedule.startTime)
-                timeLabel(title: String(localized: "Hora de fin"), time: schedule.endTime)
-            }
-        }
-    }
-
-    private var badgeText: String {
-        if isRunning { return String(localized: "En curso") }
-        return schedule.isEnabled ? String(localized: "Activo") : String(localized: "Inactivo")
-    }
-
-    private var badgeColor: Color {
-        if isRunning { return .orange }
-        return schedule.isEnabled ? .green : .secondary
-    }
-
-    private var summary: String {
-        let days = FocusModel.Weekday.mondayFirst
-            .filter { schedule.repeats.contains($0) }
-            .map(\.shortName)
-            .joined(separator: ", ")
-        let recurrence = days.isEmpty ? String(localized: "Sin días seleccionados") : String(localized: "Se repite \(days)")
-        let overnight = schedule.crossesMidnight ? String(localized: " (termina al día siguiente)") : ""
-        return String(localized: "\(recurrence), de \(schedule.startTime.formatted(date: .omitted, time: .shortened)) a \(schedule.endTime.formatted(date: .omitted, time: .shortened))\(overnight).")
-    }
-
-    /// Read-only: times are changed only from the edit form, which has a Save button.
-    private func timeLabel(title: String, time: Date) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.headline)
-            Text(time.formatted(date: .omitted, time: .shortened))
-                .font(.body.monospacedDigit())
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(Color(uiColor: .secondarySystemBackground), in: Capsule())
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func setEnabled(_ enabled: Bool) {
-        var updated = schedule
-        updated.isEnabled = enabled
-        // Turning on a schedule whose time range includes "now" blocks immediately: ask first.
-        if enabled && wouldStartNow(updated) {
-            showingStartNowAlert = true
-        } else {
-            onUpdate(updated)
-        }
     }
 }
 
@@ -561,13 +563,12 @@ private struct WeekOverview: View {
     let profile: (UUID?) -> FocusProfile?
     let now: Date
 
-    private let height: CGFloat = 150
+    private let height: CGFloat = 120
     private let dayMinutes = CGFloat(24 * 60)
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Tu semana")
-                .font(.headline)
+        VStack(alignment: .leading, spacing: Design.contentSpacing) {
+            CardHeader("Tu semana")
 
             HStack(alignment: .top, spacing: 6) {
                 hourLabels
@@ -578,8 +579,7 @@ private struct WeekOverview: View {
 
             legend
         }
-        .padding(20)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .card()
     }
 
     private var hourLabels: some View {
@@ -683,6 +683,27 @@ private extension View {
             Button("Bloquear ahora", role: .destructive, action: onConfirm)
         } message: {
             Text("Este horario incluye la hora actual. Las apps se bloquearán ya y no podrás modificar ni desactivar el horario hasta las \(endTime.formatted(date: .omitted, time: .shortened)).")
+        }
+    }
+}
+
+extension FocusModel.Schedule {
+    /// "7:00 – 15:00"
+    var timeRange: String {
+        "\(startTime.formatted(date: .omitted, time: .shortened)) – \(endTime.formatted(date: .omitted, time: .shortened))"
+    }
+
+    /// "Lunes a viernes", "Todos los días", "Fines de semana" or "Lun, Mié, Vie".
+    var daysSummary: String {
+        let workdays: Set<FocusModel.Weekday> = [.monday, .tuesday, .wednesday, .thursday, .friday]
+        let weekend: Set<FocusModel.Weekday> = [.saturday, .sunday]
+        switch repeats {
+        case Set(FocusModel.Weekday.allCases): return String(localized: "Todos los días")
+        case workdays: return String(localized: "Lunes a viernes")
+        case weekend: return String(localized: "Fines de semana")
+        case []: return String(localized: "Sin días seleccionados")
+        default:
+            return FocusModel.Weekday.mondayFirst.filter { repeats.contains($0) }.map(\.shortName).joined(separator: ", ")
         }
     }
 }

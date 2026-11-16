@@ -62,19 +62,6 @@ struct ProfilesView: View {
     }
 }
 
-struct ProfileIcon: View {
-    let symbol: String
-    var color: Color = .indigo
-
-    var body: some View {
-        Image(systemName: symbol)
-            .font(.body)
-            .foregroundStyle(.white)
-            .frame(width: 34, height: 34)
-            .background(color.gradient, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-    }
-}
-
 private struct ProfileEditor: View {
     @Environment(\.dismiss) private var dismiss
     let isNew: Bool

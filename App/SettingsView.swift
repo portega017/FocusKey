@@ -3,6 +3,7 @@
 //  FocusKey
 //
 
+import ActivityKit
 import SwiftUI
 import UserNotifications
 
@@ -31,6 +32,19 @@ struct SettingsView: View {
                     Text("Protección")
                 } footer: {
                     Text("Mientras haya algo bloqueado, iOS no deja eliminar ninguna app, incluida FocusKey. Así no se puede saltar el bloqueo desinstalándola.")
+                }
+
+                Section {
+                    Toggle("Live Activity", isOn: $model.liveActivities)
+                    if model.liveActivities && !ActivityAuthorizationInfo().areActivitiesEnabled {
+                        Button("Activar Actividades en directo en Ajustes") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                        }
+                    }
+                } header: {
+                    Text("Pantalla de bloqueo")
+                } footer: {
+                    Text("Muestra la cuenta atrás de las sesiones y los pomodoros en la pantalla de bloqueo y en la Dynamic Island.")
                 }
 
                 Section {

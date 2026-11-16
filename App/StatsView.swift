@@ -18,49 +18,88 @@ extension DeviceActivityReport.Context {
 }
 
 struct StatsView: View {
+    enum Section: String, CaseIterable, Identifiable {
+        case week, year, usage
+        var id: Self { self }
+
+        var title: LocalizedStringKey {
+            switch self {
+            case .week: return "Semana"
+            case .year: return "Año"
+            case .usage: return "Uso"
+            }
+        }
+    }
+
     @EnvironmentObject private var model: FocusModel
+    @State private var section = StatsView.initialSection
     @State private var selectedDay: Date?
     @State private var usageProfileID: UUID?
+
+    /// Debug builds accept `-FocusKeyStats week|year|usage` (for screenshots).
+    private static var initialSection: Section {
+        #if DEBUG
+        return UserDefaults.standard.string(forKey: "FocusKeyStats").flatMap(Section.init(rawValue:)) ?? .week
+        #else
+        return .week
+        #endif
+    }
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                let stats = FocusStats(records: model.records, archive: model.dailyArchive, archivedUntil: model.archivedUntil)
-                VStack(spacing: 16) {
-                    HStack(spacing: 12) {
-                        StatTile(title: "Hoy", value: FocusStats.format(minutes: stats.today), symbol: "lock.fill")
-                        StatTile(title: "Racha", value: String(localized: "\(stats.streak) días"), symbol: "flame.fill")
+                VStack(spacing: Design.cardSpacing) {
+                    Picker("Sección", selection: $section) {
+                        ForEach(Section.allCases) { Text($0.title).tag($0) }
                     }
-                    StatTile(title: "Últimos 7 días", value: FocusStats.format(minutes: stats.week.map(\.minutes).reduce(0, +)), symbol: "calendar")
+                    .pickerStyle(.segmented)
 
-                    if !model.revocations.isEmpty {
-                        revocationsCard
+                    switch section {
+                    case .week: week
+                    case .year:
+                        YearOverview(counter: FocusStats.DayCounter(
+                            records: model.records, archive: model.dailyArchive, archivedUntil: model.archivedUntil
+                        ))
+                    case .usage: usage
                     }
-
-                    chart(stats.week)
-
-                    MonthHeatmap(days: stats.calendarDays)
-
-                    YearOverview(counter: FocusStats.DayCounter(
-                        records: model.records, archive: model.dailyArchive, archivedUntil: model.archivedUntil
-                    ))
-
-                    usage
-
-                    recent(stats.recent)
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.bottom)
+                .animation(.smooth, value: section)
             }
-            .background(Color(uiColor: .systemGroupedBackground))
+            .screenBackground()
             .navigationTitle("Estadísticas")
             .refreshable { model.reload() }
         }
     }
 
+    @ViewBuilder
+    private var week: some View {
+        let stats = FocusStats(records: model.records, archive: model.dailyArchive, archivedUntil: model.archivedUntil)
+
+        HStack(spacing: 12) {
+            MetricTile(title: "Hoy", value: FocusStats.format(minutes: stats.today), symbol: "lock.fill")
+            Divider().frame(height: 36)
+            MetricTile(title: "7 días", value: FocusStats.format(minutes: stats.week.map(\.minutes).reduce(0, +)), symbol: "calendar")
+            Divider().frame(height: 36)
+            MetricTile(title: "Racha", value: String(localized: "\(stats.streak) días"), symbol: "flame.fill")
+        }
+        .card()
+
+        if !model.revocations.isEmpty {
+            revocationsCard
+        }
+
+        chart(stats.week)
+
+        MonthHeatmap(days: stats.calendarDays)
+
+        recent(stats.recent)
+    }
+
     private func chart(_ week: [FocusStats.Day]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Tiempo bloqueado")
-                .font(.headline)
+            CardHeader("Tiempo bloqueado")
 
             if let day = selectedDay.flatMap({ date in week.first { Calendar.current.isDate($0.date, inSameDayAs: date) } }) {
                 Text("\(day.date.formatted(.dateTime.weekday(.wide).day().month())): \(FocusStats.format(minutes: day.minutes))")
@@ -79,7 +118,7 @@ struct StatsView: View {
                     width: .ratio(0.55)
                 )
                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 4, topTrailingRadius: 4))
-                .foregroundStyle(Color.indigo.opacity(selectedDay == nil || Calendar.current.isDate(day.date, inSameDayAs: selectedDay!) ? 1 : 0.35))
+                .foregroundStyle(Color.accentColor.opacity(selectedDay == nil || Calendar.current.isDate(day.date, inSameDayAs: selectedDay!) ? 1 : 0.35))
                 .accessibilityLabel(day.date.formatted(.dateTime.weekday(.wide)))
                 .accessibilityValue(FocusStats.format(minutes: day.minutes))
             }
@@ -99,8 +138,7 @@ struct StatsView: View {
             .chartXSelection(value: $selectedDay)
             .frame(height: 200)
         }
-        .padding(20)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .card()
     }
 
     // MARK: Screen Time permission
@@ -119,9 +157,7 @@ struct StatsView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .card()
     }
 
     // MARK: Real usage
@@ -156,9 +192,7 @@ struct StatsView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .card()
     }
 
     private static func filter(for profile: FocusProfile) -> DeviceActivityFilter {
@@ -176,8 +210,7 @@ struct StatsView: View {
 
     private func recent(_ records: [BlockRecord]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Bloqueos recientes")
-                .font(.headline)
+            CardHeader("Bloqueos recientes")
 
             if records.isEmpty {
                 Text("Aún no hay bloqueos registrados.")
@@ -188,7 +221,7 @@ struct StatsView: View {
             ForEach(records) { record in
                 HStack(spacing: 12) {
                     Image(systemName: record.kind.symbol)
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(.tint)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(record.title).font(.subheadline.weight(.medium))
@@ -203,31 +236,7 @@ struct StatsView: View {
                 }
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
-    }
-}
-
-private struct StatTile: View {
-    let title: LocalizedStringKey
-    let value: String
-    let symbol: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Label(title, systemImage: symbol)
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.title2.bold().monospacedDigit())
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 20))
-        .accessibilityElement(children: .combine)
+        .card()
     }
 }
 
@@ -243,8 +252,7 @@ private struct MonthHeatmap: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Últimas 5 semanas")
-                .font(.headline)
+            CardHeader("Últimas 5 semanas")
 
             if let selected, let day = days.first(where: { Calendar.current.isDate($0.date, inSameDayAs: selected) }) {
                 Text("\(day.date.formatted(.dateTime.weekday(.wide).day().month())): \(FocusStats.format(minutes: day.minutes))")
@@ -282,8 +290,7 @@ private struct MonthHeatmap: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
             .accessibilityHidden(true)
         }
-        .padding(20)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .card()
     }
 
     private func cell(_ day: FocusStats.Day) -> some View {
@@ -295,7 +302,7 @@ private struct MonthHeatmap: View {
             .aspectRatio(1, contentMode: .fit)
             .overlay {
                 RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .strokeBorder(isSelected ? Color.primary : (isToday ? Color.indigo : .clear), lineWidth: 2)
+                    .strokeBorder(isSelected ? Color.primary : (isToday ? Color.accentColor : .clear), lineWidth: 2)
             }
             .contentShape(Rectangle())
             .onTapGesture { if !isFuture { selected = isSelected ? nil : day.date } }
@@ -311,7 +318,7 @@ private struct MonthHeatmap: View {
     }
 
     fileprivate static func shade(_ level: Int) -> Color {
-        level == 0 ? Color.secondary.opacity(0.12) : Color.indigo.opacity([0, 0.3, 0.5, 0.72, 1][level])
+        level == 0 ? Color.secondary.opacity(0.12) : Color.accentColor.opacity([0, 0.3, 0.5, 0.72, 1][level])
     }
 
     private static var weekdayInitials: [String] {
@@ -349,9 +356,7 @@ private struct YearOverview: View {
                 }
             }
 
-            Text(FocusStats.format(minutes: stats.total))
-                .font(.largeTitle.bold().monospacedDigit())
-                .contentTransition(.numericText())
+            MetricText(value: FocusStats.format(minutes: stats.total), font: .largeTitle)
                 .accessibilityLabel(String(localized: "Total del año: \(FocusStats.format(minutes: stats.total))"))
 
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
@@ -379,9 +384,7 @@ private struct YearOverview: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .card()
         .animation(.smooth, value: year)
         .onChange(of: year) { selected = nil }
     }
@@ -405,7 +408,7 @@ private struct YearOverview: View {
                 width: .ratio(0.6)
             )
             .clipShape(UnevenRoundedRectangle(topLeadingRadius: 3, topTrailingRadius: 3))
-            .foregroundStyle(Color.indigo)
+            .foregroundStyle(Color.accentColor)
             .accessibilityLabel(month.date.formatted(.dateTime.month(.wide)))
             .accessibilityValue(FocusStats.format(minutes: month.minutes))
         }

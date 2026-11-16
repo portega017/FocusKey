@@ -32,7 +32,8 @@ enum FocusLiveActivity {
     /// Starts, updates or ends the Live Activity so it matches what is running now.
     static func sync(now: Date = .now) async {
         let current = Activity<FocusActivityAttributes>.activities
-        guard let (attributes, state) = desired(at: now) else {
+        // Turned off in Settings: behave as if nothing were running.
+        guard FocusStore.liveActivities, let (attributes, state) = desired(at: now) else {
             for activity in current { await activity.end(nil, dismissalPolicy: .immediate) }
             return
         }

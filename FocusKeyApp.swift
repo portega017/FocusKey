@@ -21,10 +21,20 @@ struct FocusKeyApp: App {
 }
 
 private struct RootTabView: View {
+    /// Debug builds accept `-FocusKeyTab <0-3>` to open a tab directly (for screenshots).
+    static var initialTab: Int {
+        #if DEBUG
+        return UserDefaults.standard.integer(forKey: "FocusKeyTab")
+        #else
+        return 0
+        #endif
+    }
+
     @EnvironmentObject private var model: FocusModel
     @EnvironmentObject private var nfc: NFCScanner
     @Environment(\.scenePhase) private var scenePhase
-    @State private var tab = 0
+    @State private var tab = RootTabView.initialTab
+    @State private var toast: String?
     @AppStorage(OnboardingView.doneKey) private var onboardingDone = false
     @State private var showingOnboarding = false
 
@@ -60,6 +70,23 @@ private struct RootTabView: View {
                     showingOnboarding = true
                 }
             }
+        }
+        .tint(.accentColor)
+        .overlay(alignment: .top) {
+            if let toast {
+                Toast(message: toast)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .onTapGesture { withAnimation { self.toast = nil } }
+            }
+        }
+        .onChange(of: model.statusID) {
+            withAnimation(.smooth) { toast = model.status }
+        }
+        .task(id: toast) {
+            guard toast != nil else { return }
+            try? await Task.sleep(for: .seconds(3.5))
+            withAnimation(.smooth) { toast = nil }
         }
         .fullScreenCover(isPresented: $showingOnboarding) {
             OnboardingView()

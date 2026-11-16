@@ -18,44 +18,36 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            // Re-evaluated every 30 s so the state follows schedules, limits and sessions.
-            TimelineView(.periodic(from: .now, by: 30)) { context in
-                let status = FocusStatus.current(at: context.date)
-                let tint = (status.blockingProfile ?? model.activeProfile)?.color ?? .indigo
+            ScrollView {
+                // Re-evaluated every 30 s so the state follows schedules, limits and sessions.
+                TimelineView(.periodic(from: .now, by: 30)) { context in
+                    let status = FocusStatus.current(at: context.date)
+                    let tint = (status.blockingProfile ?? model.activeProfile)?.color ?? .accentColor
 
-                ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: Design.cardSpacing) {
                         if model.isAuthorizationRevoked {
                             revokedBanner
                         }
 
                         statusCard(status, tint: tint)
 
-                        if !model.isAuthorized {
-                            Button("Autorizar Screen Time") {
-                                Task { await model.authorize() }
-                            }
-                            .buttonStyle(.glassProminent)
-                            .tint(tint)
-                        }
+                        PresetGrid(isDisabled: status.isManualLocked || status.pomodoro != nil || !model.isAuthorized)
 
-                        PresetGrid(isDisabled: status.isManualLocked || status.pomodoro != nil)
-
-                        profileSection(tint: tint)
-
-                        Text(model.status)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
+                        profileSection
                     }
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                    .animation(.smooth(duration: 0.6), value: status.isBlocked)
+                    .animation(.smooth, value: model.activeProfileID)
+                    .sensoryFeedback(trigger: status.isBlocked) { _, blocked in
+                        blocked ? .impact(weight: .heavy) : .success
+                    }
                 }
-                .background { background(tint: tint, blocked: status.isBlocked) }
-                .animation(.smooth(duration: 0.6), value: status.isBlocked)
-                .animation(.smooth, value: model.activeProfileID)
-                .sensoryFeedback(trigger: status.isBlocked) { _, blocked in
-                    blocked ? .impact(weight: .heavy) : .success
+            }
+            .background {
+                TimelineView(.periodic(from: .now, by: 30)) { context in
+                    let status = FocusStatus.current(at: context.date)
+                    background(tint: (status.blockingProfile ?? model.activeProfile)?.color ?? .accentColor, blocked: status.isBlocked)
                 }
             }
             .navigationTitle("FocusKey")
@@ -88,18 +80,19 @@ struct ContentView: View {
         ZStack {
             Color(uiColor: .systemGroupedBackground)
             LinearGradient(
-                colors: [tint.opacity(blocked ? 0.35 : 0.18), tint.opacity(0.04), .clear],
+                colors: [tint.opacity(blocked ? 0.30 : 0.14), tint.opacity(0.03), .clear],
                 startPoint: .top,
                 endPoint: .center
             )
         }
         .ignoresSafeArea()
+        .animation(.smooth(duration: 0.6), value: blocked)
     }
 
     // MARK: Revoked permission
 
     private var revokedBanner: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Label("Screen Time está desactivado", systemImage: "exclamationmark.shield.fill")
                 .font(.headline)
                 .foregroundStyle(.orange)
@@ -112,15 +105,13 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular.tint(.orange.opacity(0.15)), in: .rect(cornerRadius: 28))
+        .card(tint: .orange)
     }
 
     // MARK: Status
 
     private func statusCard(_ status: FocusStatus, tint: Color) -> some View {
-        VStack(spacing: 18) {
+        VStack(spacing: Design.contentSpacing + 4) {
             LockRing(status: status, tint: tint)
 
             VStack(spacing: 4) {
@@ -135,38 +126,49 @@ struct ContentView: View {
                 }
             }
 
-            if !status.limits.isEmpty {
-                ExtendLimitButton()
-                    .controlSize(.large)
-            }
+            VStack(spacing: 10) {
+                if !model.isAuthorized {
+                    Button {
+                        Task { await model.authorize() }
+                    } label: {
+                        Label("Autorizar Screen Time", systemImage: "hourglass")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .tint(tint)
+                } else {
+                    if !status.limits.isEmpty {
+                        ExtendLimitButton()
+                    }
 
-            if status.canUnlockWithKey {
-                Button {
-                    nfc.start()
-                } label: {
-                    Label(
-                        status.pomodoro != nil ? String(localized: "Terminar con llave") : String(localized: "Desbloquear con llave"),
-                        systemImage: "wave.3.right"
-                    )
-                    .frame(maxWidth: .infinity)
+                    if status.canUnlockWithKey {
+                        Button {
+                            nfc.start()
+                        } label: {
+                            Label(
+                                status.pomodoro != nil ? String(localized: "Terminar con llave") : String(localized: "Desbloquear con llave"),
+                                systemImage: "wave.3.right"
+                            )
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.glassProminent)
+                        .tint(tint)
+                    }
+
+                    if !status.isManualLocked && status.pomodoro == nil {
+                        lockButtons(tint: tint)
+                    }
                 }
-                .buttonStyle(.glassProminent)
-                .controlSize(.large)
-                .tint(tint)
             }
-
-            if !status.isManualLocked && status.pomodoro == nil {
-                lockButtons(tint: tint)
-            }
+            .controlSize(.large)
         }
-        .padding(20)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .card(padding: 20)
     }
 
     private func lockButtons(tint: Color) -> some View {
-        GlassEffectContainer(spacing: 12) {
-            HStack(spacing: 12) {
+        GlassEffectContainer(spacing: 10) {
+            HStack(spacing: 10) {
                 Button {
                     model.lock()
                 } label: {
@@ -189,16 +191,17 @@ struct ContentView: View {
                 }
                 .buttonStyle(.glass)
             }
-            .controlSize(.large)
         }
     }
 
     // MARK: Profile
 
-    private func profileSection(tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Perfil para bloquear")
-                .font(.headline)
+    private var profileSection: some View {
+        let locked = model.isLocked || model.pomodoro != nil
+        return VStack(alignment: .leading, spacing: Design.contentSpacing) {
+            CardHeader("Perfil para bloquear", subtitle: model.activeProfile?.summary) {
+                NavigationLink("Gestionar") { ProfilesView() }
+            }
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
@@ -210,26 +213,11 @@ struct ContentView: View {
                 }
                 .padding(.vertical, 2)
             }
-            .disabled(model.isLocked || model.pomodoro != nil)
-            .opacity(model.isLocked || model.pomodoro != nil ? 0.5 : 1)
-
-            if let profile = model.activeProfile {
-                Text(profile.summary)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            NavigationLink {
-                ProfilesView()
-            } label: {
-                Label("Gestionar perfiles", systemImage: "square.stack.3d.up")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.glass)
+            .scrollClipDisabled()
+            .disabled(locked)
+            .opacity(locked ? 0.5 : 1)
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .card()
     }
 }
 
@@ -257,16 +245,16 @@ private struct LockRing: View {
 
             ZStack {
                 Circle()
-                    .stroke(ringTint.opacity(0.15), lineWidth: 12)
+                    .stroke(ringTint.opacity(0.15), lineWidth: 10)
                 Circle()
                     .trim(from: 0, to: remaining)
-                    .stroke(ringTint.gradient, style: StrokeStyle(lineWidth: 12, lineCap: .round))
+                    .stroke(ringTint.gradient, style: StrokeStyle(lineWidth: 10, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.smooth(duration: 0.8), value: remaining)
 
                 VStack(spacing: 6) {
                     Image(systemName: rest != nil ? "cup.and.saucer.fill" : (status.isBlocked ? "lock.fill" : "lock.open.fill"))
-                        .font(.system(size: 50, weight: .semibold))
+                        .font(.system(size: 44, weight: .semibold))
                         .foregroundStyle(status.isBlocked ? tint : .green)
                         .contentTransition(.symbolEffect(.replace))
                         .symbolEffect(.bounce, value: status.isBlocked)
@@ -274,11 +262,12 @@ private struct LockRing: View {
                     if let end = status.sessionEnd ?? rest?.end {
                         Text(end, style: .timer)
                             .font(.title3.monospacedDigit().bold())
+                            .fontDesign(.rounded)
                             .foregroundStyle(.secondary)
                     }
                 }
             }
-            .frame(width: 170, height: 170)
+            .frame(width: 150, height: 150)
             .padding(.top, 4)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(status.headline)

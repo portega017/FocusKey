@@ -41,9 +41,22 @@ final class FocusModel: ObservableObject {
     /// Moments the Screen Time permission was found revoked (last 60 days).
     @Published private(set) var revocations: [Date] = []
     @Published private(set) var isAuthorized = FocusLock.isAuthorized
-    @Published var status = String(localized: "Autoriza Screen Time para empezar.")
+    /// Last message for the user, shown as a toast. Every assignment shows it again, even if
+    /// the text is the same (`statusID` changes).
+    @Published var status = String(localized: "Autoriza Screen Time para empezar.") {
+        didSet { statusID = UUID() }
+    }
+    @Published private(set) var statusID: UUID?
     @Published private(set) var preventAppRemoval = FocusStore.preventAppRemoval
     @Published private(set) var strictMode = FocusStore.strictMode
+    /// Live Activity on the Lock Screen and Dynamic Island for sessions and pomodoros.
+    @Published var liveActivities = FocusStore.liveActivities {
+        didSet {
+            guard liveActivities != oldValue else { return }
+            FocusStore.liveActivities = liveActivities
+            Task { await FocusLiveActivity.sync() }
+        }
+    }
     @Published var limitWarnings = FocusStore.limitWarnings {
         didSet {
             FocusStore.limitWarnings = limitWarnings
@@ -159,11 +172,15 @@ final class FocusModel: ObservableObject {
 
         switch center.authorizationStatus {
         case .approved, .approvedWithDataAccess:
-            status = String(localized: "Screen Time está autorizado.")
+            break
         case .notDetermined, .denied:
             do {
                 try await center.requestAuthorization(for: .individual)
-                status = FocusLock.isAuthorized ? String(localized: "Autorización concedida.") : String(localized: "La autorización no está aprobada.")
+                // Right after launch iOS can briefly report "not determined" and the request then
+                // succeeds silently: only speak up when it really isn't approved.
+                if !FocusLock.isAuthorized {
+                    status = String(localized: "La autorización no está aprobada.")
+                }
             } catch {
                 status = String(localized: "Error de autorización: \(error.localizedDescription)")
             }

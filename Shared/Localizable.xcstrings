@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "es",
   "strings": {
+    " (día siguiente)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " (next day)"
+          }
+        }
+      }
+    },
     " (termina al día siguiente)": {
       "localizations": {
         "en": {
@@ -53,6 +63,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$@ a las %2$@"
+          }
+        }
+      }
+    },
+    "%@ al día": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ per day"
           }
         }
       }
@@ -393,6 +413,16 @@
         }
       }
     },
+    "7 días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 days"
+          }
+        }
+      }
+    },
     "Abre FocusKey para leer tu llave NFC.": {
       "localizations": {
         "en": {
@@ -459,6 +489,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hold your FocusKey tag near your iPhone to confirm. When that time is used up, it will block again."
+          }
+        }
+      }
+    },
+    "Activar Actividades en directo en Ajustes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on Live Activities in Settings"
           }
         }
       }
@@ -709,6 +749,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Blocks a FocusKey profile. Only your NFC key can unlock it early."
+          }
+        }
+      }
+    },
+    "Bloquea un perfil durante un tiempo con un toque.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Block a profile for a set time with one tap."
           }
         }
       }
@@ -1025,6 +1075,16 @@
         }
       }
     },
+    "Crea un horario para bloquear un perfil automáticamente cada semana.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a schedule to block a profile automatically every week."
+          }
+        }
+      }
+    },
     "Crea un límite para bloquear un perfil cuando lo hayas usado cierto tiempo al día.": {
       "localizations": {
         "en": {
@@ -1191,6 +1251,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Day"
+          }
+        }
+      }
+    },
+    "Días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days"
           }
         }
       }
@@ -1395,6 +1465,16 @@
         }
       }
     },
+    "Eliminar horario": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete schedule"
+          }
+        }
+      }
+    },
     "Empezar": {
       "localizations": {
         "en": {
@@ -1451,6 +1531,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Running"
+          }
+        }
+      }
+    },
+    "En curso hasta las %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running until %@"
           }
         }
       }
@@ -1667,6 +1757,16 @@
         }
       }
     },
+    "Está en curso: no se puede modificar, desactivar ni eliminar hasta las %@. Tu llave lo desbloquea hasta entonces.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It’s running: it can’t be changed, turned off or deleted until %@. Your key unlocks it until then."
+          }
+        }
+      }
+    },
     "Fase terminada · abre FocusKey": {
       "localizations": {
         "en": {
@@ -1693,6 +1793,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "End"
+          }
+        }
+      }
+    },
+    "Fines de semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekends"
           }
         }
       }
@@ -2033,6 +2143,16 @@
         }
       }
     },
+    "Live Activity": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live Activity"
+          }
+        }
+      }
+    },
     "Llave NFC": {
       "localizations": {
         "en": {
@@ -2059,6 +2179,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mon"
+          }
+        }
+      }
+    },
+    "Lunes a viernes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monday to Friday"
           }
         }
       }
@@ -2283,6 +2413,16 @@
         }
       }
     },
+    "Muestra la cuenta atrás de las sesiones y los pomodoros en la pantalla de bloqueo y en la Dynamic Island.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows the countdown of sessions and pomodoros on the Lock Screen and in the Dynamic Island."
+          }
+        }
+      }
+    },
     "Más": {
       "localizations": {
         "en": {
@@ -2483,12 +2623,32 @@
         }
       }
     },
+    "Pantalla de bloqueo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock Screen"
+          }
+        }
+      }
+    },
     "Para desactivar o borrar horarios y límites, subir un límite, quitar apps de un perfil o quitar la protección contra borrado necesitarás tu llave NFC. Crear, añadir o endurecer sigue siendo libre. Desactivar este modo también pide la llave.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Turning off or deleting schedules and limits, raising a limit, removing apps from a profile or turning off delete protection will need your NFC key. Creating, adding or tightening stays free. Turning this mode off also needs the key."
+          }
+        }
+      }
+    },
+    "Pausado el %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paused on %@"
           }
         }
       }
@@ -2519,6 +2679,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pause a day"
+          }
+        }
+      }
+    },
+    "Pausas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pauses"
           }
         }
       }
@@ -2919,6 +3089,26 @@
         }
       }
     },
+    "Sección": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Section"
+          }
+        }
+      }
+    },
+    "Semana": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week"
+          }
+        }
+      }
+    },
     "Sesiones rápidas": {
       "localizations": {
         "en": {
@@ -3185,6 +3375,16 @@
         }
       }
     },
+    "Todos los días": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every day"
+          }
+        }
+      }
+    },
     "Total del año: %@": {
       "localizations": {
         "en": {
@@ -3251,6 +3451,16 @@
         }
       }
     },
+    "Un día pausado no se bloquea. El resto de la semana sigue igual.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A paused day isn’t blocked. The rest of the week stays the same."
+          }
+        }
+      }
+    },
     "Un horario en curso usa este perfil. Podrás cambiar sus apps cuando termine.": {
       "localizations": {
         "en": {
@@ -3297,6 +3507,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Use key"
+          }
+        }
+      }
+    },
+    "Uso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage"
           }
         }
       }
@@ -3561,6 +3781,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "How much more time?"
+          }
+        }
+      }
+    },
+    "¿Eliminar «%@»?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete “%@”?"
           }
         }
       }

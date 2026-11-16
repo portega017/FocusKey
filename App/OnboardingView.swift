@@ -44,7 +44,6 @@ struct OnboardingView: View {
             }
             .buttonStyle(.glassProminent)
             .controlSize(.large)
-            .tint(.indigo)
             .padding()
         }
         .background(Color(uiColor: .systemGroupedBackground))
@@ -145,8 +144,11 @@ private struct OnboardingPage<Accessory: View>: View {
         VStack(spacing: 20) {
             Spacer()
             Image(systemName: symbol)
-                .font(.system(size: 64))
-                .foregroundStyle(.indigo)
+                .font(.system(size: 52, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 116, height: 116)
+                .background(Color.accentColor.gradient, in: Circle())
+                .shadow(color: Color.accentColor.opacity(0.35), radius: 18, y: 8)
             Text(title)
                 .font(.title.bold())
                 .multilineTextAlignment(.center)

@@ -50,6 +50,8 @@ nonisolated enum FocusStore {
         static let preventAppRemoval = "FocusKey.preventAppRemoval"
         /// Strict mode: weakening schedules, limits, profiles or protections needs the NFC tag.
         static let strictMode = "FocusKey.strictMode"
+        /// Show the Live Activity for sessions and pomodoros (on by default).
+        static let liveActivities = "FocusKey.liveActivities"
         /// Notify a few minutes before a daily limit is reached (on by default).
         static let limitWarnings = "FocusKey.limitWarnings"
         /// Last error of an intent run from a widget or Control Center, shown by the app.
@@ -311,6 +313,11 @@ nonisolated enum FocusStore {
     static var strictMode: Bool {
         get { defaults.bool(forKey: Key.strictMode) }
         set { defaults.set(newValue, forKey: Key.strictMode) }
+    }
+
+    static var liveActivities: Bool {
+        get { defaults.object(forKey: Key.liveActivities) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Key.liveActivities) }
     }
 
     static var limitWarnings: Bool {

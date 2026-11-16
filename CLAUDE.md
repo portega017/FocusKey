@@ -85,6 +85,23 @@ All state lives in App Group `UserDefaults` so the app, extensions, widgets and 
   `App/SettingsView`, `App/OnboardingView`, `App/FocusFilter.swift` (Focus filter),
   `App/FocusShortcuts.swift` (Siri phrases).
 
+## UI conventions
+
+- `App/DesignSystem.swift` holds the look: `Design` sizes, `.card()` (glass card), `.screenBackground()`,
+  `CardHeader`, `StatusBadge`, `ProfileIcon(size:)`, `MetricText`/`MetricTile`, `Toast`. Use them instead
+  of ad-hoc paddings/radii.
+- The four tabs are `ScrollView` (as the NavigationStack's direct child, so large titles work) with
+  glass cards; secondary screens (schedule detail, editors, profiles, presets, settings) are native
+  `List`/`Form`. Lists of items inside a tab are rows in one card separated by `Divider`s, each row
+  with `ProfileIcon`, title, rounded-digit subtitle, state line, chevron and toggle.
+- Accent is the `AccentColor` asset (iOS system blue, set as global accent); profile colors are used wherever
+  a profile is involved. Numbers use `.fontDesign(.rounded)` + `monospacedDigit()`.
+- User feedback goes through `FocusModel.status`, shown as a toast over any tab (`statusID` changes on
+  every assignment). Don't set it for routine successes that happen on launch.
+- Debug-only launch arguments for screenshots: `-FocusKeyTab 0…3`, `-FocusKeyStats week|year|usage`.
+  On the device: `xcrun devicectl device process launch --terminate-existing <bundle id> -- -FocusKeyTab 1`
+  then `xcrun devicectl device capture screenshot --destination <png>`.
+
 ## Behaviour rules (intentional — don't "fix")
 
 - **No unlock intent/shortcut/button** exists on purpose; only the NFC tag unlocks.
@@ -100,6 +117,8 @@ All state lives in App Group `UserDefaults` so the app, extensions, widgets and 
   then belongs to the pomodoro. The tag ends the whole plan (also during breaks). Phase-change
   notifications are scheduled up front by the app. `syncPomodoro` is the single source of truth
   (monitor callbacks + app reload fallback).
+- The Live Activity can be turned off in Settings (`FocusStore.liveActivities`, on by default);
+  `FocusLiveActivity.sync()` then ends any running one.
 - Live Activities can only be updated by the app process: a pomodoro phase change appears when
   the app next runs; until then the activity goes stale at the phase end.
 - Strict mode (`FocusStore.strictMode`, off by default): weakening changes need the tag. Rules are

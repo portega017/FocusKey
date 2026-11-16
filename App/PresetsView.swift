@@ -16,21 +16,14 @@ struct PresetGrid: View {
     @State private var creating = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Sesiones rápidas")
-                    .font(.headline)
-                Spacer()
+        VStack(alignment: .leading, spacing: Design.contentSpacing) {
+            CardHeader(
+                "Sesiones rápidas",
+                subtitle: model.presets.isEmpty ? String(localized: "Bloquea un perfil durante un tiempo con un toque.") : nil
+            ) {
                 if !model.presets.isEmpty {
                     NavigationLink("Gestionar") { PresetsView() }
-                        .font(.subheadline)
                 }
-            }
-
-            if model.presets.isEmpty {
-                Text("Crea botones como «Redes · 1 h» para bloquear un perfil durante un tiempo con un toque.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
             }
 
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
@@ -49,16 +42,21 @@ struct PresetGrid: View {
                 } label: {
                     Label("Nueva", systemImage: "plus")
                         .font(.subheadline.weight(.semibold))
-                        .frame(maxWidth: .infinity, minHeight: 64)
+                        .foregroundStyle(.tint)
+                        .frame(maxWidth: .infinity, minHeight: PresetTile.height)
+                        .background {
+                            RoundedRectangle(cornerRadius: Design.innerRadius, style: .continuous)
+                                .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+                                .foregroundStyle(.tint.opacity(0.6))
+                        }
+                        .contentShape(Rectangle())
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.plain)
             }
             .disabled(isDisabled)
             .opacity(isDisabled ? 0.5 : 1)
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .card()
         .sheet(item: $editing) { preset in
             PresetEditor(preset: preset) { model.updatePreset($0) }
         }
@@ -73,7 +71,9 @@ private struct PresetTile: View {
     let profile: FocusProfile?
     let action: () -> Void
 
-    private var color: Color { profile?.color ?? .indigo }
+    static let height: CGFloat = 68
+
+    private var color: Color { profile?.color ?? .accentColor }
 
     var body: some View {
         Button(action: action) {
@@ -83,8 +83,14 @@ private struct PresetTile: View {
                         .font(.headline)
                     Spacer()
                     Text(UsageLimit.formatted(minutes: preset.minutes))
-                        .font(.caption.weight(.bold).monospacedDigit())
+                        .font(.caption.weight(.bold))
+                        .fontDesign(.rounded)
+                        .monospacedDigit()
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(.white.opacity(0.22), in: Capsule())
                 }
+                Spacer(minLength: 0)
                 Text(preset.displayName(profile: profile))
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
@@ -92,8 +98,8 @@ private struct PresetTile: View {
             }
             .foregroundStyle(.white)
             .padding(12)
-            .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
-            .background(color.gradient, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .frame(maxWidth: .infinity, minHeight: Self.height, maxHeight: Self.height, alignment: .leading)
+            .background(color.gradient, in: RoundedRectangle(cornerRadius: Design.innerRadius, style: .continuous))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(String(localized: "Empezar \(preset.title(profile: profile))"))
