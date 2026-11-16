@@ -481,3 +481,21 @@ struct PomodoroPresetTests {
         #expect(PomodoroPlan.cycleRange.contains(pomodoro.cycles))
     }
 }
+
+@Suite("Tightening a running block")
+struct TighteningTests {
+    /// 3 cycles of 25 + 5 from 10:00: focus 10:00–10:25, 10:30–10:55, 11:00–11:25.
+    let plan = PomodoroPlan(profileID: UUID(), start: date(8, 10), focusMinutes: 25, breakMinutes: 5, cycles: 3)
+
+    @Test func skippingABreakStartsTheNextBlockNow() throws {
+        let shifted = try #require(plan.skippingBreak(at: date(8, 10, 27)))
+        #expect(shifted.phase(at: date(8, 10, 27)) == .focus(cycle: 1, start: date(8, 10, 27), end: date(8, 10, 52)))
+        #expect(shifted.block(2).start == date(8, 10, 57), "Later blocks move earlier by the same 3 minutes")
+        #expect(shifted.end == date(8, 11, 22))
+    }
+
+    @Test func breaksCanOnlyBeSkippedDuringABreak() {
+        #expect(plan.skippingBreak(at: date(8, 10, 10)) == nil, "During focus")
+        #expect(plan.skippingBreak(at: date(8, 12)) == nil, "After the end")
+    }
+}

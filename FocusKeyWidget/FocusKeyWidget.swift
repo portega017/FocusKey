@@ -26,6 +26,17 @@ struct FocusEntry: TimelineEntry {
     let profileName: String
     let profileSymbol: String
     let colorName: String
+    /// First quick sessions, offered as buttons by the medium widget.
+    var presets: [PresetItem] = []
+
+    struct PresetItem: Identifiable {
+        let entity: SessionPresetEntity
+        let name: String
+        let duration: String
+        let symbol: String
+        let colorName: String
+        var id: UUID { entity.id }
+    }
 
     var color: Color { FocusPalette.color(colorName) }
 
@@ -37,7 +48,18 @@ struct FocusEntry: TimelineEntry {
 
     static func make(at date: Date) -> FocusEntry {
         let status = FocusStatus.current(at: date)
-        let profile = status.blockingProfile ?? FocusStore.profile(FocusStore.activeProfileID)
+        let profiles = FocusStore.profiles()
+        let profile = status.blockingProfile ?? FocusStore.profile(FocusStore.activeProfileID, in: profiles)
+        let presets = FocusStore.presets().prefix(2).map { preset in
+            let presetProfile = profiles.first { $0.id == preset.profileID }
+            return PresetItem(
+                entity: SessionPresetEntity(preset, profiles: profiles),
+                name: preset.displayName(profile: presetProfile),
+                duration: preset.durationText,
+                symbol: presetProfile?.symbol ?? "timer",
+                colorName: presetProfile?.colorName ?? "indigo"
+            )
+        }
         return FocusEntry(
             date: date,
             isBlocked: status.isBlocked,
@@ -48,7 +70,8 @@ struct FocusEntry: TimelineEntry {
             sessionStart: status.sessionStart,
             profileName: profile?.displayName ?? String(localized: "Sin perfil"),
             profileSymbol: profile?.symbol ?? "lock.shield",
-            colorName: profile?.colorName ?? "indigo"
+            colorName: profile?.colorName ?? "indigo",
+            presets: Array(presets)
         )
     }
 }
@@ -131,7 +154,7 @@ struct FocusStatusView: View {
             VStack(alignment: .leading) {
                 Label(entry.headline, systemImage: lockSymbol).font(.headline)
                 if let end = entry.sessionEnd {
-                    Text(end, style: .timer).monospacedDigit()
+                    Text(end, style: .timer).fontDesign(.rounded).monospacedDigit()
                 } else if let detail = entry.detail {
                     Text(detail).lineLimit(2)
                 } else {
@@ -145,68 +168,98 @@ struct FocusStatusView: View {
 
     private var home: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            HStack(alignment: .top) {
+                Image(systemName: entry.profileSymbol)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 32, height: 32)
+                    .background(entry.color.gradient, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                Spacer()
                 if let interval = entry.sessionInterval {
                     ProgressView(timerInterval: interval, countsDown: true) {
                         EmptyView()
                     } currentValueLabel: {
-                        Image(systemName: lockSymbol).font(.caption.bold())
+                        EmptyView()
                     }
                     .progressViewStyle(.circular)
                     .tint(tint)
-                    .frame(width: 34, height: 34)
+                    .frame(width: 28, height: 28)
                 } else {
                     Image(systemName: lockSymbol)
-                        .font(.title2)
+                        .font(.headline)
                         .foregroundStyle(tint)
                         .contentTransition(.symbolEffect(.replace))
                 }
-                Spacer()
-                Image(systemName: entry.profileSymbol)
-                    .foregroundStyle(.secondary)
             }
 
-            Text(entry.headline)
-                .font(.headline)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-
-            if let end = entry.sessionEnd {
-                Text(end, style: .timer)
-                    .font(.title3.monospacedDigit().bold())
-            } else {
-                Text(entry.detail ?? entry.profileName)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(family == .systemSmall ? 2 : 1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(entry.headline)
+                    .font(.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                if let end = entry.sessionEnd {
+                    Text(end, style: .timer)
+                        .font(.title2.weight(.bold))
+                        .fontDesign(.rounded)
+                        .monospacedDigit()
+                        .foregroundStyle(tint)
+                } else {
+                    Text(entry.detail ?? entry.profileName)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(family == .systemSmall ? 2 : 1)
+                }
             }
 
             Spacer(minLength: 0)
 
-            if entry.canUnlockWithKey {
-                Button(intent: UnlockWithKeyIntent()) {
-                    Label("Usar llave", systemImage: "wave.3.right")
+            actions
+        }
+        .font(.subheadline)
+    }
+
+    @ViewBuilder
+    private var actions: some View {
+        if entry.canUnlockWithKey {
+            Button(intent: UnlockWithKeyIntent()) {
+                Label("Usar llave", systemImage: "wave.3.right")
+                    .frame(maxWidth: .infinity)
+            }
+            .tint(entry.color)
+        } else if family == .systemMedium, !entry.isBlocked, !entry.presets.isEmpty {
+            // Quick sessions, like on the main screen.
+            HStack(spacing: 8) {
+                ForEach(entry.presets) { preset in
+                    Button(intent: StartPresetIntent(preset: preset.entity)) {
+                        HStack(spacing: 6) {
+                            Image(systemName: preset.symbol)
+                            Text(preset.name).lineLimit(1)
+                            Spacer(minLength: 2)
+                            Text(preset.duration)
+                                .font(.caption.weight(.bold))
+                                .fontDesign(.rounded)
+                        }
                         .frame(maxWidth: .infinity)
-                }
-                .tint(entry.color)
-            } else if family == .systemMedium {
-                HStack {
-                    Button(intent: LockFocusIntent()) {
-                        Label("Bloquear", systemImage: "lock.fill").frame(maxWidth: .infinity)
                     }
-                    Button(intent: LockFocusIntent(minutes: 60)) {
-                        Label("1 hora", systemImage: "timer").frame(maxWidth: .infinity)
-                    }
+                    .tint(FocusPalette.color(preset.colorName))
                 }
-                .tint(entry.color)
-            } else {
+            }
+        } else if family == .systemMedium {
+            HStack {
                 Button(intent: LockFocusIntent()) {
                     Label("Bloquear", systemImage: "lock.fill").frame(maxWidth: .infinity)
                 }
-                .tint(entry.color)
+                Button(intent: LockFocusIntent(minutes: 60)) {
+                    Label("1 hora", systemImage: "timer").frame(maxWidth: .infinity)
+                }
             }
+            .tint(entry.color)
+        } else {
+            Button(intent: LockFocusIntent()) {
+                Label("Bloquear", systemImage: "lock.fill").frame(maxWidth: .infinity)
+            }
+            .tint(entry.color)
         }
-        .font(.subheadline)
     }
 }
 

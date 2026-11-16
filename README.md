@@ -16,15 +16,15 @@ FocusKey is available for **iOS** (this branch) and **Android** (see [`android` 
 
 - **Profiles**: named groups of apps, categories and websites (Work, Study, Night…), used by the manual lock, schedules and limits.
 - **Manual lock** of the selected profile, unlocked only with the NFC tag.
-- **Timed sessions**: lock for 15 min – 12 h; it unlocks on its own when the time is up (or earlier with the tag).
+- **Timed sessions**: lock for 15 min – 12 h; it unlocks on its own when the time is up (or earlier with the tag). A running session can be extended without the tag.
 - **Quick sessions**: one-tap buttons on the main screen that block a profile for a set time (e.g. "Social · 1 h") or start a pomodoro (e.g. "Study · 4×25"). Also available from Siri ("Start … with FocusKey") and as a configurable Control Center button.
-- **Pomodoro**: focus blocks (25–60 min) with breaks (5–20 min) in between, for 2–6 cycles. Apps are blocked only during focus blocks; a notification marks every change. The NFC tag ends it early.
+- **Pomodoro**: focus blocks (25–60 min) with breaks (5–20 min) in between, for 2–6 cycles. Apps are blocked only during focus blocks; a notification marks every change. A break can be skipped; the NFC tag ends the pomodoro early.
 - **Live Activity** on the Lock Screen and Dynamic Island with the countdown of a session or pomodoro phase.
 - **Weekly schedules**, each with its own profile, for automatic blocking. A single upcoming day can be **paused**.
 - **Strict mode**: anything that would loosen a block — turning off or deleting a schedule or limit, raising a limit, pausing a day, removing apps from a profile, turning off delete protection or strict mode itself — needs the NFC tag. Creating and tightening stay free.
 - **Daily usage limits**: once a profile has been used for N minutes today, it stays blocked until midnight. The NFC tag can't lift a reached limit, but it can grant 5, 15 or 30 extra minutes of use.
 - **Custom shield screen** explaining why an app is blocked and until when.
-- **Widgets** for the Home and Lock Screen, and **Control Center** buttons to lock or open the NFC reader.
+- **Widgets** for the Home and Lock Screen (the medium one offers your first quick sessions), and **Control Center** buttons to lock, start a quick session or open the NFC reader.
 - **Focus filters**: turning on an iOS Focus (Work, Sleep…) blocks a profile. Turning it off doesn't unlock — only the NFC tag does.
 - **Siri and Shortcuts**: lock a profile (optionally for a duration), check the status, or open the NFC reader. There is deliberately no unlock shortcut.
 - **Statistics**: time blocked per day, streak and recent blocks, plus a **yearly view** (total, daily average, best day, months and one cell per day of the year). Records are kept 60 days; older days are kept as daily totals so the year keeps adding up.

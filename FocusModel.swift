@@ -260,6 +260,25 @@ final class FocusModel: ObservableObject {
         reload()
     }
 
+    /// Adds time to the running timed session (no key: it only makes it stricter).
+    func extendSession(minutes: Int) {
+        do {
+            let end = try FocusLock.extendSession(minutes: minutes)
+            status = String(localized: "Sesión alargada hasta las \(end.formatted(date: .omitted, time: .shortened)).")
+        } catch {
+            status = error.localizedDescription
+        }
+        reload()
+    }
+
+    /// Ends the current pomodoro break and starts the next focus block now.
+    func skipPomodoroBreak() {
+        guard let plan = FocusLock.skipPomodoroBreak() else { return }
+        PomodoroNotifications.schedule(plan)
+        status = String(localized: "Descanso saltado: a concentrarse.")
+        reload()
+    }
+
     // MARK: - Session presets
 
     func startPreset(_ preset: SessionPreset) {
@@ -296,7 +315,8 @@ final class FocusModel: ObservableObject {
         FocusStore.savePresets(presets)
         // Siri phrases use preset names as parameter values.
         FocusShortcuts.updateAppShortcutParameters()
-        ControlCenter.shared.reloadAllControls()
+        // The medium widget and the Control Center button show presets.
+        FocusLock.reloadWidgets()
     }
 
     // MARK: - Pomodoro

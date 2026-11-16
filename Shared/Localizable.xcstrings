@@ -519,6 +519,16 @@
         }
       }
     },
+    "Activar modo estricto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on strict mode"
+          }
+        }
+      }
+    },
     "Activar notificaciones en Ajustes": {
       "localizations": {
         "en": {
@@ -565,6 +575,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Turning that Focus on blocks the profile you choose. Turning it off keeps the block: only your key lifts it."
+          }
+        }
+      }
+    },
+    "Alargar sesión": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extend session"
           }
         }
       }
@@ -1071,6 +1091,16 @@
         }
       }
     },
+    "Crea botones como «Redes · 1 h» o «Estudio · 4×25» para bloquear con un toque. También puedes usarlos con Siri o desde el Centro de Control.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create buttons like “Social · 1 h” or “Study · 4×25” to block with one tap. You can also use them with Siri or from Control Center."
+          }
+        }
+      }
+    },
     "Crea botones como «Redes · 1 h» para bloquear un perfil durante un tiempo con un toque.": {
       "localizations": {
         "en": {
@@ -1147,6 +1177,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Break"
+          }
+        }
+      }
+    },
+    "Descanso saltado: a concentrarse.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Break skipped: time to focus."
           }
         }
       }
@@ -2039,6 +2079,16 @@
         }
       }
     },
+    "Horarios y límites diarios, automáticos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schedules and daily limits, automatic"
+          }
+        }
+      }
+    },
     "Horas": {
       "localizations": {
         "en": {
@@ -2901,6 +2951,16 @@
         }
       }
     },
+    "Pomodoro: bloques de concentración con descansos": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro: focus blocks with breaks"
+          }
+        }
+      }
+    },
     "Pomodoro: concentración": {
       "localizations": {
         "en": {
@@ -3081,6 +3141,16 @@
         }
       }
     },
+    "Saltar descanso": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip break"
+          }
+        }
+      }
+    },
     "Screen Time está autorizado.": {
       "localizations": {
         "en": {
@@ -3181,12 +3251,32 @@
         }
       }
     },
+    "Sesiones rápidas y pomodoro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick sessions and pomodoro"
+          }
+        }
+      }
+    },
     "Sesión": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Session"
+          }
+        }
+      }
+    },
+    "Sesión alargada hasta las %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session extended until %@."
           }
         }
       }
@@ -3227,6 +3317,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quick session"
+          }
+        }
+      }
+    },
+    "Sesión: un perfil durante un tiempo fijo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session: a profile for a set time"
+          }
+        }
+      }
+    },
+    "Si lo activas, para relajar un bloqueo (desactivar un horario, subir un límite, quitar apps de un perfil…) necesitarás tu llave. Endurecer siempre es libre.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you turn it on, loosening a block (turning off a schedule, raising a limit, removing apps from a profile…) will need your key. Tightening is always free."
           }
         }
       }
@@ -3307,6 +3417,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Only the key unlocks"
+          }
+        }
+      }
+    },
+    "Solo se puede alargar una sesión con tiempo que esté en curso.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only a running timed session can be extended."
           }
         }
       }

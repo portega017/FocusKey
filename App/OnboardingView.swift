@@ -17,9 +17,11 @@ struct OnboardingView: View {
     @State private var showingPicker = false
     @State private var selection = FamilyActivitySelection()
     @State private var copied = false
+    /// Applied when the walkthrough ends, so changing your mind here never asks for the key.
+    @State private var wantsStrictMode = false
 
     static let doneKey = "FocusKey.onboardingDone"
-    private let lastPage = 3
+    private let lastPage = 5
 
     var body: some View {
         VStack(spacing: 0) {
@@ -28,6 +30,8 @@ struct OnboardingView: View {
                 permission.tag(1)
                 profile.tag(2)
                 key.tag(3)
+                sessions.tag(4)
+                strict.tag(5)
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
             .indexViewStyle(.page(backgroundDisplayMode: .always))
@@ -127,7 +131,38 @@ struct OnboardingView: View {
         }
     }
 
+    private var sessions: some View {
+        OnboardingPage(
+            symbol: "bolt.fill",
+            title: "Sesiones rápidas y pomodoro",
+            text: "Crea botones como «Redes · 1 h» o «Estudio · 4×25» para bloquear con un toque. También puedes usarlos con Siri o desde el Centro de Control."
+        ) {
+            VStack(alignment: .leading, spacing: 10) {
+                Label("Sesión: un perfil durante un tiempo fijo", systemImage: "timer")
+                Label("Pomodoro: bloques de concentración con descansos", systemImage: "timer.circle")
+                Label("Horarios y límites diarios, automáticos", systemImage: "calendar.badge.clock")
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    private var strict: some View {
+        OnboardingPage(
+            symbol: "key.fill",
+            title: "Modo estricto",
+            text: "Si lo activas, para relajar un bloqueo (desactivar un horario, subir un límite, quitar apps de un perfil…) necesitarás tu llave. Endurecer siempre es libre."
+        ) {
+            Toggle("Activar modo estricto", isOn: $wantsStrictMode)
+                .font(.headline)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 12)
+                .background(Color(uiColor: .secondarySystemGroupedBackground), in: Capsule())
+        }
+    }
+
     private func finish() {
+        if wantsStrictMode { model.setStrictMode(true) }
         if model.limitWarnings { model.requestNotificationPermission() }
         done = true
         dismiss()

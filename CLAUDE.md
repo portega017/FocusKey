@@ -128,7 +128,10 @@ All state lives in App Group `UserDefaults` so the app, extensions, widgets and 
   in `FocusModel.needsKey(_:retry:)`, which asks the root view's `requestKey` to scan and then
   re-runs the method. New mutating model methods that can loosen blocking must go through it.
   Turning strict mode on is free; off needs the tag. Strengthening (adding days/apps, longer
-  times, lower limits, enabling) is always free.
+  times, lower limits, enabling, extending a session, skipping a pomodoro break) is always free.
+- Extending a session (`FocusLock.extendSession`) saves the new `sessionEnd` before re-registering
+  `FocusKeySession`, so the monitor ignores the old interval's end. Skipping a break
+  (`PomodoroPlan.skippingBreak`) shifts the plan's `start` earlier and re-registers later blocks.
 - Paused schedule days (`FocusSchedule.pausedDays`, start of the day the interval *starts*):
   only future intervals; pausing needs the tag in strict mode, resuming never does. Pauses are saved
   without re-registering monitoring; `isActive`/`runs(on:)` honour them.

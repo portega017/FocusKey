@@ -27,6 +27,7 @@ nonisolated enum FocusLock {
         case alreadyLocked
         case sessionTooShort
         case pomodoroRunning
+        case notExtendable
         case monitoring(Error)
 
         var errorDescription: String? {
@@ -41,6 +42,8 @@ nonisolated enum FocusLock {
                 return String(localized: "Una sesión debe durar al menos \(FocusLock.minimumSessionMinutes) minutos.")
             case .pomodoroRunning:
                 return String(localized: "Hay un pomodoro en curso. Termínalo con tu llave.")
+            case .notExtendable:
+                return String(localized: "Solo se puede alargar una sesión con tiempo que esté en curso.")
             case .monitoring(let error):
                 return String(localized: "No se pudo programar el final de la sesión: \(error.localizedDescription)")
             }
@@ -206,6 +209,74 @@ nonisolated enum FocusLock {
         }
         reloadWidgets()
         return phase
+    }
+
+    /// Starts the next focus block now instead of waiting for the break to end. Stricter, so no
+    /// tag needed. Later blocks move earlier and are registered again with iOS.
+    @discardableResult
+    static func skipPomodoroBreak(now: Date = .now) -> PomodoroPlan? {
+        guard let plan = FocusStore.pomodoro, let shifted = plan.skippingBreak(at: now),
+              case let .rest(cycle, _, _) = plan.phase(at: now) else { return nil }
+
+        let center = DeviceActivityCenter()
+        let calendar = Calendar.current
+        let parts: Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
+        for next in (cycle + 1)..<shifted.cycles {
+            let block = shifted.block(next)
+            center.stopMonitoring([FocusActivity.pomodoro(next)])
+            try? center.startMonitoring(
+                FocusActivity.pomodoro(next),
+                during: DeviceActivitySchedule(
+                    intervalStart: calendar.dateComponents(parts, from: block.start),
+                    intervalEnd: calendar.dateComponents(parts, from: block.end),
+                    repeats: false
+                )
+            )
+        }
+        FocusStore.pomodoro = shifted
+        syncPomodoro(now: now)
+        return shifted
+    }
+
+    // MARK: Extending a session
+
+    /// Adds time to the running timed session. Stricter, so no tag needed.
+    @discardableResult
+    static func extendSession(minutes: Int, now: Date = .now) throws(LockError) -> Date {
+        guard FocusStore.isManualLocked, FocusStore.pomodoro == nil, let end = FocusStore.sessionEnd, end > now else {
+            throw .notExtendable
+        }
+        let newEnd = end.addingTimeInterval(TimeInterval(minutes * 60))
+        let calendar = Calendar.current
+        let parts: Set<Calendar.Component> = [.year, .month, .day, .hour, .minute, .second]
+        let center = DeviceActivityCenter()
+        // Saved first: if the monitor gets the old interval's end, it sees the new end and ignores it.
+        FocusStore.sessionEnd = newEnd
+        center.stopMonitoring([FocusActivity.session])
+        do {
+            try center.startMonitoring(
+                FocusActivity.session,
+                during: DeviceActivitySchedule(
+                    intervalStart: calendar.dateComponents(parts, from: now),
+                    intervalEnd: calendar.dateComponents(parts, from: newEnd),
+                    repeats: false
+                )
+            )
+        } catch {
+            // Keep the old end registered so the session still finishes on its own.
+            try? center.startMonitoring(
+                FocusActivity.session,
+                during: DeviceActivitySchedule(
+                    intervalStart: calendar.dateComponents(parts, from: now),
+                    intervalEnd: calendar.dateComponents(parts, from: max(end, now.addingTimeInterval(15 * 60))),
+                    repeats: false
+                )
+            )
+            FocusStore.sessionEnd = end
+            throw .monitoring(error)
+        }
+        reloadWidgets()
+        return newEnd
     }
 
     /// Stops the pomodoro (finished, or cut short with the NFC tag).

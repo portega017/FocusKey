@@ -155,6 +155,28 @@ struct ContentView: View {
                         .tint(tint)
                     }
 
+                    if status.isManualLocked, status.sessionEnd != nil, status.pomodoro == nil {
+                        Menu {
+                            ForEach([15, 30, 60], id: \.self) { minutes in
+                                Button("+\(UsageLimit.formatted(minutes: minutes))") { model.extendSession(minutes: minutes) }
+                            }
+                        } label: {
+                            Label("Alargar sesión", systemImage: "plus.circle")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.glass)
+                    }
+
+                    if case .rest? = status.pomodoroPhase, !status.isManualLocked {
+                        Button {
+                            model.skipPomodoroBreak()
+                        } label: {
+                            Label("Saltar descanso", systemImage: "forward.fill")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.glass)
+                    }
+
                     if !status.isManualLocked && status.pomodoro == nil {
                         lockButtons(tint: tint)
                     }

@@ -55,6 +55,15 @@ nonisolated struct PomodoroPlan: Codable, Equatable {
 
     /// Focus time over the whole plan, for summaries.
     var totalFocusMinutes: Int { focusMinutes * cycles }
+
+    /// The same plan with the current break cut short: the next block starts at `date` and every
+    /// later block moves earlier by the same amount. Nil when not in a break.
+    func skippingBreak(at date: Date) -> PomodoroPlan? {
+        guard case let .rest(cycle, _, end) = phase(at: date), cycle >= 0, end > date else { return nil }
+        var plan = self
+        plan.start = start.addingTimeInterval(-end.timeIntervalSince(date))
+        return plan
+    }
 }
 
 // MARK: - Notifications
