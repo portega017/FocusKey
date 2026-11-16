@@ -609,6 +609,16 @@
         }
       }
     },
+    "Autoriza Screen Time para empezar una sesión.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authorize Screen Time to start a session."
+          }
+        }
+      }
+    },
     "Autoriza Screen Time para empezar.": {
       "localizations": {
         "en": {
@@ -1909,6 +1919,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Save"
+          }
+        }
+      }
+    },
+    "Hay un pomodoro en curso. Termínalo con tu llave para empezar otra sesión.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A pomodoro is running. End it with your key to start another session."
           }
         }
       }
@@ -3669,6 +3689,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "W"
+          }
+        }
+      }
+    },
+    "Ya hay un bloqueo en curso. Termínalo con tu llave para empezar otra sesión.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A block is already running. End it with your key to start another session."
           }
         }
       }

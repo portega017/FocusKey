@@ -11,7 +11,9 @@ import SwiftUI
 /// Grid of preset buttons for the main screen.
 struct PresetGrid: View {
     @EnvironmentObject private var model: FocusModel
-    let isDisabled: Bool
+    /// Set while a session can't start (another block is running): tiles dim and explain why on
+    /// tap. Creating, editing and deleting presets stays available.
+    let startBlockedReason: String?
     @State private var editing: SessionPreset?
     @State private var creating = false
 
@@ -29,8 +31,13 @@ struct PresetGrid: View {
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                 ForEach(model.presets) { preset in
                     PresetTile(preset: preset, profile: model.profile(preset.profileID)) {
-                        model.startPreset(preset)
+                        if let startBlockedReason {
+                            model.status = startBlockedReason
+                        } else {
+                            model.startPreset(preset)
+                        }
                     }
+                    .opacity(startBlockedReason == nil ? 1 : 0.5)
                     .contextMenu {
                         Button("Editar", systemImage: "pencil") { editing = preset }
                         Button("Eliminar", systemImage: "trash", role: .destructive) { model.deletePreset(preset.id) }
@@ -53,8 +60,6 @@ struct PresetGrid: View {
                 }
                 .buttonStyle(.plain)
             }
-            .disabled(isDisabled)
-            .opacity(isDisabled ? 0.5 : 1)
         }
         .card()
         .sheet(item: $editing) { preset in

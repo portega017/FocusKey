@@ -31,7 +31,7 @@ struct ContentView: View {
 
                         statusCard(status, tint: tint)
 
-                        PresetGrid(isDisabled: status.isManualLocked || status.pomodoro != nil || !model.isAuthorized)
+                        PresetGrid(startBlockedReason: presetBlockedReason(status))
 
                         profileSection
                     }
@@ -192,6 +192,20 @@ struct ContentView: View {
                 .buttonStyle(.glass)
             }
         }
+    }
+
+    /// Why a quick session can't start right now (nil if it can). Editing presets is always allowed.
+    private func presetBlockedReason(_ status: FocusStatus) -> String? {
+        if !model.isAuthorized {
+            return String(localized: "Autoriza Screen Time para empezar una sesión.")
+        }
+        if status.pomodoro != nil {
+            return String(localized: "Hay un pomodoro en curso. Termínalo con tu llave para empezar otra sesión.")
+        }
+        if status.isManualLocked {
+            return String(localized: "Ya hay un bloqueo en curso. Termínalo con tu llave para empezar otra sesión.")
+        }
+        return nil
     }
 
     // MARK: Profile
