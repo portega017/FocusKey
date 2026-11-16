@@ -20,7 +20,8 @@ FocusKey is available for **iOS** (this branch) and **Android** (see [`android` 
 - **Quick sessions**: one-tap buttons on the main screen that block a profile for a set time (e.g. "Social · 1 h"). Also available from Siri ("Start … with FocusKey") and as a configurable Control Center button.
 - **Pomodoro**: focus blocks (25–60 min) with breaks (5–20 min) in between, for 2–6 cycles. Apps are blocked only during focus blocks; a notification marks every change. The NFC tag ends it early.
 - **Live Activity** on the Lock Screen and Dynamic Island with the countdown of a session or pomodoro phase.
-- **Weekly schedules**, each with its own profile, for automatic blocking. A single upcoming day can be **paused** — with the NFC tag.
+- **Weekly schedules**, each with its own profile, for automatic blocking. A single upcoming day can be **paused**.
+- **Strict mode**: anything that would loosen a block — turning off or deleting a schedule or limit, raising a limit, pausing a day, removing apps from a profile, turning off delete protection or strict mode itself — needs the NFC tag. Creating and tightening stay free.
 - **Daily usage limits**: once a profile has been used for N minutes today, it stays blocked until midnight. The NFC tag can't lift a reached limit, but it can grant 5, 15 or 30 extra minutes of use.
 - **Custom shield screen** explaining why an app is blocked and until when.
 - **Widgets** for the Home and Lock Screen, and **Control Center** buttons to lock or open the NFC reader.

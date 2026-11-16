@@ -377,3 +377,74 @@ struct PresetTests {
         #expect(SessionPreset.durationOptions.allSatisfy { $0 >= FocusLock.minimumSessionMinutes })
     }
 }
+
+@Suite("Strict mode rules")
+struct StrictModeTests {
+    let workdays: Set<FocusWeekday> = [.monday, .tuesday, .wednesday, .thursday, .friday]
+
+    @Test func scheduleChangesThatBlockLessAreWeakening() {
+        let base = FocusSchedule(startTime: time(9), endTime: time(17), repeats: workdays, profileID: UUID())
+        var copy = base
+
+        copy.isEnabled = false
+        #expect(base.isWeakened(by: copy, calendar: calendar), "Turning it off")
+
+        copy = base; copy.repeats.remove(.friday)
+        #expect(base.isWeakened(by: copy, calendar: calendar), "Removing a day")
+
+        copy = base; copy.startTime = time(10)
+        #expect(base.isWeakened(by: copy, calendar: calendar), "Starting later")
+
+        copy = base; copy.endTime = time(16)
+        #expect(base.isWeakened(by: copy, calendar: calendar), "Ending earlier")
+
+        copy = base; copy.profileID = UUID()
+        #expect(base.isWeakened(by: copy, calendar: calendar), "Another profile")
+
+        copy = base; copy.pausedDays = [date(9, 0)]
+        #expect(base.isWeakened(by: copy, calendar: calendar), "Adding a pause")
+    }
+
+    @Test func scheduleChangesThatBlockMoreAreFree() {
+        let base = FocusSchedule(startTime: time(9), endTime: time(17), repeats: workdays,
+                                 profileID: UUID(), pausedDays: [date(9, 0)])
+        var copy = base
+
+        copy.repeats.insert(.saturday)
+        copy.startTime = time(8)
+        copy.endTime = time(18)
+        copy.name = "Más largo"
+        copy.pausedDays = []
+        #expect(!base.isWeakened(by: copy, calendar: calendar))
+
+        copy = base; copy.endTime = time(1)
+        #expect(!base.isWeakened(by: copy, calendar: calendar), "Extending past midnight covers the old interval")
+
+        var disabled = base
+        disabled.isEnabled = false
+        var edited = disabled
+        edited.repeats = [.monday]
+        #expect(!disabled.isWeakened(by: edited, calendar: calendar), "A disabled schedule blocks nothing")
+    }
+
+    @Test func limitChangesThatAllowMoreUseAreWeakening() {
+        let base = UsageLimit(profileID: UUID(), minutes: 30)
+        var copy = base
+        copy.minutes = 45
+        #expect(base.isWeakened(by: copy))
+        copy = base; copy.isEnabled = false
+        #expect(base.isWeakened(by: copy))
+        copy = base; copy.profileID = UUID()
+        #expect(base.isWeakened(by: copy))
+        copy = base; copy.minutes = 15; copy.name = "Menos"
+        #expect(!base.isWeakened(by: copy), "Lowering the limit is stricter")
+    }
+
+    @Test func profileWithTheSameAppsIsNotWeakened() {
+        let profile = FocusProfile(name: "Redes")
+        var renamed = profile
+        renamed.name = "Social"
+        renamed.colorName = "red"
+        #expect(!profile.isWeakened(by: renamed), "Name and color don't change what is blocked")
+    }
+}

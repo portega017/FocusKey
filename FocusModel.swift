@@ -42,13 +42,8 @@ final class FocusModel: ObservableObject {
     @Published private(set) var revocations: [Date] = []
     @Published private(set) var isAuthorized = FocusLock.isAuthorized
     @Published var status = String(localized: "Autoriza Screen Time para empezar.")
-    @Published var preventAppRemoval = FocusStore.preventAppRemoval {
-        didSet {
-            guard preventAppRemoval != oldValue else { return }
-            FocusStore.preventAppRemoval = preventAppRemoval
-            FocusLock.reapplyAllShields()
-        }
-    }
+    @Published private(set) var preventAppRemoval = FocusStore.preventAppRemoval
+    @Published private(set) var strictMode = FocusStore.strictMode
     @Published var limitWarnings = FocusStore.limitWarnings {
         didSet {
             FocusStore.limitWarnings = limitWarnings
@@ -57,6 +52,11 @@ final class FocusModel: ObservableObject {
     }
 
     private let deviceActivityCenter = DeviceActivityCenter()
+
+    /// Set by the root view: scans the NFC tag and runs the action if it's valid.
+    var requestKey: ((_ message: String, _ action: @escaping () -> Void) -> Void)?
+    /// True while running an action the tag has just confirmed.
+    private var keyConfirmed = false
 
     init() {
         reload()
@@ -113,6 +113,43 @@ final class FocusModel: ObservableObject {
             try? await Task.sleep(for: .seconds(1))
             checkAuthorization()
         }
+    }
+
+    // MARK: - Strict mode
+
+    /// In strict mode, a weakening change waits for the NFC tag and then runs `action` again.
+    /// Returns true when the change was held back.
+    private func needsKey(_ weakening: Bool, retry action: @escaping () -> Void) -> Bool {
+        guard strictMode, weakening, !keyConfirmed else { return false }
+        let message = String(localized: "Modo estricto: acerca tu llave para confirmar el cambio.")
+        status = message
+        guard let requestKey else { return true }
+        requestKey(message) { [weak self] in
+            guard let self else { return }
+            keyConfirmed = true
+            action()
+            keyConfirmed = false
+        }
+        return true
+    }
+
+    /// Turning strict mode on is free; turning it off needs the tag.
+    func setStrictMode(_ enabled: Bool) {
+        guard enabled != strictMode else { return }
+        if needsKey(!enabled, retry: { self.setStrictMode(enabled) }) { return }
+        strictMode = enabled
+        FocusStore.strictMode = enabled
+        status = enabled
+            ? String(localized: "Modo estricto activado: para relajar un bloqueo necesitarás tu llave.")
+            : String(localized: "Modo estricto desactivado.")
+    }
+
+    func setPreventAppRemoval(_ enabled: Bool) {
+        guard enabled != preventAppRemoval else { return }
+        if needsKey(!enabled, retry: { self.setPreventAppRemoval(enabled) }) { return }
+        preventAppRemoval = enabled
+        FocusStore.preventAppRemoval = enabled
+        FocusLock.reapplyAllShields()
     }
 
     // MARK: - Authorization
@@ -331,6 +368,7 @@ final class FocusModel: ObservableObject {
             status = reason
             return
         }
+        if needsKey(existing.isWeakened(by: profile), retry: { self.updateProfile(profile) }) { return }
         profiles[index] = profile
         FocusStore.saveProfiles(profiles)
         // Preset titles shown to Siri include the profile name.
@@ -419,6 +457,7 @@ final class FocusModel: ObservableObject {
             status = String(localized: "No puedes modificar un horario mientras está en curso.")
             return
         }
+        if needsKey(existing.isWeakened(by: schedule), retry: { self.updateSchedule(schedule) }) { return }
         schedules[index] = schedule
         FocusStore.saveSchedules(schedules)
         if schedule.isEnabled {
@@ -435,6 +474,7 @@ final class FocusModel: ObservableObject {
             status = String(localized: "No puedes eliminar un horario mientras el bloqueo está activo.")
             return
         }
+        if needsKey(schedule.isEnabled, retry: { self.deleteSchedule(id) }) { return }
         schedules.removeAll { $0.id == id }
         FocusStore.saveSchedules(schedules)
         deviceActivityCenter.stopMonitoring([schedule.activityName])
@@ -453,7 +493,7 @@ final class FocusModel: ObservableObject {
         ))
     }
 
-    /// Skips the interval that starts on `day`. Only called after a valid NFC tag.
+    /// Skips the interval that starts on `day` (needs the tag in strict mode).
     /// iOS still calls the monitor that day; it sees the pause and doesn't block.
     func pauseSchedule(_ id: UUID, on day: Date) {
         guard let index = schedules.firstIndex(where: { $0.id == id }) else { return }
@@ -463,6 +503,7 @@ final class FocusModel: ObservableObject {
             return
         }
         guard !schedule.isPaused(on: day) else { return }
+        if needsKey(schedule.isEnabled, retry: { self.pauseSchedule(id, on: day) }) { return }
         schedule.pausedDays = (schedule.prunedPauses() + [Calendar.current.startOfDay(for: day)]).sorted()
         schedules[index] = schedule
         // Saved without re-registering with iOS: a pause doesn't change the interval.
@@ -534,6 +575,7 @@ final class FocusModel: ObservableObject {
             status = String(localized: "Este límite ya se alcanzó hoy. Podrás cambiarlo mañana.")
             return
         }
+        if needsKey(limits[index].isWeakened(by: limit), retry: { self.updateLimit(limit) }) { return }
         limits[index] = limit
         FocusStore.saveLimits(limits)
         if limit.isEnabled {
@@ -549,6 +591,7 @@ final class FocusModel: ObservableObject {
             status = String(localized: "Este límite ya se alcanzó hoy. Podrás eliminarlo mañana.")
             return
         }
+        if needsKey(limit.isEnabled, retry: { self.deleteLimit(id) }) { return }
         limits.removeAll { $0.id == id }
         FocusStore.saveLimits(limits)
         deviceActivityCenter.stopMonitoring([limit.activityName, FocusActivity.extra(id)])

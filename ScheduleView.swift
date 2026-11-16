@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ScheduleView: View {
     @EnvironmentObject private var model: FocusModel
-    @EnvironmentObject private var nfc: NFCScanner
     @State private var showingAddSchedule = false
     @State private var editingSchedule: FocusModel.Schedule?
     @State private var pausingSchedule: FocusModel.Schedule?
@@ -71,11 +70,9 @@ struct ScheduleView: View {
             }
         }
         .sheet(item: $pausingSchedule) { schedule in
-            PauseDaySheet(schedule: schedule) { day in
-                // Let the sheet go away before the NFC reader appears.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    nfc.start { model.pauseSchedule(schedule.id, on: day) }
-                }
+            // In strict mode the model asks for the tag before pausing.
+            PauseDaySheet(schedule: schedule, needsKey: model.strictMode) { day in
+                model.pauseSchedule(schedule.id, on: day)
             }
         }
     }
@@ -83,10 +80,11 @@ struct ScheduleView: View {
 
 // MARK: - Pause a day
 
-/// Picks one upcoming day to skip. Pausing needs the NFC tag, like any other way of not blocking.
+/// Picks one upcoming day to skip. In strict mode pausing needs the NFC tag.
 private struct PauseDaySheet: View {
     @Environment(\.dismiss) private var dismiss
     let schedule: FocusModel.Schedule
+    let needsKey: Bool
     let onPause: (Date) -> Void
     @State private var selected: Date?
 
@@ -118,7 +116,9 @@ private struct PauseDaySheet: View {
                         .disabled(paused)
                     }
                 } footer: {
-                    Text("Ese día el horario no bloqueará nada. Para pausarlo tendrás que acercar tu llave NFC; quitar la pausa no la necesita.")
+                    Text(needsKey
+                         ? String(localized: "Ese día el horario no bloqueará nada. Con el modo estricto tendrás que acercar tu llave NFC; quitar la pausa no la necesita.")
+                         : String(localized: "Ese día el horario no bloqueará nada. Puedes quitar la pausa cuando quieras."))
                 }
             }
             .navigationTitle("Pausar un día")
@@ -128,7 +128,7 @@ private struct PauseDaySheet: View {
                     Button("Cancelar") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Pausar con llave") {
+                    Button(needsKey ? String(localized: "Pausar con llave") : String(localized: "Pausar")) {
                         guard let selected else { return }
                         dismiss()
                         onPause(selected)

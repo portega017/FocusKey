@@ -45,6 +45,13 @@ private struct RootTabView: View {
         }
         .onAppear {
             nfc.onValidTag = { model.handleNFC() }
+            // Strict mode: confirm weakening changes with the tag. The delay lets a closing
+            // sheet go away before the NFC reader appears.
+            model.requestKey = { message, action in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    nfc.start(message: message, then: action)
+                }
+            }
             // Existing users who already picked apps don't need the walkthrough.
             if !onboardingDone {
                 if model.activeProfile?.isEmpty == false {

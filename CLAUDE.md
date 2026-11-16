@@ -102,8 +102,14 @@ All state lives in App Group `UserDefaults` so the app, extensions, widgets and 
   (monitor callbacks + app reload fallback).
 - Live Activities can only be updated by the app process: a pomodoro phase change appears when
   the app next runs; until then the activity goes stale at the phase end.
+- Strict mode (`FocusStore.strictMode`, off by default): weakening changes need the tag. Rules are
+  pure in `Shared/FocusStrict.swift` (`isWeakened(by:)` for schedules, limits, profiles) and enforced
+  in `FocusModel.needsKey(_:retry:)`, which asks the root view's `requestKey` to scan and then
+  re-runs the method. New mutating model methods that can loosen blocking must go through it.
+  Turning strict mode on is free; off needs the tag. Strengthening (adding days/apps, longer
+  times, lower limits, enabling) is always free.
 - Paused schedule days (`FocusSchedule.pausedDays`, start of the day the interval *starts*):
-  pausing needs the tag and only future intervals; resuming needs no tag. Pauses are saved
+  only future intervals; pausing needs the tag in strict mode, resuming never does. Pauses are saved
   without re-registering monitoring; `isActive`/`runs(on:)` honour them.
 - Screen Time revocation: detected on app activation (`FocusModel.checkAuthorization`, 1 s delay
   to avoid false positives), logged in `FocusStore.revocations`; on re-authorization every shield

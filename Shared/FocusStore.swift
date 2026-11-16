@@ -48,6 +48,8 @@ nonisolated enum FocusStore {
         static let pendingNFCScan = "FocusKey.pendingNFCScan"
         /// While anything is blocked, iOS won't let apps be deleted (on by default).
         static let preventAppRemoval = "FocusKey.preventAppRemoval"
+        /// Strict mode: weakening schedules, limits, profiles or protections needs the NFC tag.
+        static let strictMode = "FocusKey.strictMode"
         /// Notify a few minutes before a daily limit is reached (on by default).
         static let limitWarnings = "FocusKey.limitWarnings"
         /// Last error of an intent run from a widget or Control Center, shown by the app.
@@ -304,6 +306,11 @@ nonisolated enum FocusStore {
     static var preventAppRemoval: Bool {
         get { defaults.object(forKey: Key.preventAppRemoval) as? Bool ?? true }
         set { defaults.set(newValue, forKey: Key.preventAppRemoval) }
+    }
+
+    static var strictMode: Bool {
+        get { defaults.bool(forKey: Key.strictMode) }
+        set { defaults.set(newValue, forKey: Key.strictMode) }
     }
 
     static var limitWarnings: Bool {

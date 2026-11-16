@@ -21,12 +21,12 @@
      private var oneShot: (() -> Void)?
 
      /// Scans and runs `action` instead of the default toggle if the tag is valid.
-     func start(then action: @escaping () -> Void) {
-         start()
+     func start(message: String? = nil, then action: @escaping () -> Void) {
+         start(message: message)
          oneShot = action
      }
 
-     func start() {
+     func start(message: String? = nil) {
          oneShot = nil
          // Invalidate any existing session before starting a new one
          session?.invalidate()
@@ -42,7 +42,7 @@
              invalidateAfterFirstRead: true
          )
 
-         reader.alertMessage = "Acerca tu etiqueta FocusKey al iPhone."
+         reader.alertMessage = message ?? String(localized: "Acerca tu etiqueta FocusKey al iPhone.")
          session = reader
          reader.begin()
      }

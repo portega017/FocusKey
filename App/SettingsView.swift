@@ -18,7 +18,15 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
-                    Toggle("Impedir borrar apps", isOn: $model.preventAppRemoval)
+                    Toggle("Modo estricto", isOn: Binding(get: { model.strictMode }, set: { model.setStrictMode($0) }))
+                } header: {
+                    Text("Modo estricto")
+                } footer: {
+                    Text("Para desactivar o borrar horarios y límites, subir un límite, quitar apps de un perfil o quitar la protección contra borrado necesitarás tu llave NFC. Crear, añadir o endurecer sigue siendo libre. Desactivar este modo también pide la llave.")
+                }
+
+                Section {
+                    Toggle("Impedir borrar apps", isOn: Binding(get: { model.preventAppRemoval }, set: { model.setPreventAppRemoval($0) }))
                 } header: {
                     Text("Protección")
                 } footer: {

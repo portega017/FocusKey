@@ -433,6 +433,16 @@
         }
       }
     },
+    "Acerca tu etiqueta FocusKey al iPhone.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold your FocusKey tag near the iPhone."
+          }
+        }
+      }
+    },
     "Acerca tu llave FocusKey al iPhone para desbloquear.": {
       "localizations": {
         "en": {
@@ -1517,12 +1527,22 @@
         }
       }
     },
-    "Ese día el horario no bloqueará nada. Para pausarlo tendrás que acercar tu llave NFC; quitar la pausa no la necesita.": {
+    "Ese día el horario no bloqueará nada. Con el modo estricto tendrás que acercar tu llave NFC; quitar la pausa no la necesita.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The schedule won’t block anything that day. Pausing needs your NFC key; removing the pause doesn’t."
+            "value": "The schedule won’t block anything that day. In strict mode you’ll need your NFC key; removing the pause doesn’t."
+          }
+        }
+      }
+    },
+    "Ese día el horario no bloqueará nada. Puedes quitar la pausa cuando quieras.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The schedule won’t block anything that day. You can remove the pause at any time."
           }
         }
       }
@@ -2203,6 +2223,46 @@
         }
       }
     },
+    "Modo estricto": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strict mode"
+          }
+        }
+      }
+    },
+    "Modo estricto activado: para relajar un bloqueo necesitarás tu llave.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strict mode on: you’ll need your key to loosen any block."
+          }
+        }
+      }
+    },
+    "Modo estricto desactivado.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strict mode off."
+          }
+        }
+      }
+    },
+    "Modo estricto: acerca tu llave para confirmar el cambio.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strict mode: hold your key near the iPhone to confirm the change."
+          }
+        }
+      }
+    },
     "Modos de concentración": {
       "localizations": {
         "en": {
@@ -2419,6 +2479,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Other duration…"
+          }
+        }
+      }
+    },
+    "Para desactivar o borrar horarios y límites, subir un límite, quitar apps de un perfil o quitar la protección contra borrado necesitarás tu llave NFC. Crear, añadir o endurecer sigue siendo libre. Desactivar este modo también pide la llave.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turning off or deleting schedules and limits, raising a limit, removing apps from a profile or turning off delete protection will need your NFC key. Creating, adding or tightening stays free. Turning this mode off also needs the key."
+          }
+        }
+      }
+    },
+    "Pausar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause"
           }
         }
       }
