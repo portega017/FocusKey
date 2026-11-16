@@ -36,7 +36,7 @@ FocusKey is available for **iOS** (this branch) and **Android** (see [`android` 
 - Available in **Spanish and English**.
 - **Look & feel**: Liquid Glass cards, a color per profile (cards, widgets, shield screen), a countdown ring with haptics, a weekly schedule overview, a 5-week calendar heatmap, and dark/tinted app icons.
 - The NFC tag is the master key for the manual lock and running schedules.
-- **Spare keys**: other tags or cards — even ones that can't be written, like a metro card — can be registered by their chip identifier as spare keys, named, renamed and deleted. Only a hash of the identifier is stored; cards that change their identifier on every read can't be used.
+- **Spare key**: one other tag or card — even one that can't be written, like a metro card — can be registered by its chip identifier as a spare key, and renamed or deleted. Only one is allowed, so there aren't too many ways to unlock. Only a hash of the identifier is stored; cards that change their identifier on every read can't be used.
 
 ## How it works
 
@@ -55,7 +55,7 @@ FOCUSKEY:TOGGLE
 
 You can write it with any NFC writer app (e.g. NFC Tools). Tags with any other content are ignored.
 
-You can also register spare keys — even cards that can't be written, like a metro card — in **Settings › Spare keys**: FocusKey reads the card's identifier twice and stores a hash of it. Cards can't be added while something is blocked (and need the key in strict mode).
+You can also register one spare key — even a card that can't be written, like a metro card — in **Settings › Spare key**: FocusKey reads the card's identifier twice and stores a hash of it. Cards can't be added while something is blocked (and need the key in strict mode).
 
 ## Requirements (iOS)
 

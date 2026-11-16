@@ -26,6 +26,11 @@ nonisolated struct CardKey: Codable, Identifiable, Equatable {
 
     var displayName: String { name.isEmpty ? String(localized: "Tarjeta") : name }
 
+    /// Only one spare key: more ways to unlock would make it too easy to lose focus.
+    static let maximum = 1
+
+    static func canAdd(existing count: Int) -> Bool { count < maximum }
+
     static func hash(_ uid: Data) -> String {
         SHA256.hash(data: uid).map { String(format: "%02x", $0) }.joined()
     }

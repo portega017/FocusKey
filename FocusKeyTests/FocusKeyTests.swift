@@ -523,6 +523,12 @@ struct CardKeyTests {
         #expect(!CardKey.isRandomUID(uid), "7-byte identifiers are fixed")
     }
 
+    @Test func onlyOneSpareKeyCanBeAdded() {
+        #expect(CardKey.canAdd(existing: 0))
+        #expect(!CardKey.canAdd(existing: 1))
+        #expect(!CardKey.canAdd(existing: 3), "Extra keys from before the rule don't allow more")
+    }
+
     @Test func unnamedCardHasADefaultName() {
         #expect(CardKey(name: "", uid: uid).displayName == "Tarjeta")
     }

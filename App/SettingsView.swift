@@ -102,11 +102,17 @@ struct SettingsView: View {
                     .onDelete { offsets in
                         for index in offsets { model.removeCard(model.cardKeys[index].id) }
                     }
-                    Button("Añadir llave", systemImage: "plus") { addingCard = true }
+                    if CardKey.canAdd(existing: model.cardKeys.count) {
+                        Button("Añadir llave", systemImage: "plus") { addingCard = true }
+                    } else if model.cardKeys.count > CardKey.maximum {
+                        // Registered before the one-key rule: keep them working, but ask to trim.
+                        Label("Solo debería haber una llave de repuesto. Elimina las que sobren.", systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                    }
                 } header: {
-                    Text("Llaves de repuesto")
+                    Text("Llave de repuesto")
                 } footer: {
-                    Text("Registra otras etiquetas o tarjetas (aunque no se puedan grabar, como la del metro) para tener llaves de repuesto. Toca una para cambiarle el nombre o eliminarla. No se pueden añadir mientras haya un bloqueo; con el modo estricto, añadir una pide tu llave.")
+                    Text("Registra una etiqueta o tarjeta más (aunque no se pueda grabar, como la del metro) por si pierdes tu llave. Solo puede haber una, para no tener demasiadas formas de desbloquear: para cambiarla, elimínala y añade la nueva. Toca la llave para cambiarle el nombre. No se puede añadir mientras haya un bloqueo; con el modo estricto, añadirla pide tu llave.")
                 }
 
                 Section {

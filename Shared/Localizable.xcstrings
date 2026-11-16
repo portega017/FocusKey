@@ -2379,12 +2379,12 @@
         }
       }
     },
-    "Llaves de repuesto": {
+    "Llave de repuesto": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spare keys"
+            "value": "Spare key"
           }
         }
       }
@@ -3251,12 +3251,12 @@
         }
       }
     },
-    "Registra otras etiquetas o tarjetas (aunque no se puedan grabar, como la del metro) para tener llaves de repuesto. Toca una para cambiarle el nombre o eliminarla. No se pueden añadir mientras haya un bloqueo; con el modo estricto, añadir una pide tu llave.": {
+    "Registra una etiqueta o tarjeta más (aunque no se pueda grabar, como la del metro) por si pierdes tu llave. Solo puede haber una, para no tener demasiadas formas de desbloquear: para cambiarla, elimínala y añade la nueva. Toca la llave para cambiarle el nombre. No se puede añadir mientras haya un bloqueo; con el modo estricto, añadirla pide tu llave.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Register other tags or cards (even ones that can’t be written, like a metro card) as spare keys. Tap one to rename or delete it. Keys can’t be added while something is blocked; in strict mode adding one needs your key."
+            "value": "Register one more tag or card (even one that can’t be written, like a metro card) in case you lose your key. There can be only one, so there aren’t too many ways to unlock: to change it, delete it and add the new one. Tap the key to rename it. It can’t be added while something is blocked; in strict mode adding it needs your key."
           }
         }
       }
@@ -3581,12 +3581,32 @@
         }
       }
     },
+    "Solo debería haber una llave de repuesto. Elimina las que sobren.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There should be only one spare key. Delete the extra ones."
+          }
+        }
+      }
+    },
     "Solo la llave desbloquea": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Only the key unlocks"
+          }
+        }
+      }
+    },
+    "Solo puede haber una llave de repuesto. Elimina la actual para añadir otra.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There can be only one spare key. Delete the current one to add another."
           }
         }
       }

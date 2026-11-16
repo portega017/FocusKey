@@ -285,7 +285,10 @@ final class FocusModel: ObservableObject {
 
     /// Why a card can't be added right now, or nil if it can.
     var cardAddBlockedReason: String? {
-        isBlocked() ? String(localized: "No puedes añadir una tarjeta mientras haya un bloqueo.") : nil
+        if !CardKey.canAdd(existing: FocusStore.cardKeys().count) {
+            return String(localized: "Solo puede haber una llave de repuesto. Elimina la actual para añadir otra.")
+        }
+        return isBlocked() ? String(localized: "No puedes añadir una tarjeta mientras haya un bloqueo.") : nil
     }
 
     /// Registers a card (by its identifier) as an extra key. It adds a way to unlock, so it isn't

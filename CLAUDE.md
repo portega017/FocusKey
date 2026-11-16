@@ -113,7 +113,9 @@ All state lives in App Group `UserDefaults` so the app, extensions, widgets and 
   `FOCUSKEY:TOGGLE` text record, or a card registered by identifier (`Shared/FocusKeys.swift`,
   SHA-256 of the UID in `FocusStore.cardKeys`). Adding a card is an extra unlock path: refused while
   anything is blocked and needs the key in strict mode; renaming (`FocusModel.renameCard`) and
-  removing are always free. UI: Settings › "Llaves de repuesto" (`App/CardKeysView.swift`). Random-UID cards
+  removing are always free. **At most one spare key** (`CardKey.maximum`, on purpose: fewer ways to
+  unlock); extras registered before the rule keep working but block adding. UI: Settings ›
+  "Llave de repuesto" (`App/CardKeysView.swift`). Random-UID cards
   (4 bytes starting 0x08, or two reads that differ) are rejected. ISO 7816 AIDs live in
   `FocusKey-Info.plist` (merged with the generated Info.plist).
 - NFC tag (`FocusModel.handleNFC`): if manual lock or a running schedule → lifts them (schedules are
