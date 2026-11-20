@@ -35,16 +35,36 @@ nonisolated struct ProfileUsage {
         var id: Date { date }
     }
 
+    /// Period the "most used" list covers.
+    enum Period: Hashable {
+        case today, week
+    }
+
     struct Item: Identifiable {
         var id: String
         var name: String
         var token: ApplicationToken?
-        var duration: TimeInterval
-        var pickups: Int
+        var todayDuration: TimeInterval = 0
+        var todayPickups = 0
+        var weekDuration: TimeInterval = 0
+        var weekPickups = 0
+
+        func duration(_ period: Period) -> TimeInterval {
+            period == .today ? todayDuration : weekDuration
+        }
+
+        func pickups(_ period: Period) -> Int {
+            period == .today ? todayPickups : weekPickups
+        }
     }
 
     var days: [Day]
     var items: [Item]
+
+    /// The ten most used items in the period (at least one minute).
+    func top(_ period: Period) -> [Item] {
+        Array(items.filter { $0.duration(period) >= 60 }.sorted { $0.duration(period) > $1.duration(period) }.prefix(10))
+    }
 
     var today: TimeInterval { days.last?.duration ?? 0 }
     var total: TimeInterval { days.reduce(0) { $0 + $1.duration } }
@@ -58,26 +78,36 @@ nonisolated struct UsageReport: DeviceActivityReportScene {
         let calendar = Calendar.current
         var perDay: [Date: TimeInterval] = [:]
         var items: [String: ProfileUsage.Item] = [:]
+        let today = calendar.startOfDay(for: .now)
 
         for await device in data {
             for await segment in device.activitySegments {
                 let day = calendar.startOfDay(for: segment.dateInterval.start)
-                perDay[day, default: 0] += segment.totalActivityDuration
+                let isToday = day == today
+                // The segment total is the whole device's use, not just the filtered apps,
+                // so the day total is the sum of the profile's apps and websites.
 
                 for await category in segment.categories {
                     for await activity in category.applications {
                         let app = activity.application
                         let name = app.localizedDisplayName ?? app.bundleIdentifier ?? String(localized: "App")
                         let key = app.bundleIdentifier ?? name
-                        var item = items[key] ?? .init(id: key, name: name, token: app.token, duration: 0, pickups: 0)
-                        item.duration += activity.totalActivityDuration
-                        item.pickups += activity.numberOfPickups
+                        var item = items[key] ?? .init(id: key, name: name, token: app.token)
+                        item.weekDuration += activity.totalActivityDuration
+                        item.weekPickups += activity.numberOfPickups
+                        perDay[day, default: 0] += activity.totalActivityDuration
+                        if isToday {
+                            item.todayDuration += activity.totalActivityDuration
+                            item.todayPickups += activity.numberOfPickups
+                        }
                         items[key] = item
                     }
                     for await activity in category.webDomains {
                         let name = activity.webDomain.domain ?? String(localized: "Web")
-                        var item = items[name] ?? .init(id: name, name: name, token: nil, duration: 0, pickups: 0)
-                        item.duration += activity.totalActivityDuration
+                        var item = items[name] ?? .init(id: name, name: name, token: nil)
+                        item.weekDuration += activity.totalActivityDuration
+                        perDay[day, default: 0] += activity.totalActivityDuration
+                        if isToday { item.todayDuration += activity.totalActivityDuration }
                         items[name] = item
                     }
                 }
@@ -85,13 +115,11 @@ nonisolated struct UsageReport: DeviceActivityReportScene {
         }
 
         // The last seven days, oldest first, including days without use.
-        let today = calendar.startOfDay(for: .now)
         let days = (0..<7).reversed().compactMap { offset -> ProfileUsage.Day? in
             guard let date = calendar.date(byAdding: .day, value: -offset, to: today) else { return nil }
             return .init(date: date, duration: perDay[date] ?? 0)
         }
-        let sorted = items.values.filter { $0.duration >= 60 }.sorted { $0.duration > $1.duration }
-        return ProfileUsage(days: days, items: Array(sorted.prefix(10)))
+        return ProfileUsage(days: days, items: Array(items.values))
     }
 }
 
@@ -99,6 +127,7 @@ nonisolated struct UsageReport: DeviceActivityReportScene {
 
 struct UsageReportView: View {
     let usage: ProfileUsage
+    @State private var period: ProfileUsage.Period = .today
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -133,16 +162,26 @@ struct UsageReportView: View {
             }
             .frame(height: 150)
 
-            Text("Más usadas")
-                .font(.headline)
+            HStack {
+                Text("Más usadas")
+                    .font(.headline)
+                Spacer()
+                Picker(String(localized: "Periodo"), selection: $period) {
+                    Text("Hoy").tag(ProfileUsage.Period.today)
+                    Text("7 días").tag(ProfileUsage.Period.week)
+                }
+                .pickerStyle(.segmented)
+                .fixedSize()
+            }
 
-            if usage.items.isEmpty {
-                Text("Sin uso registrado en estos días.")
+            let top = usage.top(period)
+            if top.isEmpty {
+                Text(period == .today ? String(localized: "Sin uso registrado hoy.") : String(localized: "Sin uso registrado en estos días."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
-            ForEach(usage.items) { item in
+            ForEach(top) { item in
                 HStack(spacing: 12) {
                     if let token = item.token {
                         Label(token)
@@ -157,14 +196,12 @@ struct UsageReportView: View {
                         Text(item.name)
                             .font(.subheadline.weight(.medium))
                             .lineLimit(1)
-                        if item.pickups > 0 {
-                            Text("Abierta \(item.pickups) veces")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                        Text(subtitle(item))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Text(Self.format(item.duration))
+                    Text(Self.format(item.duration(period)))
                         .font(.subheadline.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
@@ -172,6 +209,17 @@ struct UsageReportView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Says which period the row covers, with the number of pickups when known.
+    private func subtitle(_ item: ProfileUsage.Item) -> String {
+        let pickups = item.pickups(period)
+        switch (period, pickups > 0) {
+        case (.today, true): return String(localized: "Hoy · abierta \(pickups) veces")
+        case (.today, false): return String(localized: "Hoy")
+        case (.week, true): return String(localized: "7 días · abierta \(pickups) veces")
+        case (.week, false): return String(localized: "Últimos 7 días")
+        }
     }
 
     private func tile(_ title: String, _ duration: TimeInterval) -> some View {

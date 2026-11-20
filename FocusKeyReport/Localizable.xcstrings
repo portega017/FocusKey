@@ -11,12 +11,22 @@
         }
       }
     },
-    "Abierta %lld veces": {
+    "7 días": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Opened %lld times"
+            "value": "7 days"
+          }
+        }
+      }
+    },
+    "7 días · abierta %lld veces": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7 days · opened %lld times"
           }
         }
       }
@@ -61,6 +71,16 @@
         }
       }
     },
+    "Hoy · abierta %lld veces": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today · opened %lld times"
+          }
+        }
+      }
+    },
     "Más usadas": {
       "localizations": {
         "en": {
@@ -71,12 +91,32 @@
         }
       }
     },
+    "Periodo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Period"
+          }
+        }
+      }
+    },
     "Sin uso registrado en estos días.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No usage recorded these days."
+          }
+        }
+      }
+    },
+    "Sin uso registrado hoy.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No usage recorded today."
           }
         }
       }
